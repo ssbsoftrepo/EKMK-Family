@@ -1,0 +1,112 @@
+[
+  {
+    "id": "root",
+    "name": "Founding Roots",
+    "tamilName": "Founding Roots",
+    "color": "#702D3B",
+    "badgeBg": "bg-heritage-maroon-100 text-heritage-maroon-900 border-heritage-maroon-300",
+    "badgeBorder": "border-heritage-maroon-500",
+    "rootPersonId": "ekmk-101",
+    "description": "Pioneered Erode KMK legacy in agriculture, cotton ginning, and community charity."
+  },
+  {
+    "id": "branch-shanmuga",
+    "name": "Shanmugasundaram Branch",
+    "tamilName": "Shanmugasundaram Branch",
+    "color": "#997641",
+    "badgeBg": "bg-heritage-gold-100 text-heritage-gold-900 border-heritage-gold-300",
+    "badgeBorder": "border-heritage-gold-500",
+    "rootPersonId": "ekmk-201",
+    "description": "Textile Mills, Medical Oncology, Industrial Management in Erode & Coimbatore."
+  },
+  {
+    "id": "branch-palanisamy",
+    "name": "Palanisamy Branch",
+    "tamilName": "Palanisamy Branch",
+    "color": "#466847",
+    "badgeBg": "bg-emerald-50 text-emerald-900 border-emerald-300",
+    "badgeBorder": "border-emerald-600",
+    "rootPersonId": "ekmk-203",
+    "description": "Turmeric Commerce, Precision Agriculture, Silicon Valley Software in Perundurai & California."
+  },
+  {
+    "id": "branch-sivakami",
+    "name": "Sivakami Branch",
+    "tamilName": "Sivakami Branch",
+    "color": "#A6533A",
+    "badgeBg": "bg-amber-50 text-amber-900 border-amber-300",
+    "badgeBorder": "border-amber-600",
+    "rootPersonId": "ekmk-205",
+    "description": "Civil Engineering, Higher Education, Tamil Literature in Gobichettipalayam & Chennai."
+  },
+  {
+    "id": "branch-muthusamy",
+    "name": "Muthusamy Branch",
+    "tamilName": "Muthusamy Branch",
+    "color": "#3B6B88",
+    "badgeBg": "bg-sky-50 text-sky-900 border-sky-300",
+    "badgeBorder": "border-sky-600",
+    "rootPersonId": "ekmk-207",
+    "description": "Agro-processing, Clean Energy Venture Capital & Architecture in Bhavani & Singapore."
+  },
+  {
+    "id": "branch-natarajan",
+    "name": "Natarajan Branch",
+    "tamilName": "Natarajan Branch",
+    "color": "#702D3B",
+    "badgeBg": "bg-rose-50 text-rose-900 border-rose-300",
+    "badgeBorder": "border-rose-600",
+    "rootPersonId": "ekmk-209",
+    "description": "Automotive Engineering, Precision Foundry & Heavy Machinery in Coimbatore."
+  },
+  {
+    "id": "branch-saraswathi",
+    "name": "Saraswathi Branch",
+    "tamilName": "Saraswathi Branch",
+    "color": "#B6955B",
+    "badgeBg": "bg-amber-50 text-amber-900 border-amber-300",
+    "badgeBorder": "border-amber-600",
+    "rootPersonId": "ekmk-211",
+    "description": "Knitwear Garment Manufacturing, Apparel Exports & Philanthropy in Tirupur."
+  },
+  {
+    "id": "branch-thangavelu",
+    "name": "Thangavelu Branch",
+    "tamilName": "Thangavelu Branch",
+    "color": "#2E5A88",
+    "badgeBg": "bg-blue-50 text-blue-900 border-blue-300",
+    "badgeBorder": "border-blue-600",
+    "rootPersonId": "ekmk-213",
+    "description": "Steel Processing, Transport Logistics & Cold Storage Infrastructure in Salem."
+  },
+  {
+    "id": "branch-meenakshi",
+    "name": "Meenakshi Branch",
+    "tamilName": "Meenakshi Branch",
+    "color": "#8A4F7D",
+    "badgeBg": "bg-purple-50 text-purple-900 border-purple-300",
+    "badgeBorder": "border-purple-600",
+    "rootPersonId": "ekmk-215",
+    "description": "Multi-Specialty Healthcare, Nursing Academies & Eye Care Charities in Madurai."
+  },
+  {
+    "id": "branch-dharmalingam",
+    "name": "Dharmalingam Branch",
+    "tamilName": "Dharmalingam Branch",
+    "color": "#5A7D42",
+    "badgeBg": "bg-teal-50 text-teal-900 border-teal-300",
+    "badgeBorder": "border-teal-600",
+    "rootPersonId": "ekmk-217",
+    "description": "Paper Mills, Sustainable Agro-Commodities & Renewable Energy in Karur."
+  },
+  {
+    "id": "branch-kandasamy",
+    "name": "Kandasamy Branch",
+    "tamilName": "Kandasamy Branch",
+    "color": "#8B6236",
+    "badgeBg": "bg-orange-50 text-orange-900 border-orange-300",
+    "badgeBorder": "border-orange-600",
+    "rootPersonId": "ekmk-219",
+    "description": "Legal Practice, Port Logistics, Corporate Governance & Banking in Chennai."
+  }
+]

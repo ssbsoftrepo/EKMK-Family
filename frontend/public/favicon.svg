@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="goldGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E8D7B0" />
+      <stop offset="70%" stop-color="#B6955B" />
+      <stop offset="100%" stop-color="#7B5C31" />
+    </radialGradient>
+    <radialGradient id="maroonGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#AC3F60" />
+      <stop offset="100%" stop-color="#3D151E" />
+    </radialGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="url(#maroonGrad)" stroke="#B6955B" stroke-width="2.5" />
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#FAF7EE" stroke-width="0.75" stroke-dasharray="2,2" />
+  
+  <!-- Sacred Heritage Kalasam / Tree of Life motif -->
+  <!-- Roots / Base -->
+  <path d="M 24 50 Q 32 46 40 50 L 38 52 Q 32 49 26 52 Z" fill="#B6955B" />
+  <!-- Trunk -->
+  <path d="M 30 50 Q 31 38 27 30 Q 32 33 37 30 Q 33 38 34 50 Z" fill="#E8D7B0" />
+  <!-- Canopy branches & leaves -->
+  <circle cx="32" cy="20" r="7" fill="url(#goldGrad)" />
+  <circle cx="23" cy="25" r="5" fill="#E8D7B0" />
+  <circle cx="41" cy="25" r="5" fill="#E8D7B0" />
+  <circle cx="18" cy="32" r="3.5" fill="#B6955B" />
+  <circle cx="46" cy="32" r="3.5" fill="#B6955B" />
+  <circle cx="32" cy="11" r="2.5" fill="#FAF7EE" />
+</svg>
