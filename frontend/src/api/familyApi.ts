@@ -89,6 +89,17 @@ export const familyApi = {
 
 
 
+  // Media Upload
+  async uploadPhoto(file: File): Promise<{ url: string; filename: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE_URL}/api/media/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    return handleResponse<{ url: string; filename: string }>(res);
+  },
+
   async checkHealth(): Promise<BackendHealth> {
     const res = await fetch(`${API_BASE_URL}/api/admin/health`);
     return handleResponse<BackendHealth>(res);

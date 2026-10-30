@@ -87,6 +87,17 @@ export const familyApi = {
     return handleResponse<FamilyStats>(res);
   },
 
+  // Media Upload
+  async uploadPhoto(file: File): Promise<{ url: string; filename: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE_URL}/api/media/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    return handleResponse<{ url: string; filename: string }>(res);
+  },
+
   // Admin & Health
   async checkHealth(): Promise<BackendHealth> {
     const res = await fetch(`${API_BASE_URL}/api/admin/health`);

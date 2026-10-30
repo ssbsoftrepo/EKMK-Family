@@ -155,6 +155,22 @@ export const FamilyTreeView: React.FC = () => {
   const genNumber = activePrimary?.generation || 1;
   const progressPercent = Math.min(100, Math.round((genNumber / 5) * 100));
 
+  if (!activePrimary || members.length === 0) {
+    return (
+      <div className="min-h-screen bg-heritage-ivory flex items-center justify-center p-6">
+        <div className="max-w-md w-full text-center bg-[#FFFEFB] border border-heritage-border rounded-2xl p-8 shadow-heritage-md space-y-4">
+          <div className="w-16 h-16 rounded-full bg-heritage-gold/20 border border-heritage-gold/40 flex items-center justify-center mx-auto text-heritage-maroon">
+            <Users className="w-8 h-8" />
+          </div>
+          <h2 className="font-serif text-2xl font-bold text-heritage-maroon">No Family Members Found</h2>
+          <p className="text-sm text-heritage-muted leading-relaxed">
+            The archive currently contains no records. Family tree records are being updated.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-heritage-ivory pb-24">
       
@@ -389,10 +405,12 @@ export const FamilyTreeView: React.FC = () => {
               </p>
               <div className="pt-1 flex justify-center gap-2">
                 <button
+                  type="button"
                   onClick={handleBack}
-                  className="px-4 py-2 rounded-xl bg-heritage-maroon text-[#FAF7EE] text-xs font-semibold shadow-xs"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-heritage-maroon hover:bg-heritage-maroon-800 text-[#FAF7EE] text-xs font-semibold shadow-xs transition-all duration-200 group active:scale-95 cursor-pointer"
                 >
-                  ← Back
+                  <ArrowLeft className="w-3.5 h-3.5 text-heritage-gold-300 group-hover:-translate-x-0.5 transition-transform" />
+                  <span>Back</span>
                 </button>
                 <button
                   onClick={handleResetToRoot}

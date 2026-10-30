@@ -32,8 +32,8 @@ interface FamilyContextType {
 const FamilyContext = createContext<FamilyContextType | undefined>(undefined);
 
 export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [members, setMembers] = useState<FamilyMember[]>(INITIAL_FAMILY_MEMBERS);
-  const [branches, setBranches] = useState<FamilyBranch[]>(FAMILY_BRANCHES);
+  const [members, setMembers] = useState<FamilyMember[]>([]);
+  const [branches, setBranches] = useState<FamilyBranch[]>([]);
   const [backendStats, setBackendStats] = useState<FamilyStats | null>(null);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [activeTab, setActiveTab] = useState<ViewTab>('home');
@@ -62,10 +62,10 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         familyApi.getStats(),
       ]);
 
-      if (Array.isArray(membersData) && membersData.length > 0) {
+      if (Array.isArray(membersData)) {
         setMembers(membersData);
       }
-      if (Array.isArray(branchesData) && branchesData.length > 0) {
+      if (Array.isArray(branchesData)) {
         setBranches(branchesData);
       }
       if (statsData) {
@@ -257,7 +257,7 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     const totalMembers = members.length;
-    let maxGen = 1;
+    let maxGen = members.length > 0 ? 1 : 0;
     let living = 0;
     let deceased = 0;
     let missingPhotos = 0;

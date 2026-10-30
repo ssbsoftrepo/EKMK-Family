@@ -48,6 +48,23 @@ public class FamilyMemberService {
         FamilyMember saved = memberRepository.save(member);
         String newId = saved.getId();
 
+        // If a branch was specified, ensure it exists in branchRepository
+        if (saved.getBranchId() != null && !saved.getBranchId().trim().isEmpty()) {
+            if (!branchRepository.existsById(saved.getBranchId())) {
+                FamilyBranch newBranch = new FamilyBranch(
+                    saved.getBranchId(),
+                    saved.getBranchName() != null ? saved.getBranchName() : "Family Branch",
+                    saved.getBranchNameTamil() != null ? saved.getBranchNameTamil() : saved.getBranchName(),
+                    "#702D3B",
+                    "bg-heritage-gold-100 text-heritage-gold-900 border-heritage-gold-300",
+                    "border-heritage-gold-500",
+                    saved.getId(),
+                    "Branch established in family archive"
+                );
+                branchRepository.save(newBranch);
+            }
+        }
+
         // Update Father childIds
         if (saved.getFatherId() != null && !saved.getFatherId().trim().isEmpty()) {
             memberRepository.findById(saved.getFatherId()).ifPresent(father -> {
@@ -160,8 +177,10 @@ public class FamilyMemberService {
         if (updates.getGender() != null) existing.setGender(updates.getGender());
         if (updates.getBirthDate() != null) existing.setBirthDate(updates.getBirthDate());
         if (updates.getDeathDate() != null) existing.setDeathDate(updates.getDeathDate());
-        existing.setDeceased(updates.isDeceased());
+        if (updates.getIsDeceased() != null) existing.setDeceased(updates.getIsDeceased());
         if (updates.getPhotoUrl() != null) existing.setPhotoUrl(updates.getPhotoUrl());
+        if (updates.getCouplePhotoUrl() != null) existing.setCouplePhotoUrl(updates.getCouplePhotoUrl());
+        if (updates.getCoupleAbout() != null) existing.setCoupleAbout(updates.getCoupleAbout());
         if (updates.getEducation() != null) existing.setEducation(updates.getEducation());
         if (updates.getProfession() != null) existing.setProfession(updates.getProfession());
         if (updates.getBusiness() != null) existing.setBusiness(updates.getBusiness());
@@ -212,15 +231,19 @@ public class FamilyMemberService {
     public FamilyStatsDto calculateStats() {
         List<FamilyMember> all = memberRepository.findAll();
         int totalMembers = all.size();
-        int maxGen = 1;
+        int maxGen = 0;
         int living = 0;
         int deceased = 0;
         int missingPhotos = 0;
         int missingDetails = 0;
+        java.util.Set<String> activeBranches = new java.util.HashSet<>();
 
         for (FamilyMember m : all) {
             if (m.getGeneration() > maxGen) {
                 maxGen = m.getGeneration();
+            }
+            if (m.getBranchId() != null && !m.getBranchId().trim().isEmpty() && !"root".equalsIgnoreCase(m.getBranchId())) {
+                activeBranches.add(m.getBranchId());
             }
             if (m.isDeceased()) {
                 deceased++;
@@ -236,7 +259,7 @@ public class FamilyMemberService {
             }
         }
 
-        int totalBranches = (int) branchRepository.count();
+        int totalBranches = activeBranches.size();
 
         return new FamilyStatsDto(
                 totalMembers,

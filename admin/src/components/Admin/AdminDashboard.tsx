@@ -19,6 +19,8 @@ import {
   CheckCircle2,
   ExternalLink
 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
+import { HeritageConfirmModal } from '../Common/HeritageConfirmModal';
 
 export const AdminDashboard: React.FC = () => {
   const { 
@@ -29,9 +31,12 @@ export const AdminDashboard: React.FC = () => {
     deleteMember
   } = useAdmin();
 
+  const toast = useToast();
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [defaultParentIdForAdd, setDefaultParentIdForAdd] = useState<string | undefined>(undefined);
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
+  const [deletingMember, setDeletingMember] = useState<FamilyMember | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [adminSearch, setAdminSearch] = useState('');
   const [filterMissing, setFilterMissing] = useState<'all' | 'photo' | 'details'>('all');
 
@@ -58,37 +63,56 @@ export const AdminDashboard: React.FC = () => {
     return result.sort((a, b) => a.generation - b.generation || a.fullName.localeCompare(b.fullName));
   }, [members, adminSearch, filterMissing]);
 
+  // Dynamic calculations from active database members
+  const gen1Members = useMemo(() => members.filter((m) => m.generation === 1), [members]);
+  const founder = gen1Members[0];
+  const estYear = useMemo(() => {
+    if (founder?.birthDate) {
+      const match = founder.birthDate.match(/\d{4}/);
+      if (match) return match[0];
+    }
+    return null;
+  }, [founder]);
+
+  const generationsDepth = useMemo(() => {
+    if (members.length === 0) return 0;
+    return Math.max(...members.map((m) => m.generation || 1), 1);
+  }, [members]);
+
+  const activeBranches = useMemo(() => {
+    return branches.filter((b) => b.id !== 'root' && members.some((m) => m.branchId === b.id));
+  }, [branches, members]);
 
   return (
-    <div className="min-h-screen bg-heritage-ivory py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-heritage-ivory py-5 sm:py-8 px-3 sm:px-5 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         
         {/* Header & Global Actions */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-heritage-border pb-6">
-          <div>
-            <div className="flex items-center space-x-2 text-xs font-bold text-heritage-maroon uppercase tracking-wider">
-              <ShieldCheck className="w-4 h-4 text-heritage-gold-600" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-heritage-border pb-4">
+          <div className="min-w-0">
+            <div className="flex items-center space-x-1.5 text-[10px] font-bold text-heritage-maroon uppercase tracking-wider">
+              <ShieldCheck className="w-3.5 h-3.5 text-heritage-gold-600" />
               <span>Family Tree Administrator</span>
             </div>
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold text-heritage-charcoal mt-1">
-              Executive Admin Portal
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-heritage-charcoal mt-0.5">
+              Admin Portal
             </h1>
-            <p className="text-sm text-heritage-muted mt-1">
-              Dedicated Family Tree Administration • Manage records, relationships, and PostgreSQL lineage archive.
+            <p className="text-xs text-heritage-muted mt-0.5 hidden sm:block">
+              Manage records, relationships &amp; lineage archive.
             </p>
           </div>
 
           {/* Quick Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <a
               href="http://localhost:5173"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-heritage-ivory border border-heritage-border hover:border-heritage-gold text-heritage-charcoal text-xs font-semibold shadow-sm transition-all"
-              title="Open public genealogy & interactive tree website"
+              className="flex items-center space-x-1 px-2.5 py-2 rounded-xl bg-heritage-ivory border border-heritage-border hover:border-heritage-gold text-heritage-charcoal text-[11px] font-semibold shadow-sm transition-all"
+              title="Open public website"
             >
               <ExternalLink className="w-3.5 h-3.5 text-heritage-gold-600" />
-              <span>View Public Website ↗</span>
+              <span className="hidden sm:inline">View Site ↗</span>
             </a>
 
             <button
@@ -96,10 +120,10 @@ export const AdminDashboard: React.FC = () => {
                 setDefaultParentIdForAdd(undefined);
                 setAddModalOpen(true);
               }}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-heritage-maroon hover:bg-heritage-maroon-800 text-[#FAF7EE] text-xs font-semibold shadow-heritage-sm transition-all"
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-heritage-maroon hover:bg-heritage-maroon-800 text-[#FAF7EE] text-xs font-semibold shadow-heritage-sm transition-all"
             >
-              <UserPlus className="w-4 h-4 text-heritage-gold-300" />
-              <span>Add Family Member</span>
+              <UserPlus className="w-3.5 h-3.5 text-heritage-gold-300" />
+              <span>Add Member</span>
             </button>
           </div>
         </div>
@@ -127,10 +151,14 @@ export const AdminDashboard: React.FC = () => {
             <div className="min-w-0 flex-1">
               <p className="text-[11px] sm:text-xs font-semibold text-heritage-muted truncate">Generations Depth</p>
               <h3 className="font-serif text-2xl sm:text-3xl font-bold text-heritage-gold-700 mt-0.5 sm:mt-1">
-                {stats.totalGenerations}
+                {generationsDepth}
               </h3>
               <p className="text-[10px] sm:text-[11px] text-heritage-muted mt-0.5 sm:mt-1 truncate">
-                Gen 1 (1912) to Gen 5
+                {generationsDepth === 0
+                  ? 'No generations registered'
+                  : generationsDepth === 1
+                  ? estYear ? `Gen 1 (${estYear}) Founding` : 'Gen 1 Founding'
+                  : estYear ? `Gen 1 (${estYear}) to Gen ${generationsDepth}` : `Gen 1 to Gen ${generationsDepth}`}
               </p>
             </div>
             <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-heritage-gold-100 flex items-center justify-center text-heritage-gold-900 flex-shrink-0 ml-2">
@@ -142,10 +170,12 @@ export const AdminDashboard: React.FC = () => {
             <div className="min-w-0 flex-1">
               <p className="text-[11px] sm:text-xs font-semibold text-heritage-muted truncate">Main Branches</p>
               <h3 className="font-serif text-2xl sm:text-3xl font-bold text-heritage-charcoal mt-0.5 sm:mt-1">
-                {branches.filter((b) => b.id !== 'root').length || 10}
+                {activeBranches.length}
               </h3>
               <p className="text-[10px] sm:text-[11px] text-heritage-muted mt-0.5 sm:mt-1 truncate">
-                10 Branch Lineages
+                {activeBranches.length === 0
+                  ? '0 Branch Lineages'
+                  : `${activeBranches.length} ${activeBranches.length === 1 ? 'Branch Lineage' : 'Branch Lineages'}`}
               </p>
             </div>
             <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-heritage-green-light/20 flex items-center justify-center text-heritage-green-dark flex-shrink-0 ml-2">
@@ -182,155 +212,121 @@ export const AdminDashboard: React.FC = () => {
         <div className="bg-[#FFFEFB] rounded-2xl border border-heritage-border shadow-heritage-sm overflow-hidden">
           
           {/* Table Header Filter Row */}
-          <div className="p-4 sm:p-5 border-b border-heritage-border flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="relative w-full sm:w-80">
+          <div className="p-3 sm:p-4 border-b border-heritage-border flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <div className="relative flex-1 sm:max-w-xs">
               <input
                 type="text"
-                placeholder="Search member by name..."
+                placeholder="Search by name…"
                 value={adminSearch}
                 onChange={(e) => setAdminSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs bg-heritage-ivory border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon"
+                className="w-full pl-8 pr-3 py-2 text-xs bg-heritage-ivory border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon"
               />
-              <Search className="w-4 h-4 text-heritage-muted absolute left-3 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-heritage-muted absolute left-2.5 top-2.5" />
             </div>
 
-            <div className="flex items-center space-x-2 text-xs text-heritage-muted self-end sm:self-auto">
-              <span>Filter:</span>
+            <div className="flex items-center gap-1.5 text-xs text-heritage-muted self-start sm:self-auto flex-wrap">
+              <span className="text-[10px] font-semibold uppercase tracking-wide">Filter:</span>
               <button
                 onClick={() => setFilterMissing('all')}
-                className={`px-2.5 py-1 rounded-lg ${filterMissing === 'all' ? 'bg-heritage-maroon text-white font-medium' : 'hover:bg-heritage-cream/60'}`}
+                className={`px-2 py-1 rounded-lg text-[11px] ${filterMissing === 'all' ? 'bg-heritage-maroon text-white font-medium' : 'hover:bg-heritage-cream/60'}`}
               >
                 All ({members.length})
               </button>
               <button
                 onClick={() => setFilterMissing('photo')}
-                className={`px-2.5 py-1 rounded-lg ${filterMissing === 'photo' ? 'bg-amber-600 text-white font-medium' : 'hover:bg-heritage-cream/60'}`}
+                className={`px-2 py-1 rounded-lg text-[11px] ${filterMissing === 'photo' ? 'bg-amber-600 text-white font-medium' : 'hover:bg-heritage-cream/60'}`}
               >
-                Missing Photo ({stats.missingPhotosCount})
+                No Photo ({stats.missingPhotosCount})
               </button>
             </div>
           </div>
 
-          {/* Members Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
+          {/* Members Table — horizontally scrollable on mobile */}
+          <div className="overflow-x-auto -mx-0">
+            <table className="w-full text-left text-xs min-w-[520px]">
               <thead className="bg-heritage-cream/40 text-heritage-charcoal border-b border-heritage-border font-serif">
                 <tr>
-                  <th className="py-3 px-4">Relative Name</th>
-                  <th className="py-3 px-4">Gen</th>
-                  <th className="py-3 px-4">Branch</th>
-                  <th className="py-3 px-4">Parents / Spouse</th>
-                  <th className="py-3 px-4">Children</th>
-                  <th className="py-3 px-4 text-right">Admin Actions</th>
+                  <th className="py-2.5 px-3">Name</th>
+                  <th className="py-2.5 px-3">Gen</th>
+                  <th className="py-2.5 px-3 hidden sm:table-cell">Branch</th>
+                  <th className="py-2.5 px-3 hidden md:table-cell">Spouse</th>
+                  <th className="py-2.5 px-3 hidden sm:table-cell">Children</th>
+                  <th className="py-2.5 px-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-heritage-border/60">
-                {filteredMembers.map((member) => (
-                  <tr key={member.id} className="hover:bg-heritage-cream/30 transition-colors">
+                {filteredMembers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-10 text-center text-heritage-muted">
+                      <div className="flex flex-col items-center justify-center space-y-3">
+                        <Users className="w-8 h-8 text-heritage-border" />
+                        <p className="font-serif text-sm text-heritage-charcoal">No family members found</p>
+                        <p className="text-xs text-heritage-muted max-w-xs">
+                          {adminSearch ? 'No members match your search.' : 'Click "Add Member" to register the first relative.'}
+                        </p>
+                        {!adminSearch && (
+                          <button
+                            onClick={() => { setDefaultParentIdForAdd(undefined); setAddModalOpen(true); }}
+                            className="mt-1 inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-heritage-maroon hover:bg-heritage-maroon-800 text-white text-xs font-semibold shadow-heritage-sm transition-all"
+                          >
+                            <UserPlus className="w-3.5 h-3.5 text-heritage-gold-300" />
+                            <span>Add First Relative</span>
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredMembers.map((member) => (
+                    <tr key={member.id} className="hover:bg-heritage-cream/30 transition-colors">
                     {/* Name + Avatar */}
-                    <td className="py-3 px-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-lg overflow-hidden bg-heritage-gold-100 flex-shrink-0 border border-heritage-border">
-                          <PersonAvatar
-                            photoUrl={member.photoUrl}
-                            name={member.fullName}
-                            gender={member.gender}
-                            className="w-full h-full"
-                          />
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-7 h-7 rounded-lg overflow-hidden bg-heritage-gold-100 flex-shrink-0 border border-heritage-border">
+                          <PersonAvatar photoUrl={member.photoUrl} name={member.fullName} gender={member.gender} className="w-full h-full" />
                         </div>
-                        <div>
-                          <p className="font-semibold text-heritage-charcoal leading-snug">
-                            {member.fullName}
-                          </p>
-                          <p className="text-[11px] text-heritage-muted">
-                            {member.profession || member.currentCity || 'Member'}
-                          </p>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-heritage-charcoal leading-snug truncate max-w-[140px] sm:max-w-none">{member.fullName}</p>
+                          <p className="text-[10px] text-heritage-muted truncate">{member.profession || member.currentCity || 'Member'}</p>
                         </div>
                       </div>
                     </td>
 
-                    {/* Generation */}
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-heritage-ivory border border-heritage-border text-heritage-charcoal">
-                        Gen {member.generation}
-                      </span>
+                    <td className="py-2.5 px-3">
+                      <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-heritage-ivory border border-heritage-border text-heritage-charcoal whitespace-nowrap">G{member.generation}</span>
                     </td>
 
-                    {/* Branch */}
-                    <td className="py-3 px-4 text-heritage-charcoal font-medium">
-                      {member.branchName}
+                    <td className="py-2.5 px-3 text-heritage-charcoal font-medium hidden sm:table-cell text-[11px] max-w-[100px] truncate">{member.branchName}</td>
+
+                    <td className="py-2.5 px-3 text-heritage-muted text-[10px] hidden md:table-cell">
+                      {member.spouseId ? <span className="text-heritage-charcoal">Married</span> : <span>Single</span>}
                     </td>
 
-                    {/* Parents / Spouse */}
-                    <td className="py-3 px-4 text-heritage-muted text-xs">
-                      {member.spouseId ? (
-                        <span className="text-heritage-charcoal">Married</span>
-                      ) : (
-                        <span>Single</span>
-                      )}
-                      {(member.fatherId || member.motherId) && (
-                        <span className="ml-1 text-[10px] text-heritage-gold-700 font-medium">
-                          • Has Parents
-                        </span>
-                      )}
+                    <td className="py-2.5 px-3 hidden sm:table-cell">
+                      <span className="text-[11px] font-medium text-heritage-charcoal">{member.childIds?.length || 0}</span>
                     </td>
 
-                    {/* Children count */}
-                    <td className="py-3 px-4">
-                      <span className="text-xs font-medium text-heritage-charcoal">
-                        {member.childIds?.length || 0} Children
-                      </span>
-                    </td>
-
-                    {/* Action Buttons */}
-                    <td className="py-3 px-4 text-right">
-                      <div className="inline-flex items-center space-x-1.5">
-                        {/* Add Child Shortcut */}
-                        <button
-                          onClick={() => {
-                            setDefaultParentIdForAdd(member.id);
-                            setAddModalOpen(true);
-                          }}
-                          className="px-2 py-1 rounded bg-heritage-ivory hover:bg-heritage-cream text-[11px] font-medium text-heritage-charcoal border border-heritage-border"
-                          title="Add a child to this person"
-                        >
-                          + Child
+                    {/* Actions */}
+                    <td className="py-2.5 px-3 text-right">
+                      <div className="inline-flex items-center gap-1">
+                        <button onClick={() => { setDefaultParentIdForAdd(member.id); setAddModalOpen(true); }}
+                          className="px-1.5 py-1 rounded bg-heritage-ivory hover:bg-heritage-cream text-[10px] font-medium text-heritage-charcoal border border-heritage-border whitespace-nowrap" title="Add child">
+                          +Child
                         </button>
-
-                        {/* Edit Button */}
-                        <button
-                          onClick={() => setEditingMember(member)}
-                          className="p-1.5 rounded hover:bg-heritage-cream text-heritage-charcoal transition-colors"
-                          title="Edit member details"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
+                        <button onClick={() => setEditingMember(member)} className="p-1 rounded hover:bg-heritage-cream text-heritage-charcoal transition-colors" title="Edit">
+                          <Edit3 className="w-3 h-3" />
                         </button>
-
-                        {/* Show in Tree */}
-                        <button
-                          onClick={() => locateInTree(member.id)}
-                          className="p-1.5 rounded hover:bg-heritage-cream text-heritage-maroon transition-colors"
-                          title="Show on Family Tree"
-                        >
-                          <TreePine className="w-3.5 h-3.5" />
+                        <button onClick={() => locateInTree(member.id)} className="p-1 rounded hover:bg-heritage-cream text-heritage-maroon transition-colors hidden sm:inline-flex" title="Show in tree">
+                          <TreePine className="w-3 h-3" />
                         </button>
-
-                        {/* Delete */}
-                        <button
-                          onClick={() => {
-                            if (confirm(`Delete ${member.fullName}?`)) {
-                              deleteMember(member.id);
-                            }
-                          }}
-                          className="p-1.5 rounded hover:bg-rose-50 text-heritage-muted hover:text-rose-600 transition-colors"
-                          title="Delete member"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
+                        <button onClick={() => setDeletingMember(member)}
+                          className="p-1 rounded hover:bg-rose-50 text-heritage-muted hover:text-rose-600 transition-colors cursor-pointer" title="Delete">
+                          <Trash2 className="w-3 h-3" />
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>
@@ -352,6 +348,40 @@ export const AdminDashboard: React.FC = () => {
           <EditMemberModal
             member={editingMember}
             onClose={() => setEditingMember(null)}
+          />
+        )}
+
+        {/* Themed Deletion Confirmation Modal */}
+        {deletingMember && (
+          <HeritageConfirmModal
+            isOpen={true}
+            title="Remove Family Member"
+            message={`Are you sure you want to remove "${deletingMember.fullName}" from the family tree archive?`}
+            confirmLabel="Yes, Delete Member"
+            cancelLabel="Keep Record"
+            isDestructive={true}
+            isLoading={isDeleting}
+            member={{
+              fullName: deletingMember.fullName,
+              tamilName: deletingMember.tamilName,
+              generation: deletingMember.generation,
+              gender: deletingMember.gender,
+              photoUrl: deletingMember.photoUrl,
+              branchName: deletingMember.branchName,
+            }}
+            onConfirm={async () => {
+              setIsDeleting(true);
+              try {
+                await deleteMember(deletingMember.id);
+                toast.success('Member Removed', `"${deletingMember.fullName}" was removed from the tree.`);
+                setDeletingMember(null);
+              } catch (err: unknown) {
+                toast.error('Delete Failed', err instanceof Error ? err.message : 'Failed to delete member');
+              } finally {
+                setIsDeleting(false);
+              }
+            }}
+            onClose={() => setDeletingMember(null)}
           />
         )}
 

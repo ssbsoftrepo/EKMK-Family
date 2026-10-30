@@ -11,6 +11,8 @@ export interface FamilyMember {
   deathDate?: string;
   isDeceased: boolean;
   photoUrl?: string;
+  couplePhotoUrl?: string;
+  coupleAbout?: string;
   education?: string;
   profession?: string;
   business?: string;

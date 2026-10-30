@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useFamily } from '../../context/FamilyContext';
 import { PersonAvatar } from '../Common/PersonAvatar';
 import { 
@@ -15,11 +15,44 @@ import {
   Layers,
   Calendar,
   CheckCircle2,
-  Flame
+  Flame,
+  UserPlus
 } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
   const { setActiveTab, stats, branches, locateInTree, members, setSelectedMember } = useFamily();
+
+  // Dynamic Generation 1 Founder(s)
+  const gen1Members = useMemo(() => {
+    return members.filter((m) => m.generation === 1);
+  }, [members]);
+
+  const founderPatriarch = useMemo(() => {
+    return gen1Members.find((m) => m.gender === 'male') || gen1Members[0];
+  }, [gen1Members]);
+
+  const founderMatriarch = useMemo(() => {
+    if (founderPatriarch?.spouseId) {
+      return members.find((m) => m.id === founderPatriarch.spouseId);
+    }
+    return gen1Members.find((m) => m.gender === 'female' && m.id !== founderPatriarch?.id);
+  }, [gen1Members, founderPatriarch, members]);
+
+  // Dynamic established year from Gen 1 founder's birthDate
+  const estYear = useMemo(() => {
+    const founder = founderPatriarch || founderMatriarch;
+    if (founder?.birthDate) {
+      const match = founder.birthDate.match(/\d{4}/);
+      if (match) return match[0];
+    }
+    return null;
+  }, [founderPatriarch, founderMatriarch]);
+
+  // Dynamic generations depth
+  const generationsDepth = useMemo(() => {
+    if (members.length === 0) return 0;
+    return Math.max(...members.map((m) => m.generation || 1), 1);
+  }, [members]);
 
   // Helper to get detailed branch leader and stats
   const getBranchDetails = (branchId: string, rootPersonId: string) => {
@@ -37,6 +70,17 @@ export const HomePage: React.FC = () => {
       generationsCount: genSet.size,
     };
   };
+
+  // Only branches that actually have registered members in the database
+  const activeBranches = useMemo(() => {
+    return branches
+      .filter((b) => b.id !== 'root')
+      .map((branch) => ({
+        branch,
+        details: getBranchDetails(branch.id, branch.rootPersonId),
+      }))
+      .filter(({ details }) => details.totalCount > 0);
+  }, [branches, members]);
 
   return (
     <div className="min-h-screen bg-heritage-ivory flex flex-col selection:bg-heritage-gold/30 selection:text-heritage-maroon">
@@ -59,7 +103,7 @@ export const HomePage: React.FC = () => {
               <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#FFFEFB] border border-heritage-gold/60 text-heritage-maroon shadow-sm text-xs font-semibold tracking-wide uppercase">
                 <span className="w-2 h-2 rounded-full bg-heritage-gold animate-pulse" />
                 <span>Kongu Heritage • Family Lineage Archive</span>
-                <span className="text-heritage-gold-600 font-bold">• Est. 1912</span>
+                {estYear && <span className="text-heritage-gold-600 font-bold">• Est. {estYear}</span>}
               </div>
 
               {/* Main Heading in English */}
@@ -77,11 +121,13 @@ export const HomePage: React.FC = () => {
               <div className="relative p-5 rounded-2xl bg-[#FFFEFB]/90 backdrop-blur-sm border border-heritage-gold/50 shadow-heritage-sm max-w-xl mx-auto lg:mx-0">
                 <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-heritage-maroon via-heritage-gold to-heritage-maroon rounded-l-2xl" />
                 <p className="text-sm sm:text-base font-serif text-heritage-charcoal italic leading-relaxed pl-2">
-                  "Our Roots. Our Legacy. Honoring the values of our founding ancestors and connecting five generations across continents."
+                  {generationsDepth > 1
+                    ? `"Our Roots. Our Legacy. Honoring the values of our founding ancestors and connecting ${generationsDepth} generations across continents."`
+                    : `"Our Roots. Our Legacy. Honoring the values of our founding ancestors and preserving our heritage for future generations."`}
                 </p>
                 <p className="text-xs text-heritage-muted mt-2 pl-2 font-sans font-medium flex items-center space-x-2">
                   <span className="text-heritage-gold-700">✦</span>
-                  <span>Erode KMK Family Kudumbam • Established in 1912</span>
+                  <span>Erode KMK Family Kudumbam {estYear ? `• Established in ${estYear}` : '• Living Lineage Archive'}</span>
                 </p>
               </div>
 
@@ -109,15 +155,15 @@ export const HomePage: React.FC = () => {
                 </div>
                 <div className="p-2.5 sm:p-3.5 bg-[#FFFEFB] rounded-xl border border-heritage-border/90 shadow-heritage-sm text-center transform hover:-translate-y-0.5 transition-transform">
                   <span className="block font-serif text-xl sm:text-3xl font-bold text-heritage-gold-700">
-                    {stats.totalGenerations}
+                    {generationsDepth}
                   </span>
                   <span className="text-[10px] sm:text-[11px] text-heritage-muted font-semibold uppercase tracking-wider">
-                    Generations
+                    {generationsDepth === 1 ? 'Generation' : 'Generations'}
                   </span>
                 </div>
                 <div className="p-2.5 sm:p-3.5 bg-[#FFFEFB] rounded-xl border border-heritage-border/90 shadow-heritage-sm text-center transform hover:-translate-y-0.5 transition-transform">
                   <span className="block font-serif text-xl sm:text-3xl font-bold text-heritage-charcoal">
-                    {branches.length - 1}
+                    {activeBranches.length}
                   </span>
                   <span className="text-[10px] sm:text-[11px] text-heritage-muted font-semibold uppercase tracking-wider">
                     Main Branches
@@ -141,13 +187,13 @@ export const HomePage: React.FC = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-heritage-charcoal/95 via-heritage-charcoal/30 to-transparent flex flex-col justify-end p-5 sm:p-6 text-white">
                     <span className="text-xs uppercase tracking-widest text-heritage-gold-300 font-bold">
-                      Established 1912 • Kongu Heritage
+                      {estYear ? `Established ${estYear} • Kongu Heritage` : 'Kongu Heritage • Living Archive'}
                     </span>
                     <h3 className="text-lg sm:text-xl font-serif font-bold text-white mt-1">
                       The Living Banyan of Erode KMK
                     </h3>
                     <p className="text-xs text-white/85 mt-1 leading-relaxed">
-                      Deeply rooted along the Bhavani & Cauvery river delta, flourishing across five generations into world-class doctors, technologists, and agriculturalists.
+                      Deeply rooted along the Bhavani & Cauvery river delta, flourishing {generationsDepth > 0 ? `across ${generationsDepth} ${generationsDepth === 1 ? 'generation' : 'generations'}` : 'into future generations'} into world-class doctors, technologists, and agriculturalists.
                     </p>
                   </div>
                 </div>
@@ -159,140 +205,155 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          SECTION 2: FOUNDING PATRIARCH & MATRIARCH (MUSEUM ARCHIVAL SHOWCASE)
+          SECTION 2: FOUNDING PATRIARCH & MATRIARCH (DYNAMIC - ONLY SHOWN IF DATA EXISTS)
       ========================================================================= */}
-      <section className="py-12 sm:py-20 bg-[#FFFEFB] border-b border-heritage-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-heritage-gold-800 bg-heritage-gold-50 border border-heritage-gold-200">
-              <Sparkles className="w-3.5 h-3.5 text-heritage-gold-600" />
-              <span>Generation 1 • Genesis Pillars</span>
-            </span>
-            <h2 className="font-serif text-2xl sm:text-4xl font-extrabold text-heritage-maroon mt-3">
-              Founding Ancestors & Heritage Pillars
-            </h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-transparent via-heritage-gold to-transparent mx-auto mt-3" />
-            <p className="text-xs sm:text-sm text-heritage-muted mt-3">
-              The sacred beginning of the Erode KMK family, established through hard work, integrity, and timeless values.
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#FFFDF9] via-heritage-ivory to-heritage-cream/40 rounded-3xl border-2 border-heritage-gold/60 p-4 sm:p-10 shadow-heritage-lg relative overflow-hidden">
+      {founderPatriarch && (
+        <section className="py-12 sm:py-20 bg-[#FFFEFB] border-b border-heritage-border">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            {/* Corner Decorative Kalasam Accents */}
-            <div className="absolute top-3 right-3 text-heritage-gold-300 text-lg select-none">✦</div>
-            <div className="absolute bottom-3 left-3 text-heritage-gold-300 text-lg select-none">✦</div>
-
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-              
-              {/* Couple Vintage Portrait with Museum Gilded Frame */}
-              <div className="md:col-span-5 text-center">
-                <div className="relative inline-block rounded-2xl overflow-hidden border-4 border-heritage-gold/70 shadow-heritage-lg bg-heritage-cream group">
-                  <img
-                    src="/assets/founding_couple.jpg"
-                    alt="KMK Sengottaiyan Gounder and Angammal"
-                    className="w-64 h-72 sm:w-72 sm:h-80 object-cover object-top group-hover:scale-102 transition-transform duration-500"
-                  />
-                  <div className="bg-heritage-maroon text-[#FAF7EE] py-2 px-3 text-xs font-serif font-bold tracking-wide border-t border-heritage-gold/40">
-                    1912 — 1996 • Erode & Perundurai
-                  </div>
-                </div>
-              </div>
-
-              {/* Couple Biography & Legacy */}
-              <div className="md:col-span-7 space-y-4">
-                <div>
-                  <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-heritage-gold-100 text-heritage-gold-900 border border-heritage-gold-300">
-                    Generation 1 • Founding Patriarch & Matriarch
-                  </span>
-                  <h3 className="font-serif text-2xl font-bold text-heritage-charcoal mt-2.5 leading-snug">
-                    KMK Sengottaiyan Gounder & Angammal Sengottaiyan
-                  </h3>
-                  <p className="text-sm font-display italic text-heritage-muted">
-                    Founding Couple of the Erode KMK Family Kudumbam
-                  </p>
-                </div>
-
-                <p className="text-xs sm:text-sm text-heritage-charcoalLight leading-relaxed">
-                  In the early 1900s, KMK Sengottaiyan Gounder pioneered modern cotton ginning and turmeric warehouses along the fertile banks of the Bhavani river. Known for their unyielding honesty and philanthropy, the couple established Tamil free schools and instituted the historic Chennimalai Murugan Temple Annadhanam.
-                </p>
-
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="p-3 bg-[#FFFEFB] rounded-xl border border-heritage-border text-xs">
-                    <p className="text-heritage-muted font-medium">Ancestral Native</p>
-                    <p className="font-bold text-heritage-charcoal mt-0.5">Perundurai & Chennimalai</p>
-                  </div>
-                  <div className="p-3 bg-[#FFFEFB] rounded-xl border border-heritage-border text-xs">
-                    <p className="text-heritage-muted font-medium">Living Descendants</p>
-                    <p className="font-bold text-heritage-maroon mt-0.5">{stats.totalMembers} Members in 5 Generations</p>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    onClick={() => locateInTree('ekmk-101')}
-                    className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-heritage-maroon hover:bg-heritage-maroon-800 text-[#FAF7EE] text-xs font-bold shadow-heritage-sm transition-all group"
-                  >
-                    <span>View Profile & Trace Lineage</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-              </div>
-
+            <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-heritage-gold-800 bg-heritage-gold-50 border border-heritage-gold-200">
+                <Sparkles className="w-3.5 h-3.5 text-heritage-gold-600" />
+                <span>Generation 1 • Genesis Pillars</span>
+              </span>
+              <h2 className="font-serif text-2xl sm:text-4xl font-extrabold text-heritage-maroon mt-3">
+                Founding Ancestors & Heritage Pillars
+              </h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-transparent via-heritage-gold to-transparent mx-auto mt-3" />
+              <p className="text-xs sm:text-sm text-heritage-muted mt-3">
+                The sacred beginning of our family, established through hard work, integrity, and timeless values.
+              </p>
             </div>
-          </div>
 
-        </div>
-      </section>
+            <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#FFFDF9] via-heritage-ivory to-heritage-cream/40 rounded-3xl border-2 border-heritage-gold/60 p-4 sm:p-10 shadow-heritage-lg relative overflow-hidden">
+              {/* Corner Decorative Kalasam Accents */}
+              <div className="absolute top-3 right-3 text-heritage-gold-300 text-lg select-none">✦</div>
+              <div className="absolute bottom-3 left-3 text-heritage-gold-300 text-lg select-none">✦</div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                {/* Couple or Founder Portrait with Museum Gilded Frame */}
+                <div className="md:col-span-5 text-center">
+                  <div className="relative inline-block rounded-2xl overflow-hidden border-4 border-heritage-gold/70 shadow-heritage-lg bg-heritage-cream group">
+                    <div className="w-64 h-72 sm:w-72 sm:h-80 relative overflow-hidden bg-heritage-gold-50">
+                      <PersonAvatar
+                        photoUrl={founderPatriarch.couplePhotoUrl || founderMatriarch?.couplePhotoUrl || founderPatriarch.photoUrl || founderMatriarch?.photoUrl}
+                        name={founderPatriarch.couplePhotoUrl || founderMatriarch?.couplePhotoUrl ? `${founderPatriarch.fullName} & ${founderMatriarch?.fullName || ''}` : founderPatriarch.fullName}
+                        gender={founderPatriarch.gender}
+                        className="w-full h-full"
+                        imgClassName="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="bg-heritage-maroon text-[#FAF7EE] py-2 px-3 text-xs font-serif font-bold tracking-wide border-t border-heritage-gold/40 truncate">
+                      {founderPatriarch.birthDate || 'Genesis'} {founderPatriarch.deathDate ? `— ${founderPatriarch.deathDate}` : founderPatriarch.isDeceased ? '— Deceased' : '— Present'}
+                      {founderPatriarch.birthPlace ? ` • ${founderPatriarch.birthPlace}` : ''}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Founder Biography & Legacy */}
+                <div className="md:col-span-7 space-y-4">
+                  <div>
+                    <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-heritage-gold-100 text-heritage-gold-900 border border-heritage-gold-300">
+                      Generation 1 • {founderMatriarch ? 'Founding Patriarch & Matriarch' : 'Founding Ancestor'}
+                    </span>
+                    <h3 className="font-serif text-2xl font-bold text-heritage-charcoal mt-2.5 leading-snug">
+                      {founderPatriarch.fullName}
+                      {founderMatriarch && (
+                        <span> & {founderMatriarch.fullName}</span>
+                      )}
+                    </h3>
+                    {founderPatriarch.tamilName && (
+                      <p className="text-sm font-tamil text-heritage-gold-700 font-semibold mt-0.5">
+                        {founderPatriarch.tamilName}
+                        {founderMatriarch?.tamilName && ` • ${founderMatriarch.tamilName}`}
+                      </p>
+                    )}
+                    <p className="text-sm font-display italic text-heritage-muted">
+                      Founding Generation of the Family Kudumbam
+                    </p>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-heritage-charcoalLight leading-relaxed">
+                    {founderPatriarch.coupleAbout || founderMatriarch?.coupleAbout || founderPatriarch.biography || founderMatriarch?.biography || 
+                      'Founding pillar of our family lineage. Honoring their hard work, integrity, and timeless values that continue to connect all generations.'}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <div className="p-3 bg-[#FFFEFB] rounded-xl border border-heritage-border text-xs">
+                      <p className="text-heritage-muted font-medium">Ancestral Native</p>
+                      <p className="font-bold text-heritage-charcoal mt-0.5">
+                        {founderPatriarch.birthPlace || founderPatriarch.currentCity || 'Native Ancestral Origin'}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-[#FFFEFB] rounded-xl border border-heritage-border text-xs">
+                      <p className="text-heritage-muted font-medium">Living Descendants</p>
+                      <p className="font-bold text-heritage-maroon mt-0.5">
+                        {stats.totalMembers} Members in {stats.totalGenerations} Gen
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      onClick={() => locateInTree(founderPatriarch.id)}
+                      className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-heritage-maroon hover:bg-heritage-maroon-800 text-[#FAF7EE] text-xs font-bold shadow-heritage-sm transition-all group"
+                    >
+                      <span>View Profile & Trace Lineage</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </section>
+      )}
 
       {/* =========================================================================
-          SECTION 3: THE TEN FLOURISHING BRANCHES (PHOTO AND NAME ONLY)
+          SECTION 3: THE FLOURISHING BRANCHES (ONLY SHOWN IF BRANCHES HAVE MEMBERS)
       ========================================================================= */}
-      <section className="py-16 sm:py-20 bg-heritage-ivory border-b border-heritage-border relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-            <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-heritage-maroon bg-heritage-maroon-50 border border-heritage-maroon-200">
-              <Sparkles className="w-3.5 h-3.5 text-heritage-gold-600" />
-              <span>Generation 2 • The Ten Branches</span>
-            </span>
+      {activeBranches.length > 0 && (
+        <section className="py-16 sm:py-20 bg-heritage-ivory border-b border-heritage-border relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            {/* Section Header */}
+            <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
+              <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-heritage-maroon bg-heritage-maroon-50 border border-heritage-maroon-200">
+                <Sparkles className="w-3.5 h-3.5 text-heritage-gold-600" />
+                <span>Lineage Branches</span>
+              </span>
 
-            <h2 className="font-serif text-2xl sm:text-4xl font-extrabold text-heritage-maroon mt-3">
-              The Ten Flourishing Branches
-            </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-transparent via-heritage-gold to-transparent mx-auto mt-3" />
+              <h2 className="font-serif text-2xl sm:text-4xl font-extrabold text-heritage-maroon mt-3">
+                {activeBranches.length} Flourishing {activeBranches.length === 1 ? 'Branch' : 'Branches'}
+              </h2>
+              <div className="w-20 h-1 bg-gradient-to-r from-transparent via-heritage-gold to-transparent mx-auto mt-3" />
 
-            <p className="text-xs sm:text-sm text-heritage-muted mt-3 max-w-xl mx-auto leading-relaxed">
-              Founded by the children of Sengottaiyan Gounder and Angammal. Tap any branch to view details and lineage.
-            </p>
-          </div>
+              <p className="text-xs sm:text-sm text-heritage-muted mt-3 max-w-xl mx-auto leading-relaxed">
+                Established family branches and their registered relatives. Tap any branch to view details and lineage.
+              </p>
+            </div>
 
-          {/* Minimal Mobile-First 10 Branch Cards Grid: Photo and Name Only */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-            {branches.filter((b) => b.id !== 'root').map((branch, idx) => {
-              const details = getBranchDetails(branch.id, branch.rootPersonId);
-
-              return (
+            {/* Branch Cards Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+              {activeBranches.map(({ branch, details }, idx) => (
                 <button
                   key={branch.id}
                   onClick={() => {
                     if (details.leader) {
                       setSelectedMember(details.leader);
-                    } else {
+                    } else if (branch.rootPersonId) {
                       locateInTree(branch.rootPersonId);
                     }
                   }}
                   className="bg-[#FFFEFB] hover:bg-heritage-cream/50 active:scale-98 rounded-2xl border border-heritage-border hover:border-heritage-gold shadow-heritage-sm hover:shadow-heritage p-2.5 sm:p-3 flex flex-col items-center text-center transition-all group cursor-pointer relative overflow-hidden"
                 >
-                  {/* Top hairline accent bar colored by branch identity */}
                   <div
                     className="h-1 w-full absolute top-0 inset-x-0"
-                    style={{ backgroundColor: branch.color }}
+                    style={{ backgroundColor: branch.color || '#B6955B' }}
                   />
 
-                  {/* Photo only */}
                   <div className="w-full aspect-[3/4] rounded-xl overflow-hidden border border-heritage-gold/60 bg-heritage-cream shadow-2xs mb-2 relative mt-1">
                     <PersonAvatar
                       photoUrl={details.leader?.photoUrl}
@@ -302,26 +363,27 @@ export const HomePage: React.FC = () => {
                       imgClassName="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
                     />
 
-                    {/* Branch Number Badge */}
                     <div className="absolute top-1.5 left-1.5 bg-black/60 backdrop-blur-xs text-[#FAF7EE] text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md z-10">
                       Branch {String(idx + 1).padStart(2, '0')}
                     </div>
                   </div>
 
-                  {/* Name only */}
                   <h3 className="font-serif text-xs sm:text-sm font-bold text-heritage-charcoal group-hover:text-heritage-maroon leading-tight line-clamp-2 px-1">
                     {details.leader?.fullName || branch.name}
                   </h3>
                   <p className="text-[11px] text-heritage-muted mt-0.5 line-clamp-1 font-medium">
                     {branch.name}
                   </p>
+                  <span className="mt-1 text-[10px] text-heritage-maroon font-bold bg-heritage-gold-50 px-2 py-0.5 rounded-full border border-heritage-gold/30">
+                    {details.totalCount} {details.totalCount === 1 ? 'Relative' : 'Relatives'}
+                  </span>
                 </button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {/* =========================================================================
           FOOTER (AUTHENTIC TAMIL HERITAGE FINALE)

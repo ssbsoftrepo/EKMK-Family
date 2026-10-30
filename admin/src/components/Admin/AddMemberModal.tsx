@@ -1,11 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAdmin } from '../../context/AdminContext';
 import { Gender } from '../../types/family';
 import { HeritageSelect, SelectOption } from '../Common/HeritageSelect';
 import { HeritageDateInput } from '../Common/HeritageDateInput';
-import { X, UserPlus, Sparkles, CheckCircle2 } from 'lucide-react';
+import { PersonAvatar } from '../Common/PersonAvatar';
+import { familyApi } from '../../api/familyApi';
+import { X, UserPlus, Sparkles, CheckCircle2, Upload, Loader2, Image as ImageIcon, ArrowLeft, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useToast } from '../../context/ToastContext';
 
 interface Props {
   onClose: () => void;
@@ -13,10 +16,12 @@ interface Props {
 }
 
 export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) => {
-  const { members, branches, addMember, locateInTree } = useAdmin();
+  const { members, branches, addMember } = useAdmin();
+  const toast = useToast();
 
   // Multi-step form step (1 = Basic Info, 2 = Relationships, 3 = Professional & Heritage)
   const [step, setStep] = useState<number>(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
   const [firstName, setFirstName] = useState('');
@@ -35,11 +40,57 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
   const [currentCity, setCurrentCity] = useState('Erode');
   const [biography, setBiography] = useState('');
 
+  // Server Photo Upload State
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File Too Large', 'File size exceeds 10MB. Please choose a smaller photo.');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Invalid Format', 'Please select a valid image file (JPG, PNG, or WEBP).');
+      return;
+    }
+
+    // Immediate local preview for responsive UX
+    const localPreview = URL.createObjectURL(file);
+    setPhotoUrl(localPreview);
+    setIsUploadingPhoto(true);
+    setUploadError(null);
+
+    try {
+      const res = await familyApi.uploadPhoto(file);
+      if (res?.url) {
+        setPhotoUrl(res.url);
+        toast.success('Photo Uploaded', 'Portrait photo attached successfully.');
+      }
+    } catch (err: unknown) {
+      console.warn('Server upload notice:', err);
+      // Fallback: file reader base64 if server upload endpoint is temporarily unreachable
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        if (base64) setPhotoUrl(base64);
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsUploadingPhoto(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
   // Preset default parent relationships cleanly based on parent gender
   const initialRelations = useMemo(() => {
-    if (!defaultParentId) return { fatherId: '', motherId: '', branchId: 'branch-shanmuga' };
+    if (!defaultParentId) return { fatherId: '', motherId: '', branchId: 'root' };
     const p = members.find((m) => m.id === defaultParentId);
-    if (!p) return { fatherId: '', motherId: '', branchId: 'branch-shanmuga' };
+    if (!p) return { fatherId: '', motherId: '', branchId: 'root' };
 
     let fId = '';
     let mId = '';
@@ -50,7 +101,7 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
       fId = p.id;
       mId = p.spouseId || '';
     }
-    return { fatherId: fId, motherId: mId, branchId: p.branchId || 'branch-shanmuga' };
+    return { fatherId: fId, motherId: mId, branchId: p.branchId || 'root' };
   }, [defaultParentId, members]);
 
   // Relationships
@@ -58,6 +109,11 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
   const [motherId, setMotherId] = useState<string>(initialRelations.motherId);
   const [spouseId, setSpouseId] = useState<string>('');
   const [selectedBranchId, setSelectedBranchId] = useState<string>(initialRelations.branchId);
+
+  // Check if member is Generation 1 (no parents)
+  const isGen1 = useMemo(() => {
+    return !fatherId && !motherId;
+  }, [fatherId, motherId]);
 
   // Prevent background scroll when modal is mounted
   useEffect(() => {
@@ -68,101 +124,101 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
     };
   }, []);
 
-  // Preset portrait avatars for quick demonstration
-  const PRESET_AVATARS = [
-    { label: 'Elder Patriarch', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80' },
-    { label: 'Elder Matriarch', url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&auto=format&fit=crop&q=80' },
-    { label: 'Young Man', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&auto=format&fit=crop&q=80' },
-    { label: 'Young Woman', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80' },
-    { label: 'Child / Toddler', url: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=300&auto=format&fit=crop&q=80' },
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!fullName.trim()) {
-      alert('Please enter Full Name.');
+      toast.warning('Name Required', 'Please enter Full Name.');
+      setStep(1);
       return;
     }
 
-    let calculatedGen = 3;
-    let branchId = selectedBranchId;
-    let branchName = 'Shanmugasundaram Branch';
-    let branchNameTamil = 'Shanmugasundaram Branch';
+    let calculatedGen = 1;
+    let branchId = 'root';
+    let branchName = 'Founding Roots';
+    let branchNameTamil = 'Founding Roots';
 
     if (fatherId) {
       const f = members.find((m) => m.id === fatherId);
       if (f) {
         calculatedGen = f.generation + 1;
-        branchId = f.branchId;
-        branchName = f.branchName;
-        branchNameTamil = f.branchNameTamil;
+        branchId = f.branchId || 'root';
+        branchName = f.branchName || 'Founding Roots';
+        branchNameTamil = f.branchNameTamil || branchName;
       }
     } else if (motherId) {
       const m = members.find((m) => m.id === motherId);
       if (m) {
         calculatedGen = m.generation + 1;
-        branchId = m.branchId;
-        branchName = m.branchName;
-        branchNameTamil = m.branchNameTamil;
+        branchId = m.branchId || 'root';
+        branchName = m.branchName || 'Founding Roots';
+        branchNameTamil = m.branchNameTamil || branchName;
       }
     } else if (spouseId) {
       const s = members.find((m) => m.id === spouseId);
       if (s) {
         calculatedGen = s.generation;
-        branchId = s.branchId;
-        branchName = s.branchName;
-        branchNameTamil = s.branchNameTamil;
+        branchId = s.branchId || 'root';
+        branchName = s.branchName || 'Founding Roots';
+        branchNameTamil = s.branchNameTamil || branchName;
       }
     } else {
-      const br = branches.find((b) => b.id === selectedBranchId);
-      if (br) {
-        branchName = br.name;
-        branchNameTamil = br.tamilName;
-      }
+      // 1st Generation Founding Ancestor
+      calculatedGen = 1;
+      branchId = 'root';
+      branchName = 'Founding Roots';
+      branchNameTamil = 'Founding Roots';
     }
 
-    const newMemberId = await addMember({
-      firstName: firstName || fullName.split(' ')[0],
-      lastName: lastName,
-      fullName: fullName.trim(),
-      tamilName: tamilName.trim() || fullName.trim(),
-      gender,
-      birthDate: birthDate || undefined,
-      deathDate: isDeceased ? deathDate || undefined : undefined,
-      isDeceased,
-      photoUrl: photoUrl.trim() || undefined,
-      education: education.trim() || undefined,
-      profession: profession.trim() || undefined,
-      business: business.trim() || undefined,
-      birthPlace: birthPlace.trim() || undefined,
-      currentCity: currentCity.trim() || undefined,
-      biography: biography.trim() || undefined,
-      generation: calculatedGen,
-      branchId,
-      branchName,
-      branchNameTamil,
-      fatherId: fatherId || undefined,
-      motherId: motherId || undefined,
-      spouseId: spouseId || undefined,
-      childIds: [],
-      tags: ['Newly Added'],
-    });
-
+    setIsSubmitting(true);
     try {
-      confetti({
-        particleCount: 60,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#702D3B', '#B6955B', '#E8D7B0'],
+      const newMemberId = await addMember({
+        firstName: firstName || fullName.split(' ')[0],
+        lastName: lastName,
+        fullName: fullName.trim(),
+        tamilName: tamilName.trim() || fullName.trim(),
+        gender,
+        birthDate: birthDate || undefined,
+        deathDate: isDeceased ? deathDate || undefined : undefined,
+        isDeceased,
+        photoUrl: photoUrl.trim() || undefined,
+        education: education.trim() || undefined,
+        profession: profession.trim() || undefined,
+        business: business.trim() || undefined,
+        birthPlace: birthPlace.trim() || undefined,
+        currentCity: currentCity.trim() || undefined,
+        biography: biography.trim() || undefined,
+        generation: calculatedGen,
+        branchId,
+        branchName,
+        branchNameTamil,
+        fatherId: fatherId || undefined,
+        motherId: motherId || undefined,
+        spouseId: spouseId || undefined,
+        childIds: [],
+        tags: ['Newly Added'],
       });
-    } catch {
-      // ignore
-    }
 
-    onClose();
-    if (newMemberId) {
-      locateInTree(newMemberId);
+      if (newMemberId) {
+        toast.success('Member Added', `"${fullName.trim()}" was successfully registered.`);
+        try {
+          confetti({
+            particleCount: 60,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#702D3B', '#B6955B', '#E8D7B0'],
+          });
+        } catch {
+          // ignore
+        }
+        onClose();
+      } else {
+        toast.error('Add Failed', 'Failed to register member. Please check details and try again.');
+      }
+    } catch (err: unknown) {
+      toast.error('Add Failed', err instanceof Error ? err.message : 'Unable to register member');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -291,7 +347,6 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. KMK S. Balakrishnan"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full px-3 py-2 text-xs bg-[#FFFEFB] border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon focus:ring-2 focus:ring-heritage-maroon/15"
@@ -304,7 +359,6 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Balu, KMK Jr."
                     value={tamilName}
                     onChange={(e) => setTamilName(e.target.value)}
                     className="w-full px-3 py-2 text-xs bg-[#FFFEFB] border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon focus:ring-2 focus:ring-heritage-maroon/15"
@@ -327,7 +381,6 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                   label="Date of Birth"
                   value={birthDate}
                   onChange={setBirthDate}
-                  placeholder="YYYY-MM-DD"
                 />
 
                 <div className="pb-1">
@@ -352,36 +405,101 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                     label="Date of Demise"
                     value={deathDate}
                     onChange={setDeathDate}
-                    placeholder="YYYY-MM-DD"
                   />
                 </div>
               )}
 
-              {/* Photo URL & Presets */}
+              {/* Photo Upload (Direct file upload only, no external link) */}
               <div>
-                <label className="block text-xs font-semibold text-heritage-charcoal mb-1">
-                  Profile Photo URL (Optional)
+                <label className="block text-xs font-semibold text-heritage-charcoal mb-1.5">
+                  Portrait Photograph <span className="text-heritage-muted font-normal">(Server File Upload)</span>
                 </label>
-                <input
-                  type="url"
-                  placeholder="Paste image link, or select sample preset below"
-                  value={photoUrl}
-                  onChange={(e) => setPhotoUrl(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[#FFFEFB] border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon focus:ring-2 focus:ring-heritage-maroon/15"
-                />
 
-                <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                  <span className="text-[11px] text-heritage-muted mr-1">Sample presets:</span>
-                  {PRESET_AVATARS.map((preset, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setPhotoUrl(preset.url)}
-                      className="px-2 py-0.5 rounded-lg bg-heritage-cream/50 hover:bg-heritage-cream text-[10px] font-medium text-heritage-charcoal border border-heritage-border transition-colors"
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
+                <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-heritage-ivory/70 border border-heritage-border rounded-2xl">
+                  {/* Live Avatar Preview */}
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-heritage-gold/70 bg-heritage-cream shadow-sm flex-shrink-0 relative group">
+                    <PersonAvatar
+                      photoUrl={photoUrl}
+                      name={fullName || 'New Member'}
+                      gender={gender}
+                      className="w-full h-full"
+                      imgClassName="w-full h-full object-cover object-top"
+                    />
+                    {photoUrl && !isUploadingPhoto && (
+                      <button
+                        type="button"
+                        onClick={() => setPhotoUrl('')}
+                        title="Remove photo"
+                        className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs font-semibold cursor-pointer"
+                      >
+                        <X className="w-5 h-5 text-white" />
+                      </button>
+                    )}
+                    {isUploadingPhoto && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <Loader2 className="w-5 h-5 text-heritage-gold animate-spin" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Controls */}
+                  <div className="flex-1 w-full space-y-2 text-center sm:text-left">
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                      <button
+                        type="button"
+                        disabled={isUploadingPhoto}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-heritage-maroon hover:bg-heritage-maroon-800 disabled:opacity-50 text-[#FAF7EE] text-xs font-semibold shadow-heritage-sm transition-all cursor-pointer"
+                      >
+                        {isUploadingPhoto ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-heritage-gold-300" />
+                            <span>Uploading to Server...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 text-heritage-gold-300" />
+                            <span>{photoUrl ? 'Change Portrait Photo' : 'Upload Portrait Photo'}</span>
+                          </>
+                        )}
+                      </button>
+
+                      {photoUrl && !isUploadingPhoto && (
+                        <button
+                          type="button"
+                          onClick={() => setPhotoUrl('')}
+                          className="px-3 py-2 rounded-xl border border-heritage-border text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+
+                    <p className="text-[11px] text-heritage-muted leading-relaxed">
+                      Supports JPG, PNG, or WEBP up to 10MB. Photos are stored securely in the server archive and served with HTTP caching.
+                    </p>
+
+                    {photoUrl && !isUploadingPhoto && (
+                      <p className="text-[11px] text-emerald-700 font-semibold flex items-center justify-center sm:justify-start space-x-1.5 pt-0.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Photo attached to record successfully</span>
+                      </p>
+                    )}
+
+                    {uploadError && (
+                      <p className="text-[11px] text-rose-600 font-medium">
+                        {uploadError}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -390,12 +508,26 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
           {/* STEP 2: Relationships */}
           {step === 2 && (
             <div className="space-y-4">
-              <div className="p-3 bg-heritage-gold-50 border border-heritage-gold-200 rounded-xl text-xs text-heritage-gold-900 flex items-start space-x-2">
-                <Sparkles className="w-4 h-4 text-heritage-gold-700 flex-shrink-0 mt-0.5" />
-                <span>
-                  Select the father, mother, or spouse. You can search by name or clear any selection with the ✕ button at any time.
-                </span>
-              </div>
+              {isGen1 ? (
+                <div className="p-3.5 bg-heritage-gold-50/90 border border-heritage-gold-300 rounded-xl flex items-start space-x-3">
+                  <Sparkles className="w-5 h-5 text-heritage-gold-700 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-heritage-maroon uppercase tracking-wider">
+                      Generation 1 • Founding Root Lineage
+                    </p>
+                    <p className="text-[11px] text-heritage-muted leading-relaxed">
+                      With no parents selected, this relative is registered as a <strong>Generation 1 Founding Ancestor</strong>. They will establish the root lineage for the family tree without needing to choose a child branch.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 bg-heritage-gold-50 border border-heritage-gold-200 rounded-xl text-xs text-heritage-gold-900 flex items-start space-x-2">
+                  <Sparkles className="w-4 h-4 text-heritage-gold-700 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Select the father, mother, or spouse. You can search by name or clear any selection with the ✕ button at any time.
+                  </span>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <HeritageSelect
@@ -432,7 +564,7 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                 allowClear
               />
 
-              {!fatherId && !motherId && (
+              {!isGen1 && branchOptions.length > 0 && (
                 <HeritageSelect
                   label="Primary Family Branch"
                   value={selectedBranchId}
@@ -456,7 +588,6 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. B.E. (Mech), M.B.A., M.B.B.S."
                     value={education}
                     onChange={(e) => setEducation(e.target.value)}
                     className="w-full px-3 py-2 text-xs bg-[#FFFEFB] border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon"
@@ -469,7 +600,6 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Software Engineer, Doctor, Agriculturist"
                     value={profession}
                     onChange={(e) => setProfession(e.target.value)}
                     className="w-full px-3 py-2 text-xs bg-[#FFFEFB] border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon"
@@ -484,7 +614,6 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. KMK Textile Mills, Perundurai Farms"
                     value={business}
                     onChange={(e) => setBusiness(e.target.value)}
                     className="w-full px-3 py-2 text-xs bg-[#FFFEFB] border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon"
@@ -497,7 +626,6 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Erode, Coimbatore, Chennai, USA"
                     value={currentCity}
                     onChange={(e) => setCurrentCity(e.target.value)}
                     className="w-full px-3 py-2 text-xs bg-[#FFFEFB] border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon"
@@ -511,7 +639,6 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="Share a short note about this person's contributions, life story or passions..."
                   value={biography}
                   onChange={(e) => setBiography(e.target.value)}
                   className="w-full px-3 py-2 text-xs bg-[#FFFEFB] border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon"
@@ -526,9 +653,10 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
               <button
                 type="button"
                 onClick={() => setStep(step - 1)}
-                className="px-4 py-2 text-xs font-semibold bg-heritage-cream/60 hover:bg-heritage-cream text-heritage-charcoal rounded-xl transition-colors"
+                className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold bg-[#FFFEFB] hover:bg-heritage-cream/80 text-heritage-charcoal border border-heritage-border hover:border-heritage-gold/50 rounded-xl shadow-xs hover:shadow-sm transition-all duration-200 group active:scale-95 cursor-pointer"
               >
-                ← Back
+                <ArrowLeft className="w-3.5 h-3.5 text-heritage-muted group-hover:text-heritage-maroon group-hover:-translate-x-0.5 transition-all" />
+                <span>Back</span>
               </button>
             ) : (
               <div />
@@ -539,17 +667,23 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                 <button
                   type="button"
                   onClick={() => setStep(step + 1)}
-                  className="px-5 py-2 text-xs font-semibold bg-heritage-maroon hover:bg-heritage-maroon-800 text-[#FAF7EE] rounded-xl transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold bg-heritage-maroon hover:bg-heritage-maroon-800 text-[#FAF7EE] rounded-xl shadow-heritage-sm transition-all duration-200 group active:scale-95 cursor-pointer"
                 >
-                  Continue →
+                  <span>Continue</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-heritage-gold-300 group-hover:translate-x-0.5 transition-all" />
                 </button>
               ) : (
                 <button
                   type="submit"
-                  className="px-6 py-2 text-xs font-semibold bg-heritage-maroon hover:bg-heritage-maroon-800 text-[#FAF7EE] rounded-xl shadow-heritage-sm flex items-center space-x-1.5 transition-colors"
+                  disabled={isSubmitting}
+                  className="px-6 py-2 text-xs font-semibold bg-heritage-maroon hover:bg-heritage-maroon-800 disabled:opacity-50 text-[#FAF7EE] rounded-xl shadow-heritage-sm flex items-center space-x-1.5 transition-colors cursor-pointer"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-heritage-gold-300" />
-                  <span>Save & Generate in Tree</span>
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-heritage-gold-300" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 text-heritage-gold-300" />
+                  )}
+                  <span>{isSubmitting ? 'Registering...' : 'Save & Generate in Tree'}</span>
                 </button>
               )}
             </div>

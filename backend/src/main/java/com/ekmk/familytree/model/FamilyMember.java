@@ -19,11 +19,17 @@ public class FamilyMember {
     private String gender; // "male", "female", "other"
     private String birthDate;
     private String deathDate;
-    private boolean isDeceased;
+    private Boolean isDeceased = false;
     
-    @Column(length = 2048)
+    @Column(columnDefinition = "TEXT")
     private String photoUrl;
-    
+
+    @Column(columnDefinition = "TEXT")
+    private String couplePhotoUrl;
+
+    @Column(length = 4000)
+    private String coupleAbout;
+
     private String education;
     private String profession;
     private String business;
@@ -156,12 +162,20 @@ public class FamilyMember {
         this.deathDate = deathDate;
     }
 
-    public boolean isDeceased() {
+    public Boolean getIsDeceased() {
         return isDeceased;
     }
 
-    public void setDeceased(boolean deceased) {
-        isDeceased = deceased;
+    public Boolean isDeceased() {
+        return isDeceased != null ? isDeceased : false;
+    }
+
+    public void setDeceased(Boolean deceased) {
+        this.isDeceased = deceased;
+    }
+
+    public void setIsDeceased(Boolean isDeceased) {
+        this.isDeceased = isDeceased;
     }
 
     public String getPhotoUrl() {
@@ -170,6 +184,22 @@ public class FamilyMember {
 
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public String getCouplePhotoUrl() {
+        return couplePhotoUrl;
+    }
+
+    public void setCouplePhotoUrl(String couplePhotoUrl) {
+        this.couplePhotoUrl = couplePhotoUrl;
+    }
+
+    public String getCoupleAbout() {
+        return coupleAbout;
+    }
+
+    public void setCoupleAbout(String coupleAbout) {
+        this.coupleAbout = coupleAbout;
     }
 
     public String getEducation() {

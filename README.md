@@ -32,10 +32,9 @@ Family-Tree-EKMK/
     │   ├── repository/           # Spring Data JPA Repositories
     │   ├── service/              # FamilyMemberService, FamilyBranchService (CRUD + stats)
     │   ├── controller/           # REST Controllers (/api/members, /api/branches, /api/stats, /api/admin)
-    │   └── config/               # DataInitializer (seeds 80 lineage members into PostgreSQL), CorsConfig
+    │   └── config/               # CorsConfig
     ├── src/main/resources/
-    │   ├── application.properties # PostgreSQL Database: kmk-family & Server Port 8081
-    │   └── data/                 # seed-branches.json & seed-members.json
+    │   └── application.properties # PostgreSQL Database: kmk-family & Server Port 8081
     ├── build.gradle              # Gradle build targeting Java 21 with PostgreSQL JDBC driver
     └── gradlew                   # Gradle wrapper script
 ```
@@ -88,5 +87,4 @@ npm run dev
 | `DELETE` | `/api/members/{id}` | Delete member and clean up reciprocal relationship references |
 | `GET` | `/api/branches` | Retrieve all 11 family branches |
 | `GET` | `/api/stats` | Dynamic PostgreSQL stats (total members, generations, living, deceased) |
-| `POST` | `/api/admin/reset` | Restore PostgreSQL database to the initial 80-member archival dataset |
 | `GET` | `/api/admin/health` | Backend and runtime health check |
