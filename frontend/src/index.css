@@ -68,6 +68,9 @@
   .lamp { animation: lamp 1.8s ease-in-out infinite alternate, magic-pop .45s cubic-bezier(.2, 1.4, .4, 1) both; }
   .lamp-glow { box-shadow: 0 0 0 4px #F2B705, 0 0 28px 8px rgba(242, 183, 5, .55); }
 
+  /* Stars in the header at night. */
+  .star { animation: twinkle 2.4s ease-in-out infinite; opacity: .5; }
+
   /* The logo gives a little wobble while it counts taps. */
   .logo-wobble { animation: wobble .35s ease-in-out; }
 }
@@ -79,10 +82,11 @@
 @keyframes drawer-slide { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
 @keyframes sparkle { 0%, 55% { left: -60%; } 100% { left: 130%; } }
 @keyframes lamp { from { filter: drop-shadow(0 0 2px #F2B705); transform: scale(1); } to { filter: drop-shadow(0 0 9px #F6A21B); transform: scale(1.08); } }
+@keyframes twinkle { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.2); } }
 @keyframes wobble { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-10deg) scale(1.08); } 70% { transform: rotate(8deg); } }
 
 @media (prefers-reduced-motion: reduce) {
   .lift, .lift:hover, .lift:active { transition: none; transform: none; }
   .kolam-line { animation: none; stroke-dashoffset: 0; }
-  .kolam-dot, .magic-fade-in, .magic-pop, .magic-reveal, .drawer-slide, .lamp, .logo-wobble, .sparkle::after { animation: none; }
+  .kolam-dot, .magic-fade-in, .magic-pop, .magic-reveal, .drawer-slide, .lamp, .logo-wobble, .sparkle::after, .star { animation: none; }
 }

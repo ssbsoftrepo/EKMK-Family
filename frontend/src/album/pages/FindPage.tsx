@@ -1,8 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FamilyMember } from '../../types/family';
 import { Family, coupleLabel, firstName, whoLine } from '../family';
 import { href } from '../router';
 import { Hand, Icon, PersonTile, Svg, Title } from '../ui';
+import { emojiRain, funWord } from '../magic';
+import { SurpriseMe } from '../SurpriseMe';
 
 const STEP = 48;
 
@@ -11,6 +13,17 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
   const [query, setQuery] = useState('');
   const [branch, setBranch] = useState<string | null>(null);
   const [limit, setLimit] = useState(STEP);
+
+  // Easter egg: some family words make something rain down ("paati" brings jasmine).
+  const fun = funWord(query);
+  const lastFun = useRef<string | null>(null);
+  useEffect(() => {
+    if (!fun) { lastFun.current = null; return; }
+    if (lastFun.current === fun.say) return;
+    lastFun.current = fun.say;
+    const t = setTimeout(() => emojiRain(fun.emojis), 250);
+    return () => clearTimeout(t);
+  }, [fun]);
 
   // One chip per child of the elders: "Ravi's family" = Ravi, his wife, their children and grandchildren.
   const branches = useMemo(() => {
@@ -59,6 +72,7 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
         </div>
       )}
 
+      {fun && <Hand className="text-xl magic-pop">{fun.say}</Hand>}
       <span className="text-[17px]" aria-live="polite">{results.length === 1 ? '1 person' : `${results.length} people`}</span>
 
       {results.length === 0 ? (
@@ -76,6 +90,7 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
           Show more ({results.length - limit} left)
         </button>
       )}
+      <div className="pt-4"><SurpriseMe family={family} /></div>
       {branch && (
         <a href={href.family(branch)} className="self-start text-lg font-extrabold text-album-terracotta min-h-[44px] flex items-center">
           See {coupleLabel(family.couple(family.get(branch)!))}'s family as a tree ›
