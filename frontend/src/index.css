@@ -4,12 +4,47 @@
 
 /* "Family album" look: leaf green, turmeric and terracotta on a pale leaf ground. */
 @layer base {
+  /*
+   * Page background. Default "turmeric morning": warm turmeric cream with faint kolam dots.
+   * Other looks: <html data-bg="rose|sunrise|leaf">.
+   */
+  :root {
+    --album-paper: 255 241 201;
+    --page-dot: 214 150 0;
+    --page-dot-alpha: .32;
+    --page-glow: 255 224 140;
+  }
+  :root[data-bg="rose"] { --album-paper: 255 228 228; --page-dot: 224 69 123; --page-dot-alpha: .22; --page-glow: 255 200 208; }
+  :root[data-bg="sunrise"] { --album-paper: 255 240 214; --page-dot: 232 121 12; --page-dot-alpha: .26; --page-glow: 255 190 100; }
+  /* Pastels */
+  :root[data-bg="peach"] { --album-paper: 255 232 220; --page-dot: 232 121 90; --page-dot-alpha: .18; --page-glow: 255 216 198; }
+  :root[data-bg="mint"] { --album-paper: 225 245 234; --page-dot: 92 158 120; --page-dot-alpha: .2; --page-glow: 206 238 220; }
+  :root[data-bg="lavender"] { --album-paper: 238 230 250; --page-dot: 140 110 200; --page-dot-alpha: .18; --page-glow: 226 212 248; }
+  :root[data-bg="sky"] { --album-paper: 226 240 251; --page-dot: 90 140 200; --page-dot-alpha: .18; --page-glow: 208 230 248; }
+  :root[data-bg="mix"] { --album-paper: 244 236 250; --page-dot: 160 120 190; --page-dot-alpha: .14; --page-glow: 255 226 214; }
+  :root[data-bg="leaf"] { --album-paper: 243 247 236; --page-dot: 92 138 74; --page-dot-alpha: 0; --page-glow: 243 247 236; }
+
   html, body {
-    background-color: #F3F7EC;
+    background-color: rgb(var(--album-paper));
     color: #1E4636;
     font-family: 'Baloo Thambi 2', 'Noto Sans Tamil', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-image:
+      radial-gradient(rgb(var(--page-dot) / var(--page-dot-alpha)) 1.5px, transparent 1.8px),
+      linear-gradient(180deg, rgb(var(--page-glow)) 0, rgb(var(--album-paper)) 520px);
+    background-size: 24px 24px, 100% 100%;
+    background-attachment: scroll;
+  }
+
+  /* Pastel mix: peach at the top, lavender in the middle, mint at the bottom. */
+  :root[data-bg="mix"] body {
+    background-image:
+      radial-gradient(rgb(var(--page-dot) / var(--page-dot-alpha)) 1.5px, transparent 1.8px),
+      linear-gradient(170deg, #FFE2D6 0%, #F3E6FF 45%, #DFF5EA 100%);
   }
 
   #root {

@@ -10,7 +10,8 @@ export default {
         // "Family album" look (design option B): leaf green, turmeric, terracotta
         album: {
           leaf: '#1E4636',
-          paper: '#F3F7EC',
+          // The page background; set in index.css so the look can change in one place.
+          paper: 'rgb(var(--album-paper) / <alpha-value>)',
           line: '#DCE6D2',
           sage: '#BFD8B0',
           moss: '#5C8A4A',

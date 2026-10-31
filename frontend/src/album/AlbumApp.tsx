@@ -46,7 +46,7 @@ export const AlbumApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-album-paper text-album-leaf font-album">
+    <div className="min-h-screen flex flex-col text-album-leaf font-album">
       <header className={`sticky top-0 z-20 overflow-hidden border-b-2 transition-colors ${night ? 'bg-[#16352A] border-[#16352A]' : 'bg-white border-album-line'}`}>
         {night && <NightSky />}
         <div className="relative max-w-[1200px] mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
