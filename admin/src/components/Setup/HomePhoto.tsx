@@ -26,7 +26,7 @@ export const HomePhoto: React.FC<{ url: string; onChange: (url: string) => void 
 
   return (
     <section className={`${card} flex flex-wrap gap-5 items-center`}>
-      <div className="flex-[1_1_260px] max-w-[360px] bg-white p-2 rounded-[10px] shadow-[0_8px_20px_rgba(30,70,54,0.16)] -rotate-1">
+      <div className="flex-[1_1_260px] max-w-[360px] bg-white p-2 rounded-[10px] shadow-[0_8px_20px_rgb(var(--c-leaf)/0.16)] -rotate-1">
         <div className="aspect-[16/10] rounded-md bg-album-peach overflow-hidden flex items-center justify-center">
           {url ? <img src={url} alt="Home page photo" className="w-full h-full object-cover" /> : <span className="font-hand text-xl text-album-leaf">no photo yet</span>}
         </div>

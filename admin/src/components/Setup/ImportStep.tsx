@@ -81,7 +81,7 @@ export const ImportStep: React.FC<{ onNext: () => void }> = ({ onNext }) => {
         className={`rounded-[26px] border-[3px] border-dashed px-5 py-8 flex flex-col items-center gap-3.5 text-center transition ${dragging ? 'bg-album-sage/40 border-album-terracotta' : 'bg-white border-album-leaf'}`}
       >
         <span className="w-[76px] h-[76px] rounded-full bg-album-sage flex items-center justify-center">
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="w-10 h-10" fill="none" stroke="#1E4636" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="w-10 h-10 text-album-leaf" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 16V4M7 9l5-5 5 5" /><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
           </svg>
         </span>
@@ -99,7 +99,7 @@ export const ImportStep: React.FC<{ onNext: () => void }> = ({ onNext }) => {
       </section>
 
       <div className="flex flex-wrap gap-5 items-start">
-        <section className={`${card} flex-[1_1_420px] min-w-0 shadow-[0_4px_0_#1E4636] flex flex-col gap-3.5`}>
+        <section className={`${card} flex-[1_1_420px] min-w-0 shadow-pop flex flex-col gap-3.5`}>
           <div className="flex flex-wrap items-baseline gap-2.5">
             <span className="text-5xl font-extrabold leading-none">{members.length}</span>
             <span className="text-xl font-bold">family members so far</span>

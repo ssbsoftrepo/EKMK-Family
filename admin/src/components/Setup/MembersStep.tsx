@@ -109,7 +109,7 @@ export const MembersStep: React.FC = () => {
         <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
           {list.map((m) => (
             <button key={m.id} type="button" onClick={() => { setOpenId(m.id); window.scrollTo({ top: 0 }); }}
-              className="text-left bg-white rounded-[20px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-[0_3px_0_#DCE6D2] hover:shadow-[0_3px_0_#1E4636] transition">
+              className="text-left bg-white rounded-[20px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm transition">
               <Face member={m} className="w-full aspect-square" rounded="rounded-[14px]" />
               <span className="text-[17px] font-extrabold leading-tight px-1">{m.fullName}</span>
               <span className="text-sm leading-tight px-1">

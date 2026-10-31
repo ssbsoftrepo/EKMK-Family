@@ -4,6 +4,7 @@ import { SecretDrawerSettings } from './SecretDrawerSettings';
 import { useToast } from '../../context/ToastContext';
 import { familyApi, SiteSettings } from '../../api/familyApi';
 import { StepTitle, btnPrimary, btnSecondary, card, Check } from './ui';
+import { THEMES, ThemeId, useSiteTheme } from '../../lib/theme';
 
 type Key = keyof SiteSettings;
 
@@ -28,6 +29,7 @@ export const ShareStep: React.FC = () => {
   const [saved, setSaved] = useState<'idle' | 'saving' | 'saved'>('idle');
   const timer = useRef<number | undefined>(undefined);
   const pending = useRef<Partial<SiteSettings>>({});
+  useSiteTheme(settings?.siteTheme);
 
   useEffect(() => {
     familyApi.getSettings().then(setSettings).catch((e) => toast.error('Could not load the messages', e instanceof Error ? e.message : undefined));
@@ -77,7 +79,7 @@ export const ShareStep: React.FC = () => {
         <span className="font-hand text-[22px]">loading…</span>
       ) : (
         <>
-          <section className={`${card} shadow-[0_4px_0_#1E4636] flex flex-col gap-3`}>
+          <section className={`${card} shadow-pop flex flex-col gap-3`}>
             <label className="flex flex-col gap-1.5">
               <span className="text-xl font-extrabold">The family website’s address</span>
               <span className="text-base">The link people open, for example https://kmkfamily.in</span>
@@ -92,6 +94,8 @@ export const ShareStep: React.FC = () => {
             </div>
             <span className="text-[15px]">“Send to the WhatsApp group” opens WhatsApp with the share message below. You pick the group and press send.</span>
           </section>
+
+          <SiteLook value={settings.siteTheme} onChange={(id) => change('siteTheme', id)} />
 
           <HomePhoto url={settings.homePhotoUrl} onChange={(url) => change('homePhotoUrl', url)} />
 
@@ -136,3 +140,36 @@ export const ShareStep: React.FC = () => {
     </>
   );
 };
+
+const LOOK_NOTES: Record<ThemeId, string> = {
+  album: 'Photos as taped prints on turmeric paper, with handwritten notes.',
+  kaveri: 'River mint and morning yellow, floating cards, a card deck to meet relatives, and each person’s life story.',
+};
+
+/** Which look everyone sees when they open the family website. Visitors can still switch with the Look button. */
+const SiteLook: React.FC<{ value: string; onChange: (id: ThemeId) => void }> = ({ value, onChange }) => (
+  <section className={`${card} flex flex-col gap-3`}>
+    <div className="flex flex-col">
+      <span className="text-xl font-extrabold">The look of the family website</span>
+      <span className="text-base">Everyone sees this look. Each person can still switch with the “Look” button at the top of the website.</span>
+    </div>
+    <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="The look of the family website">
+      {THEMES.map((t) => {
+        const on = (value || 'album') === t.id;
+        return (
+          <button key={t.id} type="button" role="radio" aria-checked={on} onClick={() => onChange(t.id)}
+            className={`text-left rounded-[20px] p-3 flex gap-3 items-start border-[3px] ${on ? 'border-album-terracotta bg-album-paper' : 'border-album-line bg-white hover:bg-album-paper/60'}`}>
+            <span aria-hidden="true" className="w-14 h-14 rounded-2xl overflow-hidden grid grid-cols-2 flex-shrink-0 border-2 border-white shadow-[0_1px_4px_rgba(0,0,0,0.2)]">
+              {t.swatch.map((c) => <span key={c} style={{ background: c }} />)}
+            </span>
+            <span className="flex flex-col gap-0.5 min-w-0">
+              <span className="text-lg font-extrabold flex items-center gap-2">{t.en} {on && <Check className="w-5 h-5" />}</span>
+              <span lang="ta" className="text-sm">{t.ta}</span>
+              <span className="text-[15px] leading-snug">{LOOK_NOTES[t.id]}</span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  </section>
+);

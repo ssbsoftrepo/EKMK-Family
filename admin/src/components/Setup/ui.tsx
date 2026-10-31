@@ -3,14 +3,14 @@ import { FamilyMember } from '../../types/family';
 
 /** Shared look for the 3-step setup ("family album": leaf green, turmeric, terracotta). */
 export const btnPrimary =
-  'inline-flex items-center justify-center gap-2 min-h-[56px] px-6 rounded-2xl bg-album-terracotta text-white font-album font-extrabold text-lg shadow-[0_4px_0_#1E4636] hover:brightness-105 active:translate-y-[2px] active:shadow-[0_2px_0_#1E4636] disabled:opacity-50 disabled:pointer-events-none transition';
+  'inline-flex items-center justify-center gap-2 min-h-[56px] px-6 rounded-2xl bg-album-terracotta text-white font-album font-extrabold text-lg shadow-pop hover:brightness-105 active:translate-y-[2px] active:shadow-pop-pressed disabled:opacity-50 disabled:pointer-events-none transition';
 export const btnSecondary =
   'inline-flex items-center justify-center gap-2 min-h-[52px] px-5 rounded-2xl border-2 border-album-leaf bg-white text-album-leaf font-album font-bold text-base hover:bg-album-paper disabled:opacity-50 disabled:pointer-events-none transition';
 export const btnDark =
   'inline-flex items-center justify-center gap-2 min-h-[48px] px-4 rounded-xl bg-album-leaf text-white font-album font-extrabold text-base hover:brightness-110 disabled:opacity-50 transition';
 export const card = 'bg-white rounded-[24px] p-5 sm:p-6';
 
-const tones = ['#BFD8B0', '#F2C6B4', '#F6D77A', '#E8A58C'];
+const tones = ['rgb(var(--c-sage))', 'rgb(var(--c-blush))', 'rgb(var(--c-sun))', 'rgb(var(--c-peach))'];
 const toneFor = (id: string) => tones[Array.from(id).reduce((n, c) => n + c.charCodeAt(0), 0) % tones.length];
 
 /** A person's photo, or a friendly coloured silhouette when there is none yet. */

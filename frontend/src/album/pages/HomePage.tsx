@@ -7,6 +7,8 @@ import { ContactButtons } from '../../components/Common/ContactButtons';
 import { useBirthdayPetals } from '../Magic';
 import { SurpriseMe } from '../SurpriseMe';
 import { GREETINGS, useDayPart } from '../timeOfDay';
+import { useTheme } from '../../lib/theme';
+import { FamilyDeck, tamilMonth } from '../Kaveri';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -14,6 +16,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
   const settings = useSiteSettings();
   const greeting = GREETINGS[useDayPart()];
+  const kaveri = useTheme() === 'kaveri';
   const founders = family.founders();
   const today = birthdaysOn(family.members);
   const soon = upcomingBirthdays(family.members, 31).filter((b) => b.inDays > 0).slice(0, 5);
@@ -86,10 +89,10 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
       <section className="flex flex-col gap-3.5">
         <Title as="h2" en="What would you like to do?" ta="என்ன செய்ய விரும்புகிறீர்கள்?" />
         <div className="grid gap-3.5 grid-cols-2 lg:grid-cols-4">
-          <Tile to={href.find()} en="Find a relative" ta="உறவினரைத் தேடு" icon={Icon.search} bg="#BFD8B0" />
-          <Tile to={href.family()} en="Family tree" ta="குடும்ப மரம்" icon={Icon.tree} bg="#F6D77A" />
-          <Tile to={href.related()} en="How are we related?" ta="நமக்குள் என்ன உறவு?" icon={Icon.link} bg="#F2C6B4" />
-          <Tile to={href.home()} onClick={() => document.getElementById('birthdays')?.scrollIntoView({ behavior: 'smooth' })} en="Birthdays" ta="பிறந்தநாள்" icon={Icon.cake} bg="#E8A58C" />
+          <Tile to={href.find()} en="Find a relative" ta="உறவினரைத் தேடு" icon={Icon.search} bg="rgb(var(--c-sage))" />
+          <Tile to={href.family()} en="Family tree" ta="குடும்ப மரம்" icon={Icon.tree} bg="rgb(var(--c-sun))" />
+          <Tile to={href.related()} en="How are we related?" ta="நமக்குள் என்ன உறவு?" icon={Icon.link} bg="rgb(var(--c-blush))" />
+          <Tile to={href.home()} onClick={() => document.getElementById('birthdays')?.scrollIntoView({ behavior: 'smooth' })} en="Birthdays" ta="பிறந்தநாள்" icon={Icon.cake} bg="rgb(var(--c-peach))" />
         </div>
       </section>
 
@@ -102,12 +105,15 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
         ) : (
           <div className="flex flex-col gap-2 max-w-[640px]">
             {soon.map(({ member, date, inDays }) => (
-              <a key={member.id} href={href.person(member.id)} className="no-underline text-album-leaf bg-white rounded-[18px] p-2 pr-4 flex items-center gap-3 shadow-[0_3px_0_#DCE6D2]">
+              <a key={member.id} href={href.person(member.id)} className="no-underline text-album-leaf bg-white rounded-[18px] p-2 pr-4 flex items-center gap-3 shadow-soft">
                 <span className="w-[52px] h-[52px] rounded-[14px] bg-album-leaf text-white flex flex-col items-center justify-center leading-none flex-shrink-0">
                   <span className="text-xl font-extrabold">{date.getDate()}</span>
                   <span className="text-xs">{MONTHS[date.getMonth()].toUpperCase()}</span>
                 </span>
-                <span className="flex-1 min-w-0 text-lg font-extrabold truncate">{member.fullName}</span>
+                <span className="flex-1 min-w-0 flex flex-col leading-tight">
+                  <span className="text-lg font-extrabold truncate">{member.fullName}</span>
+                  {kaveri && <span className="text-sm">in {tamilMonth(date).en} · <span lang="ta">{tamilMonth(date).ta}</span></span>}
+                </span>
                 <span className="text-[15px] flex-shrink-0">{inDays === 1 ? 'tomorrow' : `in ${inDays} days`}</span>
               </a>
             ))}
@@ -116,7 +122,17 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
         <Hand className="text-lg">only the day and month are shown, ages stay secret!</Hand>
       </section>
 
-      {faces.length > 0 && (
+      {kaveri && faces.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-2.5">
+            <Title as="h2" en="Meet your family" ta="உங்கள் குடும்பத்தைச் சந்தியுங்கள்" />
+            <a href={href.find()} className="text-lg font-extrabold text-album-terracotta min-h-[44px] flex items-center">See everyone ›</a>
+          </div>
+          <FamilyDeck family={family} people={faces} />
+        </section>
+      )}
+
+      {!kaveri && faces.length > 0 && (
         <section className="flex flex-col gap-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2.5">
             <Title as="h2" en="Some of our family" ta="நம் குடும்பத்தில் சிலர்" />
@@ -132,7 +148,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
 };
 
 const Tile: React.FC<{ to: string; en: string; ta: string; icon: React.ReactNode; bg: string; onClick?: () => void }> = ({ to, en, ta, icon, bg, onClick }) => (
-  <a href={to} onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined} className="no-underline text-album-leaf bg-white rounded-[22px] p-2 pb-3 flex flex-col gap-2 shadow-[0_4px_0_#1E4636] active:translate-y-[2px] active:shadow-[0_2px_0_#1E4636] transition">
+  <a href={to} onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined} className="no-underline text-album-leaf bg-white rounded-[22px] p-2 pb-3 flex flex-col gap-2 shadow-pop active:translate-y-[2px] active:shadow-pop-pressed transition">
     <span className="h-[84px] rounded-2xl flex items-center justify-center" style={{ background: bg }}>
       <Svg icon={icon} className="w-11 h-11" stroke={2} />
     </span>

@@ -140,7 +140,7 @@ const Picker: React.FC<{
       <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 30%), 1fr))' }}>
         {list.slice(0, limit).map((m) => (
           <button key={m.id} type="button" onClick={() => onPick(m)}
-            className="text-left text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-[0_3px_0_#DCE6D2] hover:shadow-[0_3px_0_#1E4636] lift">
+            className="text-left text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm lift">
             <Face member={m} className="w-full aspect-square" rounded="rounded-[13px]" />
             <span className="text-[17px] font-extrabold leading-tight px-1">{m.fullName}</span>
             <span className="text-sm leading-tight px-1">{whoLine(family, m)}</span>

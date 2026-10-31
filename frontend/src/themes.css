@@ -1,0 +1,115 @@
+/*
+ * The two looks of the KMK family website and the admin site.
+ * <html data-theme="album"> (Family Album, the default) or <html data-theme="kaveri">.
+ * Colours are RGB triplets so Tailwind can add opacity (bg-album-leaf/10).
+ * The same file is used by frontend/ and admin/; keep both copies equal.
+ */
+
+/* ---------- Family Album: leaf green, turmeric and terracotta on turmeric cream ---------- */
+:root,
+:root[data-theme="album"] {
+  --c-leaf: 30 70 54;          /* text, dark buttons     #1E4636 */
+  --c-paper: 255 241 201;      /* page                   #FFF1C9 */
+  --c-line: 220 230 210;       /* dividers               #DCE6D2 */
+  --c-sage: 191 216 176;       /* soft tile              #BFD8B0 */
+  --c-moss: 92 138 74;         /* leaves, ticks          #5C8A4A */
+  --c-turmeric: 242 183 5;     /* highlight              #F2B705 */
+  --c-sun: 246 215 122;        /* soft highlight         #F6D77A */
+  --c-terracotta: 184 69 42;   /* main buttons, links    #B8452A (a touch darker than the first #C4502F, for AA on the page) */
+  --c-peach: 232 165 140;      /* soft tile              #E8A58C */
+  --c-blush: 242 198 180;      /* soft tile              #F2C6B4 */
+  --c-edge: 30 70 54;          /* thick card borders     #1E4636 */
+  --c-night: 22 53 42;         /* header at night        #16352A */
+
+  --font-body: 'Baloo Thambi 2', 'Noto Sans Tamil', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-hand: 'Kalam', 'Baloo Thambi 2', cursive;
+
+  --shadow-pop: 0 4px 0 rgb(var(--c-leaf));
+  --shadow-pop-lg: 0 6px 0 rgb(var(--c-leaf));
+  --shadow-pop-sm: 0 3px 0 rgb(var(--c-leaf));
+  --shadow-pop-pressed: 0 2px 0 rgb(var(--c-leaf));
+  --shadow-soft: 0 3px 0 rgb(var(--c-line));
+
+  --page-dot: 214 150 0;
+  --page-dot-alpha: .32;
+  --page-glow: 255 224 140;
+}
+
+/* ---------- Kaveri: river mint and morning yellow, after the river that flows past Erode ---------- */
+:root[data-theme="kaveri"] {
+  --c-leaf: 15 59 69;          /* text, dark buttons     #0F3B45 */
+  --c-paper: 217 246 239;      /* page                   #D9F6EF */
+  --c-line: 191 227 230;       /* dividers               #BFE3E6 */
+  --c-sage: 178 230 214;       /* soft tile              #B2E6D6 */
+  --c-moss: 46 140 120;        /* leaves, ticks          #2E8C78 */
+  --c-turmeric: 244 165 28;    /* highlight              #F4A51C */
+  --c-sun: 255 231 163;        /* soft highlight         #FFE7A3 */
+  --c-terracotta: 11 110 119;  /* main buttons, links    #0B6E77 */
+  --c-peach: 255 214 196;      /* soft tile              #FFD6C4 */
+  --c-blush: 205 235 247;      /* soft tile              #CDEBF7 */
+  --c-edge: 255 255 255;       /* cards float, no thick borders */
+  --c-night: 14 63 74;         /* header at night        #0E3F4A */
+
+  --font-body: 'Plus Jakarta Sans', 'Noto Sans Tamil', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-hand: 'Plus Jakarta Sans', 'Noto Sans Tamil', system-ui, sans-serif;
+
+  --shadow-pop: 0 10px 24px rgb(15 59 69 / .14);
+  --shadow-pop-lg: 0 16px 36px rgb(15 59 69 / .16);
+  --shadow-pop-sm: 0 8px 20px rgb(15 59 69 / .16);
+  --shadow-pop-pressed: 0 3px 8px rgb(15 59 69 / .14);
+  --shadow-soft: 0 6px 18px rgb(15 59 69 / .08);
+}
+
+/* Kaveri page: mint into sky into morning yellow, with soft ripples at the top. */
+:root[data-theme="kaveri"] body {
+  background-color: #EAF7EF;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 380 230' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23fff' stroke-width='2'%3E%3Cpath d='M0 60 Q95 20 190 60 T380 60' opacity='.75'/%3E%3Cpath d='M0 95 Q95 55 190 95 T380 95' opacity='.5'/%3E%3Cpath d='M0 130 Q95 90 190 130 T380 130' opacity='.3'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(170deg, #D9F6EF 0, #C6ECF5 420px, #EAF7EF 900px, #FFF4CF 1600px);
+  background-size: 100% 260px, 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* A printed photo (Print in album/ui.tsx). Family Album tilts it and tapes it down; Kaveri floats it as a card. */
+.print { transform: rotate(var(--tilt, 0deg)); }
+:root[data-theme="kaveri"] .print { transform: none; border-radius: 28px; padding: 8px; box-shadow: 0 14px 30px rgb(15 59 69 / .16); }
+:root[data-theme="kaveri"] .print > :first-child:not(.print-tape),
+:root[data-theme="kaveri"] .print-tape + * { border-radius: 21px; }
+:root[data-theme="kaveri"] .print-tape { display: none; }
+
+/* Header and bottom tabs: frosted glass in Kaveri. */
+:root[data-theme="kaveri"] .site-header:not(.is-night) {
+  background: rgb(255 255 255 / .62);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-color: rgb(255 255 255 / .8);
+}
+:root[data-theme="kaveri"] .site-logo {
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0E7C86, #3BB5A0);
+  color: #fff;
+}
+:root[data-theme="kaveri"] .bottom-nav {
+  left: 12px;
+  right: 12px;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  padding: 6px !important;
+  gap: 4px;
+  border: 1px solid rgb(255 255 255 / .85);
+  border-radius: 24px;
+  background: rgb(255 255 255 / .72);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 26px rgb(15 59 69 / .14);
+}
+:root[data-theme="kaveri"] .bottom-nav a { min-height: 60px; border-radius: 18px; }
+:root[data-theme="kaveri"] .bottom-nav a[aria-current="page"] { background: rgb(var(--c-terracotta)); color: #fff; }
+
+/* Handwritten notes become a bold accent line in Kaveri. */
+:root[data-theme="kaveri"] .font-hand { font-weight: 800; letter-spacing: -.01em; }
+
+/* Rounder cards and buttons in Kaveri. */
+:root[data-theme="kaveri"] .rounded-2xl { border-radius: 20px; }
+:root[data-theme="kaveri"] .rounded-\[18px\],
+:root[data-theme="kaveri"] .rounded-\[20px\],
+:root[data-theme="kaveri"] .rounded-\[22px\] { border-radius: 24px; }

@@ -6,11 +6,14 @@ import { Face, Hand, Icon, JasmineGarland, Print, Svg, btnSecondary } from '../u
 import { ContactButtons } from '../../components/Common/ContactButtons';
 import { useBirthdayPetals } from '../Magic';
 import { birthdaysOn } from '../family';
+import { useTheme } from '../../lib/theme';
+import { LifeStory } from '../Kaveri';
 
 /** One person: a big photo, who they are, their close family as photos, and Call / WhatsApp. */
 export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, id }) => {
   const m = family.get(id);
   const isBirthday = !!m && birthdaysOn([m]).length > 0;
+  const kaveri = useTheme() === 'kaveri';
   useBirthdayPetals(isBirthday, `person-${id}`);
   if (!m) {
     return (
@@ -67,7 +70,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
               {about}
             </p>
           )}
-          <a href={href.related(m.id)} className="no-underline bg-album-terracotta text-white rounded-[20px] min-h-[64px] px-4.5 py-2 px-5 flex items-center justify-between gap-2.5 shadow-[0_4px_0_#1E4636]">
+          <a href={href.related(m.id)} className="no-underline bg-album-terracotta text-white rounded-[20px] min-h-[64px] px-4.5 py-2 px-5 flex items-center justify-between gap-2.5 shadow-pop">
             <span className="flex flex-col leading-tight">
               <span className="text-[19px] font-extrabold">How is {firstName(m)} related to me?</span>
               <span lang="ta" className="text-sm">இவர் எனக்கு என்ன உறவு?</span>
@@ -78,6 +81,8 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
         </div>
       </div>
 
+      {kaveri && <LifeStory family={family} m={m} />}
+
       {close.length > 0 && (
         <section className="flex flex-col gap-2.5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -87,7 +92,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
           <div className="grid gap-x-2 gap-y-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(92px, 1fr))' }}>
             {close.map(({ person, label }) => (
               <a key={person.id + label} href={href.person(person.id)} className="no-underline text-album-leaf flex flex-col items-center gap-1 text-center lift">
-                <Face member={person} className="w-[78px] h-[78px]" rounded="rounded-full" ring="border-[3px] border-white shadow-[0_2px_6px_rgba(30,70,54,0.18)]" />
+                <Face member={person} className="w-[78px] h-[78px]" rounded="rounded-full" ring="border-[3px] border-white shadow-[0_2px_6px_rgb(var(--c-leaf)/0.18)]" />
                 <span className="text-base font-bold leading-tight">{firstName(person)}</span>
                 <span className="text-[13px] leading-tight">{label}</span>
               </a>

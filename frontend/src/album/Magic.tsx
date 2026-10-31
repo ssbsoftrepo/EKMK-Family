@@ -8,16 +8,16 @@ import { Face, Hand } from './ui';
 export const KolamLoader: React.FC<{ text: string }> = ({ text }) => (
   <div className="flex flex-col items-center text-center gap-3 py-16" role="status">
     <svg viewBox="0 0 120 120" className="w-32 h-32 kolam-draw" aria-hidden="true">
-      <g fill="#1E4636">
+      <g className="fill-album-leaf">
         {[20, 40, 60, 80, 100].flatMap((x) => [20, 40, 60, 80, 100].map((y) => <circle key={`${x}-${y}`} cx={x} cy={y} r="2.4" className="kolam-dot" />))}
       </g>
-      <g fill="none" stroke="#C4502F" strokeWidth="3" strokeLinecap="round">
+      <g fill="none" className="stroke-album-terracotta" strokeWidth="3" strokeLinecap="round">
         <path className="kolam-line" pathLength={1} d="M60 6 C90 30 90 30 114 60 C90 90 90 90 60 114 C30 90 30 90 6 60 C30 30 30 30 60 6Z" />
         <circle className="kolam-line" pathLength={1} cx="60" cy="60" r="24" style={{ animationDelay: '0.35s' }} />
-        <circle className="kolam-line" pathLength={1} cx="40" cy="40" r="13" style={{ animationDelay: '0.6s', stroke: '#F2B705' }} />
-        <circle className="kolam-line" pathLength={1} cx="80" cy="40" r="13" style={{ animationDelay: '0.7s', stroke: '#F2B705' }} />
-        <circle className="kolam-line" pathLength={1} cx="40" cy="80" r="13" style={{ animationDelay: '0.8s', stroke: '#F2B705' }} />
-        <circle className="kolam-line" pathLength={1} cx="80" cy="80" r="13" style={{ animationDelay: '0.9s', stroke: '#F2B705' }} />
+        <circle className="kolam-line" pathLength={1} cx="40" cy="40" r="13" style={{ animationDelay: '0.6s', stroke: 'rgb(var(--c-turmeric))' }} />
+        <circle className="kolam-line" pathLength={1} cx="80" cy="40" r="13" style={{ animationDelay: '0.7s', stroke: 'rgb(var(--c-turmeric))' }} />
+        <circle className="kolam-line" pathLength={1} cx="40" cy="80" r="13" style={{ animationDelay: '0.8s', stroke: 'rgb(var(--c-turmeric))' }} />
+        <circle className="kolam-line" pathLength={1} cx="80" cy="80" r="13" style={{ animationDelay: '0.9s', stroke: 'rgb(var(--c-turmeric))' }} />
       </g>
     </svg>
     <Hand className="text-2xl">drawing the kolam…</Hand>
@@ -95,7 +95,7 @@ export const SecretDrawer: React.FC<{ note: string; photoUrl: string; onClose: (
           <button type="button" onClick={onClose} className="min-h-[48px] px-4 rounded-2xl border-2 border-album-leaf bg-white font-bold text-album-leaf">Close</button>
         </div>
         {photoUrl && (
-          <figure className="m-0 bg-white p-2.5 rounded-[10px] shadow-[0_10px_24px_rgba(30,70,54,0.2)] rotate-1">
+          <figure className="m-0 bg-white p-2.5 rounded-[10px] shadow-[0_10px_24px_rgb(var(--c-leaf)/0.2)] rotate-1">
             <img src={photoUrl} alt="From the family archive" className="w-full rounded-md" />
           </figure>
         )}

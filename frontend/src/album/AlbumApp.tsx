@@ -12,6 +12,8 @@ import { RelatedPage } from './pages/RelatedPage';
 import { KolamLoader, SecretDrawer } from './Magic';
 import { useSiteSettings } from '../lib/whatsapp';
 import { useDayPart } from './timeOfDay';
+import { ThemeSwitch } from './ThemeSwitch';
+import { useSiteTheme } from '../lib/theme';
 
 const NAV: { id: Route['page'][]; to: string; en: string; ta: string; icon: React.ReactNode }[] = [
   { id: ['home'], to: href.home(), en: 'Home', ta: 'முகப்பு', icon: Icon.home },
@@ -27,6 +29,7 @@ export const AlbumApp: React.FC = () => {
   const family = useMemo(() => new Family(members), [members]);
   const settings = useSiteSettings();
   const night = useDayPart() === 'night';
+  useSiteTheme(settings.siteTheme);
 
   // Easter egg: tap the KMK logo five times quickly to open the secret family drawer.
   const [drawer, setDrawer] = useState(false);
@@ -47,16 +50,17 @@ export const AlbumApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col text-album-leaf font-album">
-      <header className={`sticky top-0 z-20 overflow-hidden border-b-2 transition-colors ${night ? 'bg-[#16352A] border-[#16352A]' : 'bg-white border-album-line'}`}>
-        {night && <NightSky />}
+      <header className={`site-header sticky top-0 z-20 border-b-2 transition-colors ${night ? 'bg-album-night border-album-night is-night' : 'bg-white border-album-line'}`}>
+        {night && <span className="absolute inset-0 overflow-hidden pointer-events-none"><NightSky /></span>}
         <div className="relative max-w-[1200px] mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
           <a href={href.home()} onClick={tapLogo} className={`no-underline flex items-center gap-2.5 ${night ? 'text-white' : 'text-album-leaf'}`}>
-            <span key={wobble} className={`w-12 h-12 rounded-full flex ${night ? 'bg-album-turmeric text-album-leaf' : 'bg-album-leaf text-album-turmeric'} items-center justify-center text-base font-extrabold ${wobble ? 'logo-wobble' : ''}`}>KMK</span>
+            <span key={wobble} className={`site-logo w-12 h-12 rounded-full flex ${night ? 'bg-album-turmeric text-album-leaf' : 'bg-album-leaf text-album-turmeric'} items-center justify-center text-base font-extrabold ${wobble ? 'logo-wobble' : ''}`}>KMK</span>
             <span className="flex flex-col leading-tight">
               <span className="text-xl font-extrabold">Our Family</span>
               <span lang="ta" className="text-[15px]">எங்கள் குடும்பம்</span>
             </span>
           </a>
+          <div className="flex items-center gap-2">
           <nav aria-label="Main" className="hidden md:flex gap-1.5">
             {NAV.map((n) => {
               const on = n.id.includes(route.page);
@@ -68,6 +72,8 @@ export const AlbumApp: React.FC = () => {
               );
             })}
           </nav>
+          <ThemeSwitch night={night} />
+          </div>
         </div>
       </header>
 
@@ -96,7 +102,7 @@ export const AlbumApp: React.FC = () => {
 
       {drawer && <SecretDrawer note={settings.secretNote} photoUrl={settings.secretPhotoUrl} onClose={() => setDrawer(false)} />}
 
-      <nav aria-label="Main" className="md:hidden fixed left-0 right-0 bottom-0 z-30 bg-white border-t-2 border-album-line flex justify-around items-stretch"
+      <nav aria-label="Main" className="bottom-nav md:hidden fixed left-0 right-0 bottom-0 z-30 bg-white border-t-2 border-album-line flex justify-around items-stretch"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {NAV.map((n) => {
           const on = n.id.includes(route.page);

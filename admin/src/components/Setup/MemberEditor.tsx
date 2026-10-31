@@ -162,7 +162,7 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
 
       <section className={`${card} flex flex-wrap gap-6 items-center`}>
         <div className="flex flex-col items-center gap-2.5 flex-[0_0_auto]">
-          <div className="bg-white p-2 rounded-[10px] shadow-[0_8px_20px_rgba(30,70,54,0.16)] -rotate-1">
+          <div className="bg-white p-2 rounded-[10px] shadow-[0_8px_20px_rgb(var(--c-leaf)/0.16)] -rotate-1">
             <Face member={m} className="w-[180px] h-[200px]" rounded="rounded-md" />
           </div>
           <input ref={photoInput} type="file" accept="image/*" className="hidden" onChange={(e) => uploadPhoto(e.target.files?.[0])} />
@@ -185,7 +185,7 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
             </div>
           </div>
           <label className="flex items-center gap-3 min-h-[48px] text-[17px] font-bold cursor-pointer self-start">
-            <input type="checkbox" checked={!!m.isDeceased} onChange={(e) => save({ isDeceased: e.target.checked })} className="w-6 h-6 accent-[#1E4636]" />
+            <input type="checkbox" checked={!!m.isDeceased} onChange={(e) => save({ isDeceased: e.target.checked })} className="w-6 h-6 accent-album-leaf" />
             Has passed away (shown “in loving memory”)
           </label>
         </div>
@@ -274,7 +274,7 @@ const LinkRow: React.FC<{
   title: string; people: FamilyMember[]; addLabel: string; disabledHint?: string;
   onAdd: () => void; onRemove: (p: FamilyMember) => void; onOpen: (id: string) => void;
 }> = ({ title, people, addLabel, disabledHint, onAdd, onRemove, onOpen }) => (
-  <div className="flex flex-col gap-2 border-t-2 border-dotted border-[#9BB58C] pt-3">
+  <div className="flex flex-col gap-2 border-t-2 border-dotted border-album-moss/60 pt-3">
     <span className="text-[17px] font-extrabold">{title}</span>
     <div className="flex flex-wrap gap-2.5 items-center">
       {people.map((p) => (
