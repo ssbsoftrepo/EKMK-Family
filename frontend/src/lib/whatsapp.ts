@@ -9,6 +9,8 @@ import { useEffect, useState } from 'react';
 export interface SiteSettings {
   siteUrl: string;
   homePhotoUrl: string;
+  secretNote: string;
+  secretPhotoUrl: string;
   whatsappBirthday: string;
   whatsappHello: string;
   whatsappShare: string;
@@ -19,6 +21,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 const FALLBACK: SiteSettings = {
   siteUrl: '',
   homePhotoUrl: '',
+  secretNote: '',
+  secretPhotoUrl: '',
   whatsappBirthday: 'Happy birthday {name}! Wishing you a wonderful year ahead. With love, from the KMK family',
   whatsappHello: 'Hi {name}, I found you on our KMK family website! {site}',
   whatsappShare: 'Hello everyone! Our KMK family website is ready. Find yourself on the family tree: {site}',

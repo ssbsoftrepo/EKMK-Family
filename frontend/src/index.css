@@ -31,3 +31,58 @@
     html { scroll-behavior: smooth; }
   }
 }
+
+/* ---------- Little magic (all of it switched off for "reduce motion") ---------- */
+@layer components {
+  /* Photos lift like a print picked off the table. */
+  .lift { transition: transform .18s ease, box-shadow .18s ease; }
+  .lift:hover { transform: translateY(-3px) rotate(-1deg); }
+  .lift:active { transform: translateY(-6px) rotate(-2.5deg) scale(1.03); box-shadow: 0 14px 24px rgba(30, 70, 54, .22); }
+
+  /* The kolam loader draws itself. */
+  .kolam-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: kolam-draw 1.4s ease-in-out forwards infinite alternate; }
+  .kolam-dot { animation: kolam-dot 1.4s ease-in-out infinite alternate; }
+
+  .magic-fade-in { animation: magic-fade .25s ease-out both; }
+  .magic-pop { animation: magic-pop .45s cubic-bezier(.2, 1.4, .4, 1) both; }
+  .magic-reveal { animation: magic-pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+  .drawer-slide { animation: drawer-slide .35s cubic-bezier(.2, 1.1, .4, 1) both; }
+
+  /* Scratch card cover: turmeric foil with kolam dots. */
+  .scratch-cover {
+    background:
+      radial-gradient(circle, rgba(30, 70, 54, .25) 1.5px, transparent 2px) 0 0 / 16px 16px,
+      linear-gradient(135deg, #F6D77A, #F2B705 45%, #FFE69A 55%, #F2B705);
+    border: 2px dashed rgba(30, 70, 54, .4);
+  }
+
+  /* The birthday wish button sparkles. */
+  .sparkle { position: relative; overflow: hidden; }
+  .sparkle::after {
+    content: ""; position: absolute; inset: -40% auto -40% -60%; width: 40%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent);
+    transform: skewX(-20deg); animation: sparkle 2.6s ease-in-out infinite;
+  }
+
+  /* Lamps on the tree flicker gently. */
+  .lamp { animation: lamp 1.8s ease-in-out infinite alternate, magic-pop .45s cubic-bezier(.2, 1.4, .4, 1) both; }
+  .lamp-glow { box-shadow: 0 0 0 4px #F2B705, 0 0 28px 8px rgba(242, 183, 5, .55); }
+
+  /* The logo gives a little wobble while it counts taps. */
+  .logo-wobble { animation: wobble .35s ease-in-out; }
+}
+
+@keyframes kolam-draw { to { stroke-dashoffset: 0; } }
+@keyframes kolam-dot { from { opacity: .35; } to { opacity: 1; } }
+@keyframes magic-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes magic-pop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+@keyframes drawer-slide { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+@keyframes sparkle { 0%, 55% { left: -60%; } 100% { left: 130%; } }
+@keyframes lamp { from { filter: drop-shadow(0 0 2px #F2B705); transform: scale(1); } to { filter: drop-shadow(0 0 9px #F6A21B); transform: scale(1.08); } }
+@keyframes wobble { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-10deg) scale(1.08); } 70% { transform: rotate(8deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lift, .lift:hover, .lift:active { transition: none; transform: none; }
+  .kolam-line { animation: none; stroke-dashoffset: 0; }
+  .kolam-dot, .magic-fade-in, .magic-pop, .magic-reveal, .drawer-slide, .lamp, .logo-wobble, .sparkle::after { animation: none; }
+}

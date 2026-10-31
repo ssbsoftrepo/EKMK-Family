@@ -26,7 +26,7 @@ export const ContactButtons: React.FC<{ member: FamilyMember; message?: 'hello' 
         </a>
       )}
       {wa && (
-        <a href={wa} target="_blank" rel="noreferrer" className={`${size} rounded-[18px] ${message === 'birthday' ? 'bg-album-terracotta' : 'bg-album-leaf'} text-white font-extrabold flex items-center justify-center gap-2 no-underline px-4`}>
+        <a href={wa} target="_blank" rel="noreferrer" className={`${size} rounded-[18px] ${message === 'birthday' ? 'bg-album-terracotta sparkle' : 'bg-album-leaf'} text-white font-extrabold flex items-center justify-center gap-2 no-underline px-4`}>
           <Svg icon={Icon.chat} className="w-6 h-6" />
           {message === 'birthday' ? 'Wish on WhatsApp' : 'WhatsApp'}
         </a>

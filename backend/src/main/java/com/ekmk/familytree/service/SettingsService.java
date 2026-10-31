@@ -28,6 +28,8 @@ public class SettingsService {
         Map<String, String> d = new LinkedHashMap<>();
         d.put("siteUrl", "");
         d.put("homePhotoUrl", "");
+        d.put("secretNote", "");
+        d.put("secretPhotoUrl", "");
         d.put("whatsappBirthday", "Happy birthday {name}! Wishing you a wonderful year ahead. With love, from the KMK family");
         d.put("whatsappHello", "Hi {name}, I found you on our KMK family website! {site}");
         d.put("whatsappShare", "Hello everyone! Our KMK family website is ready. Find yourself on the family tree: {site}");
@@ -35,7 +37,7 @@ public class SettingsService {
     }
 
     /** Settings that may be left empty (the messages fall back to their defaults instead). */
-    private static final java.util.Set<String> OPTIONAL = java.util.Set.of("siteUrl", "homePhotoUrl");
+    private static final java.util.Set<String> OPTIONAL = java.util.Set.of("siteUrl", "homePhotoUrl", "secretNote", "secretPhotoUrl");
 
     private final AppSettingRepository repository;
 
@@ -74,6 +76,6 @@ public class SettingsService {
     }
 
     private static String[] orderedKeys() {
-        return new String[] {"siteUrl", "homePhotoUrl", "whatsappBirthday", "whatsappHello", "whatsappShare"};
+        return new String[] {"siteUrl", "homePhotoUrl", "secretNote", "secretPhotoUrl", "whatsappBirthday", "whatsappHello", "whatsappShare"};
     }
 }

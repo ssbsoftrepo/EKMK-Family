@@ -1,20 +1,39 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FamilyMember } from '../../types/family';
 import { Family, firstName, whoLine } from '../family';
 import { relate } from '../kinship';
 import { href, rememberMe } from '../router';
 import { Face, Hand, Icon, Print, Svg, Title, btnPrimary, btnSecondary } from '../ui';
+import { ScratchReveal, WelcomeHome } from '../Magic';
+import { onceOnThisPhone, reducedMotion } from '../magic';
 
 /**
  * "How are we related?" No login: the visitor taps their own photo once
  * (remembered on this phone only), then anyone else.
  */
-export const RelatedPage: React.FC<{ family: Family; id?: string }> = ({ family, id }) => {
+export const RelatedPage: React.FC<{ family: Family; id?: string }> = (props) => {
+  // "Welcome home!" plays the first time someone tells this phone who they are.
+  const [welcome, setWelcome] = useState<FamilyMember | null>(null);
+  return (
+    <>
+      <Related {...props} onFirstVisit={setWelcome} />
+      {welcome && <WelcomeHome person={welcome} onClose={() => setWelcome(null)} />}
+    </>
+  );
+};
+
+const Related: React.FC<{ family: Family; id?: string; onFirstVisit: (m: FamilyMember) => void }> = ({ family, id, onFirstVisit }) => {
   const [meId, setMeId] = useState<string | null>(() => rememberMe.get());
   const me = family.get(meId);
   const them = family.get(id);
+  const [revealed, setRevealed] = useState(() => reducedMotion());
+  useEffect(() => setRevealed(reducedMotion()), [id, meId]);
 
-  const chooseMe = (m: FamilyMember) => { rememberMe.set(m.id); setMeId(m.id); };
+  const chooseMe = (m: FamilyMember) => {
+    rememberMe.set(m.id);
+    setMeId(m.id);
+    if (onceOnThisPhone(`welcome-${m.id}`)) onFirstVisit(m);
+  };
   const notMe = () => { rememberMe.set(null); setMeId(null); };
 
   if (!me) {
@@ -51,9 +70,16 @@ export const RelatedPage: React.FC<{ family: Family; id?: string }> = ({ family,
           ) : (
             <>
               <span className="text-lg">{firstName(them)} is your</span>
-              {r.tamil && <span lang="ta" className="text-[3rem] sm:text-[3.5rem] font-extrabold leading-tight text-album-terracotta">{r.tamil}</span>}
-              {r.term && <span className="font-hand font-bold text-[1.9rem] leading-tight">{r.term}</span>}
-              <span className={`${r.tamil ? 'text-lg pt-1' : 'text-[1.7rem] font-extrabold leading-tight'}`}>{r.description}</span>
+              <ScratchReveal key={them.id} label="Who could it be?" onReveal={() => setRevealed(true)}>
+                <div className="flex flex-col items-center gap-1 px-2">
+                  {r.tamil && <span lang="ta" className="text-[3rem] sm:text-[3.5rem] font-extrabold leading-tight text-album-terracotta">{r.tamil}</span>}
+                  {r.term && <span className="font-hand font-bold text-[1.9rem] leading-tight">{r.term}</span>}
+                  <span className={`${r.tamil ? 'text-lg pt-1' : 'text-[1.7rem] font-extrabold leading-tight'}`}>{r.description}</span>
+                  {(r.term?.startsWith('Kollu') || r.path.length >= 5) && (
+                    <span className="mt-1.5 bg-album-turmeric rounded-full px-3.5 py-0.5 text-base font-extrabold">🌟 Rare find! A far branch of the tree</span>
+                  )}
+                </div>
+              </ScratchReveal>
               <div className="flex flex-wrap justify-center items-start gap-x-1 gap-y-3 pt-4 w-full">
                 {r.path.map((p, i) => (
                   <React.Fragment key={p.id}>
@@ -70,7 +96,7 @@ export const RelatedPage: React.FC<{ family: Family; id?: string }> = ({ family,
         </div>
       </Print>
 
-      {r?.term && <Hand className="text-[1.6rem] text-center">next time you meet, call {them.gender === 'female' ? 'her' : them.gender === 'male' ? 'him' : 'them'} {r.term.split(' / ')[0]}!</Hand>}
+      {r?.term && revealed && <Hand className="text-[1.6rem] text-center">next time you meet, call {them.gender === 'female' ? 'her' : them.gender === 'male' ? 'him' : 'them'} {r.term.split(' / ')[0]}!</Hand>}
 
       <div className="grid grid-cols-2 gap-2.5">
         <a href={href.related()} className={btnPrimary}>Try another</a>
@@ -114,7 +140,7 @@ const Picker: React.FC<{
       <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 30%), 1fr))' }}>
         {list.slice(0, limit).map((m) => (
           <button key={m.id} type="button" onClick={() => onPick(m)}
-            className="text-left text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-[0_3px_0_#DCE6D2] hover:shadow-[0_3px_0_#1E4636]">
+            className="text-left text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-[0_3px_0_#DCE6D2] hover:shadow-[0_3px_0_#1E4636] lift">
             <Face member={m} className="w-full aspect-square" rounded="rounded-[13px]" />
             <span className="text-[17px] font-extrabold leading-tight px-1">{m.fullName}</span>
             <span className="text-sm leading-tight px-1">{whoLine(family, m)}</span>

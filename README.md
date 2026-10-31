@@ -108,6 +108,13 @@ A photo album, phone first, bilingual labels (English + Tamil), big buttons, no 
 | Whole tree | `#/tree` | Elders on top, one colour per branch, **Bigger / Smaller** buttons and **Find a name** |
 | How are we related? | `#/related/<id>` | Tap your own photo once (remembered on that phone only), then anyone: the Tamil name (சித்தப்பா, Chithappa), a plain explanation ("your appa's younger brother") and the chain of photos between you |
 
+**Little surprises** (all short, never in the way, and switched off when the phone asks for less motion; `frontend/src/album/magic.ts` and `Magic.tsx`):
+- photos lift like a print when tapped, and a kolam draws itself while the album opens;
+- marigold petals and balloons on someone's birthday (home page and their own page, once per visit), and the wish button sparkles;
+- "How are we related?" is a scratch card with a rangoli burst; far relations get a "Rare find!" badge; the first time someone picks their own photo they get "Welcome home!";
+- on the whole tree, "Find a name" lights lamps from the elders down to that person;
+- tapping the KMK logo five times opens the **secret family drawer** (admin → Share the link → Secret family drawer).
+
 The relation names live in `frontend/src/album/kinship.ts`; `npm run check:kinship` (in `frontend/`) checks them against a made-up family.
 
 ---
