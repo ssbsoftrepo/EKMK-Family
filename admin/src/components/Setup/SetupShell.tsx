@@ -89,7 +89,7 @@ export const SetupShell: React.FC = () => {
       </main>
 
       <footer className="border-t-2 border-album-line py-5 px-4 text-center font-hand text-lg text-album-leaf">
-        Made with <span role="img" aria-label="love">❤️</span> by SSB Software Solutions Pvt. Ltd.
+        Made with <span role="img" aria-label="love">❤️</span> by <a href="https://www.ssbsoft.com" target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:text-album-terracotta">SSB Software Solutions Pvt. Ltd.</a>
       </footer>
     </div>
   );

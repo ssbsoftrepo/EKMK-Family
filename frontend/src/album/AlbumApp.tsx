@@ -68,7 +68,7 @@ export const AlbumApp: React.FC = () => {
       </main>
 
       <footer className="border-t-2 border-album-line py-5 px-4 pb-28 md:pb-6 text-center font-hand text-lg">
-        Made with <span role="img" aria-label="love">❤️</span> by SSB Software Solutions Pvt. Ltd.
+        Made with <span role="img" aria-label="love">❤️</span> by <a href="https://www.ssbsoft.com" target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:text-album-terracotta">SSB Software Solutions Pvt. Ltd.</a>
       </footer>
 
       <nav aria-label="Main" className="md:hidden fixed left-0 right-0 bottom-0 z-30 bg-white border-t-2 border-album-line flex justify-around items-stretch"
