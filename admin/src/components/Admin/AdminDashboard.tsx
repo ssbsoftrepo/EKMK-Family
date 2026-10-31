@@ -499,9 +499,10 @@ export const AdminDashboard: React.FC = () => {
 
                           <td className="py-3 px-4 text-xs hidden md:table-cell">
                             {(() => {
-                              const sIds = (member.spouseIds && member.spouseIds.length > 0)
+                              const sIds = ((member.spouseIds && member.spouseIds.length > 0)
                                 ? member.spouseIds
-                                : (member.spouseId ? [member.spouseId] : []);
+                                : (member.spouseId ? [member.spouseId] : []))
+                                .filter((id) => id !== member.id && id !== member.fatherId && id !== member.motherId);
                               if (sIds.length > 1) {
                                 return (
                                   <span className="text-heritage-maroon font-semibold bg-heritage-maroon/10 px-2 py-0.5 rounded text-xs border border-heritage-maroon/20">

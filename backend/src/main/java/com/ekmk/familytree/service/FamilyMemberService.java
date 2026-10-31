@@ -207,6 +207,19 @@ public class FamilyMemberService {
         FamilyMember existing = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + id));
 
+        // Determine target spouses (supports multiple wives / multiple husbands / remarriage)
+        List<String> targetSpouseIds = updates.getSpouseIds();
+        if (targetSpouseIds == null && updates.getSpouseId() != null) {
+            targetSpouseIds = updates.getSpouseId().trim().isEmpty() ? new ArrayList<>() : new ArrayList<>(List.of(updates.getSpouseId().trim()));
+        }
+        List<String> effectiveSpouseIds = targetSpouseIds != null ? targetSpouseIds : (existing.getSpouseIds() != null ? existing.getSpouseIds() : Collections.emptyList());
+
+        // Validate all kinship relations (parents, spouses, cycles, chronology) BEFORE making any state mutations
+        String effectiveFatherId = updates.getFatherId() != null ? (updates.getFatherId().trim().isEmpty() ? null : updates.getFatherId()) : existing.getFatherId();
+        String effectiveMotherId = updates.getMotherId() != null ? (updates.getMotherId().trim().isEmpty() ? null : updates.getMotherId()) : existing.getMotherId();
+        String effectiveBirthDate = updates.getBirthDate() != null ? updates.getBirthDate() : existing.getBirthDate();
+        validateKinshipRelations(id, effectiveFatherId, effectiveMotherId, existing.getChildIds(), effectiveSpouseIds, effectiveBirthDate);
+
         // Detect father change
         if (updates.getFatherId() != null && !updates.getFatherId().equals(existing.getFatherId())) {
             if (existing.getFatherId() != null) {
@@ -244,20 +257,6 @@ public class FamilyMemberService {
             }
             existing.setMotherId(updates.getMotherId().trim().isEmpty() ? null : updates.getMotherId());
         }
-
-        // Determine target spouses (supports multiple wives / multiple husbands / remarriage)
-        List<String> targetSpouseIds = updates.getSpouseIds();
-        if (targetSpouseIds == null && updates.getSpouseId() != null) {
-            targetSpouseIds = updates.getSpouseId().trim().isEmpty() ? new ArrayList<>() : new ArrayList<>(List.of(updates.getSpouseId().trim()));
-        }
-
-        List<String> effectiveSpouseIds = targetSpouseIds != null ? targetSpouseIds : (existing.getSpouseIds() != null ? existing.getSpouseIds() : Collections.emptyList());
-
-        // Validate all kinship relations (parents, spouses, cycles, chronology)
-        String effectiveFatherId = updates.getFatherId() != null ? (updates.getFatherId().trim().isEmpty() ? null : updates.getFatherId()) : existing.getFatherId();
-        String effectiveMotherId = updates.getMotherId() != null ? (updates.getMotherId().trim().isEmpty() ? null : updates.getMotherId()) : existing.getMotherId();
-        String effectiveBirthDate = updates.getBirthDate() != null ? updates.getBirthDate() : existing.getBirthDate();
-        validateKinshipRelations(id, effectiveFatherId, effectiveMotherId, existing.getChildIds(), effectiveSpouseIds, effectiveBirthDate);
 
         // Reconcile spouse changes only if spouseIds or spouseId was explicitly provided in request
         if (targetSpouseIds != null) {
@@ -464,6 +463,16 @@ public class FamilyMemberService {
         if (memberId != null) {
             if (memberId.equals(fatherId) || memberId.equals(motherId)) {
                 throw new IllegalArgumentException("A person cannot be their own parent");
+            }
+        }
+
+        // Parent and Spouse collision: A person cannot marry their own father or mother
+        if (spouseIds != null && !spouseIds.isEmpty()) {
+            if (fatherId != null && !fatherId.trim().isEmpty() && spouseIds.contains(fatherId.trim())) {
+                throw new IllegalArgumentException("Cannot select father as spouse under Tamil Hindu kinship tradition");
+            }
+            if (motherId != null && !motherId.trim().isEmpty() && spouseIds.contains(motherId.trim())) {
+                throw new IllegalArgumentException("Cannot select mother as spouse under Tamil Hindu kinship tradition");
             }
         }
 

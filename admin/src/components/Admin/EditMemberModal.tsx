@@ -192,7 +192,7 @@ export const EditMemberModal: React.FC<Props> = ({ member, onClose }) => {
 
     // Tamil Hindu Kinship Validation for Spouses (multiple wives / multiple husbands / remarriage)
     for (const spId of spouseIds) {
-      if (ancestorIds.has(spId)) {
+      if (spId === fatherId || spId === motherId || spId === member.fatherId || spId === member.motherId || ancestorIds.has(spId)) {
         toast.warning('Kinship Rule', 'In Tamil Hindu tradition, a person cannot select their father, mother, grandfather, or grandmother as spouse.');
         return;
       }
@@ -384,6 +384,8 @@ export const EditMemberModal: React.FC<Props> = ({ member, onClose }) => {
         if (m.id === member.id) return false;
         // Cannot be already selected in spouseIds
         if (spouseIds.includes(m.id)) return false;
+        // Cannot be father or mother
+        if (m.id === fatherId || m.id === motherId || m.id === member.fatherId || m.id === member.motherId) return false;
         // Cannot be a direct descendant (children, grandchildren, etc.)
         if (descendantIds.has(m.id)) return false;
         // Cannot be a direct ancestor (father, mother, grandfather, grandmother, etc.)
@@ -413,7 +415,7 @@ export const EditMemberModal: React.FC<Props> = ({ member, onClose }) => {
           sublabel: sub,
         };
       });
-  }, [members, member.id, spouseIds, descendantIds, ancestorIds, siblingIds, inLawIds, gender]);
+  }, [members, member.id, spouseIds, fatherId, motherId, member.fatherId, member.motherId, descendantIds, ancestorIds, siblingIds, inLawIds, gender]);
 
   const branchOptions: SelectOption[] = useMemo(() => {
     return branches

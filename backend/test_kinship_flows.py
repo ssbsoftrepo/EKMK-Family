@@ -117,4 +117,37 @@ print("✓ Test 8: Partial update protection verified: updating currentCity did 
 # Reset Nila's city back to original
 req(f"/api/members/{nila['id']}", method="PUT", data={"currentCity": nila.get("currentCity", "Erode")})
 
-print("\nALL 8 AUDIT AND FULL-FLOW VALIDATION TESTS PASSED 100%!")
+# Test 9: Kinship rule - Cannot create member with father as spouse
+test_parent_as_spouse = {
+    "fullName": "Invalid Kinship Member",
+    "gender": "female",
+    "fatherId": balram["id"],
+    "spouseIds": [balram["id"]],
+}
+status, err = req("/api/members", method="POST", data=test_parent_as_spouse)
+assert status == 400, f"Expected 400 for father as spouse, got {status}: {err}"
+err_msg = err.get("message") or err.get("error") or str(err)
+assert "Cannot select father as spouse" in err_msg or "cannot select father" in err_msg.lower(), f"Unexpected error: {err_msg}"
+print("✓ Test 9: Creating member with father as spouse rejected by backend")
+
+# Test 10: Kinship rule - Cannot create member with mother as spouse
+test_mother_as_spouse = {
+    "fullName": "Invalid Kinship Member 2",
+    "gender": "male",
+    "motherId": meenama["id"],
+    "spouseIds": [meenama["id"]],
+}
+status, err = req("/api/members", method="POST", data=test_mother_as_spouse)
+assert status == 400, f"Expected 400 for mother as spouse, got {status}: {err}"
+err_msg = err.get("message") or err.get("error") or str(err)
+assert "Cannot select mother as spouse" in err_msg or "cannot select mother" in err_msg.lower(), f"Unexpected error: {err_msg}"
+print("✓ Test 10: Creating member with mother as spouse rejected by backend")
+
+# Test 11: Kinship rule - Updating existing member (Rani) to set father Balram as spouse
+status, err = req(f"/api/members/{rani['id']}", method="PUT", data={"spouseIds": [balram["id"]]})
+assert status == 400, f"Expected 400 for setting father as spouse on update, got {status}: {err}"
+err_msg = err.get("message") or err.get("error") or str(err)
+assert "Cannot select father as spouse" in err_msg or "cannot select father" in err_msg.lower(), f"Unexpected error: {err_msg}"
+print("✓ Test 11: Updating member with father as spouse rejected by backend")
+
+print("\nALL 11 AUDIT AND FULL-FLOW VALIDATION TESTS PASSED 100%!")

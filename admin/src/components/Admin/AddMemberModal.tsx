@@ -192,6 +192,8 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
       .filter((m) => {
         // Exclude already added spouses
         if (spouseIds.includes(m.id)) return false;
+        // Exclude direct parents explicitly
+        if (m.id === fatherId || m.id === motherId) return false;
         // Exclude ancestors (father, mother, grandfather, grandmother, etc.)
         if (ancestorIds.has(m.id)) return false;
         // Exclude siblings (brother, sister)
@@ -219,7 +221,7 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
           sublabel: sub,
         };
       });
-  }, [members, spouseIds, ancestorIds, siblingIds, gender]);
+  }, [members, spouseIds, fatherId, motherId, ancestorIds, siblingIds, inLawIds, gender]);
 
   const branchOptions: SelectOption[] = useMemo(() => {
     return branches.map((b) => ({
@@ -321,7 +323,7 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
 
     // Tamil Hindu Kinship Validation for Spouses
     for (const spId of spouseIds) {
-      if (ancestorIds.has(spId)) {
+      if (spId === fatherId || spId === motherId || ancestorIds.has(spId)) {
         toast.warning('Kinship Rule', 'In Tamil Hindu tradition, a person cannot select their father, mother, grandfather, or grandmother as spouse.');
         setStep(2);
         return;

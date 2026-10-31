@@ -161,9 +161,18 @@ export function buildFamilyTreeLayout(
       processedChildIds.add(c.id);
 
       let childSpouse: FamilyMember | undefined;
-      if (c.spouseId && memberMap.has(c.spouseId)) {
-        childSpouse = memberMap.get(c.spouseId);
-        processedChildIds.add(c.spouseId);
+      const spId = (c.spouseIds && c.spouseIds.length > 0) ? c.spouseIds[0] : c.spouseId;
+      if (
+        spId &&
+        spId !== c.id &&
+        spId !== c.fatherId &&
+        spId !== c.motherId &&
+        spId !== primary.id &&
+        (!spouse || spId !== spouse.id) &&
+        memberMap.has(spId)
+      ) {
+        childSpouse = memberMap.get(spId);
+        processedChildIds.add(spId);
       }
 
       childNodes.push(createNode(c, childSpouse, currentGen + 1));

@@ -94,7 +94,12 @@ export const FamilyTreeView: React.FC = () => {
         if (!list.includes(m.id)) list.push(m.id);
       }
     });
-    return list.map((id) => members.find((m) => m.id === id)).filter(Boolean) as FamilyMember[];
+
+    // Exclude self, father, and mother from active spouses
+    return list
+      .filter((id) => id !== activePrimary.id && id !== activePrimary.fatherId && id !== activePrimary.motherId)
+      .map((id) => members.find((m) => m.id === id))
+      .filter(Boolean) as FamilyMember[];
   }, [members, activePrimary]);
 
   // Active branch
@@ -561,7 +566,10 @@ export const FamilyTreeView: React.FC = () => {
                   ? detailPerson.spouseIds
                   : (detailPerson.spouseId ? [detailPerson.spouseId] : []);
                 if (spIds.length === 0) return null;
-                const spMembers = spIds.map((id) => members.find((m) => m.id === id)).filter(Boolean) as FamilyMember[];
+                const spMembers = spIds
+                  .filter((id) => id !== detailPerson.id && id !== detailPerson.fatherId && id !== detailPerson.motherId)
+                  .map((id) => members.find((m) => m.id === id))
+                  .filter(Boolean) as FamilyMember[];
                 if (spMembers.length === 0) return null;
                 return (
                   <div className="p-2.5 rounded-xl bg-heritage-ivory border border-heritage-border space-y-1.5 text-xs text-heritage-charcoal">
