@@ -64,9 +64,9 @@
     transform: skewX(-20deg); animation: sparkle 2.6s ease-in-out infinite;
   }
 
-  /* Lamps on the tree flicker gently. */
-  .lamp { animation: lamp 1.8s ease-in-out infinite alternate, magic-pop .45s cubic-bezier(.2, 1.4, .4, 1) both; }
-  .lamp-glow { box-shadow: 0 0 0 4px #F2B705, 0 0 28px 8px rgba(242, 183, 5, .55); }
+  /* Marigolds bloom on the tree along the path from the elders, then sway gently. */
+  .bloom { animation: bloom .6s cubic-bezier(.2, 1.5, .4, 1) both, sway 2.6s ease-in-out .6s infinite alternate; transform-origin: 50% 80%; }
+  .trail-glow { box-shadow: 0 0 0 4px #F2B705, 0 0 22px 6px rgba(242, 183, 5, .45); }
 
   /* Stars in the header at night. */
   .star { animation: twinkle 2.4s ease-in-out infinite; opacity: .5; }
@@ -81,12 +81,13 @@
 @keyframes magic-pop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
 @keyframes drawer-slide { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
 @keyframes sparkle { 0%, 55% { left: -60%; } 100% { left: 130%; } }
-@keyframes lamp { from { filter: drop-shadow(0 0 2px #F2B705); transform: scale(1); } to { filter: drop-shadow(0 0 9px #F6A21B); transform: scale(1.08); } }
+@keyframes bloom { from { opacity: 0; transform: scale(0) rotate(-120deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes sway { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
 @keyframes twinkle { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.2); } }
 @keyframes wobble { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-10deg) scale(1.08); } 70% { transform: rotate(8deg); } }
 
 @media (prefers-reduced-motion: reduce) {
   .lift, .lift:hover, .lift:active { transition: none; transform: none; }
   .kolam-line { animation: none; stroke-dashoffset: 0; }
-  .kolam-dot, .magic-fade-in, .magic-pop, .magic-reveal, .drawer-slide, .lamp, .logo-wobble, .sparkle::after, .star { animation: none; }
+  .kolam-dot, .magic-fade-in, .magic-pop, .magic-reveal, .drawer-slide, .bloom, .logo-wobble, .sparkle::after, .star { animation: none; }
 }

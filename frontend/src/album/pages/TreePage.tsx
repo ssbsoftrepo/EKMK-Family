@@ -8,7 +8,7 @@ import { TreeSwitch } from './FamilyPage';
 
 const BRANCH_COLOURS = ['#C4502F', '#D99A00', '#5C8A4A', '#1E4636', '#B5652B', '#7A8F2C'];
 const MIN = 0.3;
-const TOP = 56; // room above the elders for their lamp
+const TOP = 56; // room above the elders for their marigold
 const MAX = 1.2;
 
 /** The whole tree, elders at the top. Big "Bigger / Smaller" buttons instead of pinch gestures. */
@@ -46,8 +46,8 @@ export const TreePage: React.FC<{ family: Family; focusId?: string }> = ({ famil
       return i === undefined ? '#1E4636' : BRANCH_COLOURS[i % BRANCH_COLOURS.length];
     };
   }, [family]);
-  // Lamps light up, one generation at a time, from the elders down to the person you looked for.
-  const lampPath = useMemo(() => {
+  // Marigolds bloom, one generation at a time, from the elders down to the person you looked for.
+  const trailPath = useMemo(() => {
     const onTreeIds = new Set(onTree.map((m) => m.id));
     const path: string[] = [];
     let cur = family.get(focus);
@@ -60,17 +60,17 @@ export const TreePage: React.FC<{ family: Family; focusId?: string }> = ({ famil
   }, [family, onTree, focus]);
   const [litCount, setLitCount] = useState(0);
   useEffect(() => {
-    if (reducedMotion()) { setLitCount(lampPath.length); return; }
+    if (reducedMotion()) { setLitCount(trailPath.length); return; }
     setLitCount(0);
     let n = 0;
     const timer = setInterval(() => {
       n += 1;
       setLitCount(n);
-      if (n >= lampPath.length) clearInterval(timer);
+      if (n >= trailPath.length) clearInterval(timer);
     }, 420);
     return () => clearInterval(timer);
-  }, [lampPath]);
-  const lit = new Set(lampPath.slice(0, litCount));
+  }, [trailPath]);
+  const lit = new Set(trailPath.slice(0, litCount));
   const focusPerson = family.get(focus);
 
   const childAt = (x: number, y: number) =>
@@ -157,9 +157,9 @@ export const TreePage: React.FC<{ family: Family; focusId?: string }> = ({ famil
               const hit = people.some((p) => p.id === focus);
               const glowing = people.some((p) => lit.has(p.id));
               return (
-                <div key={n.id} className={`absolute bg-white rounded-2xl p-2 flex gap-2 justify-center ${hit ? 'ring-[5px] ring-album-terracotta' : ''} ${glowing ? 'lamp-glow' : ''}`}
+                <div key={n.id} className={`absolute bg-white rounded-2xl p-2 flex gap-2 justify-center ${hit ? 'ring-[5px] ring-album-terracotta' : ''} ${glowing ? 'trail-glow' : ''}`}
                   style={{ left: n.x - bounds.minX, top: n.y - bounds.minY + TOP, width: n.width, height: n.height, border: `3px solid ${branchColour(n.primary.id)}` }}>
-                  {glowing && <span aria-hidden="true" className="lamp absolute -top-10 left-1/2 -ml-6 text-[44px] leading-none">🪔</span>}
+                  {glowing && <span aria-hidden="true" className="bloom absolute -top-10 left-1/2 -ml-6 text-[44px] leading-none">🌼</span>}
                   {people.map((p) => (
                     <a key={p.id} href={href.person(p.id)} className="no-underline text-album-leaf flex flex-col items-center gap-1 w-[136px]">
                       <Face member={p} className="w-[118px] h-[118px]" rounded="rounded-xl" />
@@ -172,8 +172,8 @@ export const TreePage: React.FC<{ family: Family; focusId?: string }> = ({ famil
           </div>
         </div>
       </div>
-      {focusPerson && lampPath.length > 1 && litCount >= lampPath.length && (
-        <Hand className="text-xl text-center magic-pop">🪔 the lamps show the way from the elders to {firstName(focusPerson)}</Hand>
+      {focusPerson && trailPath.length > 1 && litCount >= trailPath.length && (
+        <Hand className="text-xl text-center magic-pop">🌼 a marigold trail from the elders to {firstName(focusPerson)}</Hand>
       )}
       <Hand className="text-lg text-center">tap any photo to open that person · scroll to move around</Hand>
     </div>

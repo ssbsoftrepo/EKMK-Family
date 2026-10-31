@@ -115,7 +115,7 @@ A photo album, phone first, bilingual labels (English + Tamil), big buttons, no 
 - photos lift like a print when tapped, and a kolam draws itself while the album opens;
 - marigold petals and balloons on someone's birthday (home page and their own page, once per visit), and the wish button sparkles;
 - "How are we related?" is a scratch card with a rangoli burst; far relations get a "Rare find!" badge; the first time someone picks their own photo they get "Welcome home!";
-- on the whole tree, "Find a name" lights lamps from the elders down to that person;
+- on the whole tree, "Find a name" makes marigolds bloom from the elders down to that person, one generation at a time;
 - tapping the KMK logo five times opens the **secret family drawer** (admin → Share the link → Secret family drawer).
 - a Tamil greeting that follows the clock (Kaalai vanakkam, Madhiya vanakkam, Maalai vanakkam, Iniya iravu) and a starry header at night (`timeOfDay.ts`);
 - fun searches: typing "paati" brings a rain of jasmine, "thatha" filter coffee, "murukku", "amma", "appa", "kmk"… (English or Tamil; `FUN_WORDS` in `magic.ts`);
