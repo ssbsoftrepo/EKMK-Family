@@ -26,6 +26,7 @@ export interface ImportReport {
 /** Editable site settings. WhatsApp messages use {name} and {site}. */
 export interface SiteSettings {
   siteUrl: string;
+  homePhotoUrl: string;
   whatsappBirthday: string;
   whatsappHello: string;
   whatsappShare: string;
@@ -57,6 +58,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json();
 }
 
+// Reads use /api/admin/members (full records); the public /api/members leaves out addresses and emails.
 export const familyApi = {
   // Members
   async getAllMembers(params?: {
@@ -73,18 +75,18 @@ export const familyApi = {
     if (params?.gender) searchParams.append('gender', params.gender);
     if (params?.isDeceased !== undefined) searchParams.append('isDeceased', String(params.isDeceased));
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    const res = await fetch(`${API_BASE_URL}/api/members${query}`);
+    const res = await fetch(`${API_BASE_URL}/api/admin/members${query}`);
     return handleResponse<FamilyMember[]>(res);
   },
 
   async searchMembers(query: string): Promise<FamilyMember[]> {
     if (!query.trim()) return [];
-    const res = await fetch(`${API_BASE_URL}/api/members/search?q=${encodeURIComponent(query.trim())}`);
+    const res = await fetch(`${API_BASE_URL}/api/admin/members/search?q=${encodeURIComponent(query.trim())}`);
     return handleResponse<FamilyMember[]>(res);
   },
 
   async getMemberById(id: string): Promise<FamilyMember> {
-    const res = await fetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`);
+    const res = await fetch(`${API_BASE_URL}/api/admin/members/${encodeURIComponent(id)}`);
     return handleResponse<FamilyMember>(res);
   },
 

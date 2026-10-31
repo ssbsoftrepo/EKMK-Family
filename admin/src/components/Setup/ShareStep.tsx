@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { HomePhoto } from './HomePhoto';
 import { useToast } from '../../context/ToastContext';
 import { familyApi, SiteSettings } from '../../api/familyApi';
 import { StepTitle, btnPrimary, btnSecondary, card, Check } from './ui';
@@ -43,7 +44,7 @@ export const ShareStep: React.FC = () => {
       try {
         const fresh = await familyApi.saveSettings(changes);
         // Keep what the admin is typing; only fill back defaults for cleared messages.
-        setSettings((s) => (s ? { ...fresh, ...Object.fromEntries(Object.entries(s).filter(([k, v]) => v !== '' || k === 'siteUrl')) } as SiteSettings : fresh));
+        setSettings((s) => (s ? { ...fresh, ...Object.fromEntries(Object.entries(s).filter(([k, v]) => v !== '' || k === 'siteUrl' || k === 'homePhotoUrl')) } as SiteSettings : fresh));
         setSaved('saved');
       } catch (e) {
         setSaved('idle');
@@ -90,6 +91,8 @@ export const ShareStep: React.FC = () => {
             </div>
             <span className="text-[15px]">“Send to the WhatsApp group” opens WhatsApp with the share message below. You pick the group and press send.</span>
           </section>
+
+          <HomePhoto url={settings.homePhotoUrl} onChange={(url) => change('homePhotoUrl', url)} />
 
           <section className={`${card} flex flex-col gap-5`}>
             <div className="flex flex-wrap items-baseline justify-between gap-3">

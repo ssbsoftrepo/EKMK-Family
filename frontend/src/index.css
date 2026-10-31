@@ -2,131 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* "Family album" look: leaf green, turmeric and terracotta on a pale leaf ground. */
 @layer base {
-  :root {
-    --bg-ivory: #F8F4EC;
-    --bg-cream: #EFE4D2;
-    --maroon-primary: #702D3B;
-    --gold-primary: #B6955B;
-    --charcoal-primary: #292522;
-  }
-
   html, body {
-    background-color: #F8F4EC;
-    color: #292522;
-    font-family: 'Plus Jakarta Sans', 'Noto Sans Tamil', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #F3F7EC;
+    color: #1E4636;
+    font-family: 'Baloo Thambi 2', 'Noto Sans Tamil', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
-    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
   }
 
   #root {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    width: 100%;
-    margin: 0;
-    max-width: none;
-    border: none;
   }
 
-  h1, h2, h3, .font-heritage-serif {
-    font-family: 'Cinzel', 'Noto Serif Tamil', Georgia, serif;
-    letter-spacing: 0.02em;
+  button, input, textarea, select {
+    font-family: inherit;
   }
 
-  .font-heritage-display {
-    font-family: 'Playfair Display', 'Noto Serif Tamil', Georgia, serif;
+  :focus-visible {
+    outline: 3px solid #C4502F;
+    outline-offset: 2px;
   }
 
-  .font-tamil-text {
-    font-family: 'Noto Serif Tamil', 'Noto Sans Tamil', serif;
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
   }
-}
-
-/* Custom scrollbars with antique gold thumb */
-::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
-}
-
-::-webkit-scrollbar-track {
-  background: #EFE4D2;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #B6955B;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #702D3B;
-}
-
-/* Subtle Kolam Background Pattern */
-.bg-kolam-grid {
-  background-color: #F8F4EC;
-  background-image: 
-    radial-gradient(#B6955B 0.8px, transparent 0.8px),
-    radial-gradient(#702D3B 0.6px, #F8F4EC 0.6px);
-  background-size: 32px 32px;
-  background-position: 0 0, 16px 16px;
-}
-
-.bg-canvas-dots {
-  background-image: radial-gradient(#D6C6AF 1.2px, transparent 1.2px);
-  background-size: 24px 24px;
-}
-
-/* Traditional Ornamental Corner Borders */
-.ornamental-card {
-  position: relative;
-  background: #FFFEFB;
-  border: 1px solid #E3D8C8;
-  box-shadow: 0 6px 20px -4px rgba(112, 45, 59, 0.07), 0 2px 6px -2px rgba(182, 149, 91, 0.05);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.ornamental-card:hover {
-  border-color: #B6955B;
-  box-shadow: 0 12px 30px -6px rgba(112, 45, 59, 0.12), 0 4px 14px -2px rgba(182, 149, 91, 0.15);
-}
-
-/* Gold Gradient Shimmer text */
-.text-gold-gradient {
-  background: linear-gradient(135deg, #7B5C31 0%, #B6955B 45%, #E8D7B0 70%, #997641 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-maroon-gradient {
-  background: linear-gradient(135deg, #3D151E 0%, #702D3B 50%, #A74459 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Animated connector line pulse */
-@keyframes flowDash {
-  to {
-    stroke-dashoffset: -40;
-  }
-}
-
-.connector-pulse {
-  stroke-dasharray: 6 4;
-  animation: flowDash 2.5s linear infinite;
-}
-
-/* Glassmorphism for floating controls */
-.glass-panel {
-  background: rgba(255, 254, 251, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(227, 216, 200, 0.85);
-}
-
-.glass-panel-dark {
-  background: rgba(41, 37, 34, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(182, 149, 91, 0.3);
 }

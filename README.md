@@ -80,7 +80,8 @@ npm run dev
 
 | HTTP Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/members` | Retrieve all family members from PostgreSQL |
+| `GET` | `/api/members` | All family members for the public website (no addresses, emails or form notes; phone numbers stay for the Call / WhatsApp buttons) |
+| `GET` | `/api/admin/members` | All family members with every detail, for the admin site (also `/api/admin/members/search`, `/api/admin/members/{id}`) |
 | `GET` | `/api/members/{id}` | Retrieve specific member with relationship hierarchy |
 | `POST` | `/api/members` | Insert new family member (updates parents' `childIds` and spouse link) |
 | `PUT` | `/api/members/{id}` | Update member profile and reciprocal relations |
@@ -94,16 +95,33 @@ npm run dev
 
 ---
 
+## 📸 The family website ("family album" look)
+
+A photo album, phone first, bilingual labels (English + Tamil), big buttons, no login screens yet:
+
+| Page | Address | What it shows |
+|---|---|---|
+| Home | `#/` | Family photo (admin → Share → Home page photo), welcome, today's birthdays with a WhatsApp wish, big buttons, coming birthdays (day and month only), some family faces |
+| Find a relative | `#/find` | Search by name, town or job; one chip per branch ("Ravi's family"); photo grid |
+| One person | `#/person/<id>` | Big photo, who they are, "in their words", close family as photos, Call / WhatsApp, "How is … related to me?" |
+| One family | `#/family/<id>` | A couple's photos and their children; tap to go one step down, "Up to …" to go back up |
+| Whole tree | `#/tree` | Elders on top, one colour per branch, **Bigger / Smaller** buttons and **Find a name** |
+| How are we related? | `#/related/<id>` | Tap your own photo once (remembered on that phone only), then anyone: the Tamil name (சித்தப்பா, Chithappa), a plain explanation ("your appa's younger brother") and the chain of photos between you |
+
+The relation names live in `frontend/src/album/kinship.ts`; `npm run check:kinship` (in `frontend/`) checks them against a made-up family.
+
+---
+
 ## 🧭 Admin in 3 steps
 
 The admin site opens on three simple steps (plus **All members** for detailed edits):
 
 1. **Add people**: upload the Google Form file. The site tidies it and only asks what it cannot guess (man or woman, possible duplicates). Upload again whenever new answers arrive.
 2. **Build the tree**: one question at a time ("Who are the children of …?", "Who is … married to?"), answered by tapping photos. Likely answers come first with a clue (same address, same phone, the form's father/mother/spouse names). Only parent → child and husband ↔ wife links are ever set. A **Still to do** list shows everyone not on the tree yet and every unanswered question, so nobody is left out. Every answer is saved at once; **Undo last** reverses the latest one.
-3. **Share the link**: the website address and the editable WhatsApp messages.
+3. **Share the link**: the website address, the home page photo and the editable WhatsApp messages.
 
 **WhatsApp needs no setup.** The buttons are plain `https://wa.me/<number>?text=…` links: they open WhatsApp on the visitor's phone with the message ready, and the visitor presses send. No WhatsApp API, account or approval is involved. The public site shows **Call** and **WhatsApp** buttons on a person's profile (only when they gave a phone number) and a **Birthday today** section with a one-tap wish.
 
-> Before the site goes live, put it behind a family-only login: the members API now returns phone numbers and addresses from the form.
+> There is no login for now. The public `/api/members` therefore leaves out addresses, emails and the admin's form notes (`PublicMembers`); phone numbers stay public for the Call and WhatsApp buttons. The full records are only on `/api/admin/members`.
 
 **Tip for the Google Form:** questions named "Man / Woman" (or "Gender") and "Father's name", "Mother's name", "Spouse's name" are picked up automatically and make step 2 almost one-tap.

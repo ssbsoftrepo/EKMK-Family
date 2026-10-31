@@ -27,11 +27,15 @@ public class SettingsService {
     static {
         Map<String, String> d = new LinkedHashMap<>();
         d.put("siteUrl", "");
+        d.put("homePhotoUrl", "");
         d.put("whatsappBirthday", "Happy birthday {name}! Wishing you a wonderful year ahead. With love, from the KMK family");
         d.put("whatsappHello", "Hi {name}, I found you on our KMK family website! {site}");
         d.put("whatsappShare", "Hello everyone! Our KMK family website is ready. Find yourself on the family tree: {site}");
         DEFAULTS = Map.copyOf(d);
     }
+
+    /** Settings that may be left empty (the messages fall back to their defaults instead). */
+    private static final java.util.Set<String> OPTIONAL = java.util.Set.of("siteUrl", "homePhotoUrl");
 
     private final AppSettingRepository repository;
 
@@ -58,7 +62,7 @@ public class SettingsService {
                 if (value.length() > MAX_LENGTH) {
                     throw new IllegalArgumentException("Message is too long (more than " + MAX_LENGTH + " letters)");
                 }
-                if (value.isEmpty() && !"siteUrl".equals(e.getKey())) {
+                if (value.isEmpty() && !OPTIONAL.contains(e.getKey())) {
                     // An empty message would make the button useless: go back to the default.
                     repository.deleteById(e.getKey());
                 } else {
@@ -70,6 +74,6 @@ public class SettingsService {
     }
 
     private static String[] orderedKeys() {
-        return new String[] {"siteUrl", "whatsappBirthday", "whatsappHello", "whatsappShare"};
+        return new String[] {"siteUrl", "homePhotoUrl", "whatsappBirthday", "whatsappHello", "whatsappShare"};
     }
 }

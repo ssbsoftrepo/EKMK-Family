@@ -7,6 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
+        // "Family album" look (design option B): leaf green, turmeric, terracotta
+        album: {
+          leaf: '#1E4636',
+          paper: '#F3F7EC',
+          line: '#DCE6D2',
+          sage: '#BFD8B0',
+          moss: '#5C8A4A',
+          turmeric: '#F2B705',
+          sun: '#F6D77A',
+          terracotta: '#C4502F',
+          peach: '#E8A58C',
+          blush: '#F2C6B4',
+        },
         heritage: {
           ivory: '#F8F4EC',
           cream: '#EFE4D2',
@@ -58,6 +71,8 @@ export default {
         }
       },
       fontFamily: {
+        album: ['"Baloo Thambi 2"', 'system-ui', 'sans-serif'],
+        hand: ['"Kalam"', 'cursive'],
         serif: ['"Cinzel"', '"Noto Serif Tamil"', 'Georgia', 'serif'],
         display: ['"Playfair Display"', '"Noto Serif Tamil"', 'serif'],
         sans: ['"Plus Jakarta Sans"', '"Noto Sans Tamil"', 'system-ui', 'sans-serif'],
