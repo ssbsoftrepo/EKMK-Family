@@ -26,6 +26,7 @@ export interface ImportReport {
 /** Editable site settings. WhatsApp messages use {name} and {site}. */
 export interface SiteSettings {
   siteUrl: string;
+  homePhotoUrl: string;
   whatsappBirthday: string;
   whatsappHello: string;
   whatsappShare: string;
