@@ -29,11 +29,36 @@ export const Face: React.FC<{ member: FamilyMember; className?: string; rounded?
       </svg>
     )}
     {member.isDeceased && (
-      <span className="absolute left-1 bottom-1 bg-white/90 rounded-full px-1.5 text-[11px] font-bold text-album-leaf leading-5" aria-label="in loving memory">
-        🕯️
+      <span role="img" aria-label="in loving memory" className="absolute inset-x-0 top-0 pointer-events-none">
+        <JasmineGarland className="w-full h-auto drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]" />
       </span>
     )}
   </span>
+);
+
+/*
+ * A jasmine garland (malli poo), as draped over the photo of an elder who has passed away,
+ * with a few orange kanakambaram flowers. Buds are placed along one drooping curve.
+ */
+const GARLAND_BUDS = Array.from({ length: 23 }, (_, i) => {
+  const t = i / 22;
+  const x = (1 - t) ** 2 * 3 + 2 * (1 - t) * t * 50 + t ** 2 * 97;
+  const y = (1 - t) ** 2 * 4 + 2 * (1 - t) * t * 50 + t ** 2 * 4;
+  return { x, y, orange: i % 6 === 3 };
+});
+
+export const JasmineGarland: React.FC<{ className?: string }> = ({ className = 'w-full h-auto' }) => (
+  <svg viewBox="0 0 100 34" className={className} aria-hidden="true">
+    <path d="M3 4 Q50 50 97 4" fill="none" stroke="#5C8A4A" strokeWidth="1.2" />
+    {GARLAND_BUDS.map((b, i) => (
+      <g key={i}>
+        {i % 4 === 0 && <ellipse cx={b.x + 2.2} cy={b.y + 1.2} rx="2.2" ry="1" fill="#5C8A4A" transform={`rotate(30 ${b.x + 2.2} ${b.y + 1.2})`} />}
+        <circle cx={b.x} cy={b.y} r={b.orange ? 3 : 3.3} fill={b.orange ? '#F28C28' : '#FFFFFF'} stroke={b.orange ? '#C4502F' : '#D8D2C2'} strokeWidth="0.6" />
+        {!b.orange && <circle cx={b.x - 0.9} cy={b.y - 0.9} r="0.9" fill="#F3F7EC" />}
+      </g>
+    ))}
+    <circle cx="50" cy="29.5" r="3.6" fill="#F28C28" stroke="#C4502F" strokeWidth="0.6" />
+  </svg>
 );
 
 /** A printed photo: white border, a strip of tape, slightly tilted. */

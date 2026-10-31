@@ -2,7 +2,7 @@ import React from 'react';
 import { FamilyMember } from '../../types/family';
 import { Family, firstName, whoLine } from '../family';
 import { href } from '../router';
-import { Face, Hand, Icon, Print, Svg, btnSecondary } from '../ui';
+import { Face, Hand, Icon, JasmineGarland, Print, Svg, btnSecondary } from '../ui';
 import { ContactButtons } from '../../components/Common/ContactButtons';
 import { useBirthdayPetals } from '../Magic';
 import { birthdaysOn } from '../family';
@@ -54,7 +54,11 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
             {m.tamilName && <span lang="ta" className="text-xl">{m.tamilName}</span>}
             <span className="text-lg pt-1">{whoLine(family, m)}</span>
             {facts && <span className="text-lg">{facts}</span>}
-            {m.isDeceased && <span className="text-lg pt-1">🕯️ In loving memory</span>}
+            {m.isDeceased && (
+              <span className="flex items-center gap-2 text-lg pt-1">
+                <JasmineGarland className="w-14 h-auto" /> In loving memory
+              </span>
+            )}
             {isBirthday && <span className="mt-2 self-start bg-album-turmeric rounded-full px-4 py-1 text-lg font-extrabold magic-pop">🎂 Happy birthday, {firstName(m)}!</span>}
           </div>
           {about && (
