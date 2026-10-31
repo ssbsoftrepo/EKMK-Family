@@ -29,6 +29,17 @@ export interface FamilyMember {
   spouseIds?: string[];
   childIds: string[];
   tags?: string[];
+  // From the Google Form import (admin) and the Build-the-tree answers
+  phone?: string;
+  email?: string;
+  address?: string;
+  notes?: string;
+  source?: string;
+  noSpouse?: boolean;
+  noChildren?: boolean;
+  formFatherName?: string;
+  formMotherName?: string;
+  formSpouseName?: string;
 }
 
 export interface FamilyBranch {

@@ -1,14 +1,13 @@
 import React from 'react';
 import { ToastProvider } from './context/ToastContext';
 import { AdminProvider } from './context/AdminContext';
-import { AdminDashboard } from './components/Admin/AdminDashboard';
-import { Gen1SetupWizard } from './components/Admin/Gen1SetupWizard';
+import { SetupShell } from './components/Setup/SetupShell';
 import { useAdmin } from './context/AdminContext';
 import { Loader2, TreePine } from 'lucide-react';
 
 /** Inner shell — reads AdminContext to decide which screen to render */
 const AppShell: React.FC = () => {
-  const { members, isLoading, isBackendConnected, error } = useAdmin();
+  const { isLoading, isBackendConnected, error } = useAdmin();
 
   // Loading state
   if (isLoading) {
@@ -53,13 +52,8 @@ const AppShell: React.FC = () => {
     );
   }
 
-  // No members yet → show Gen 1 Setup Wizard
-  if (members.length === 0) {
-    return <Gen1SetupWizard />;
-  }
-
-  // Normal admin dashboard
-  return <AdminDashboard />;
+  // Three simple steps (add people, build the tree, share), plus the full member list.
+  return <SetupShell />;
 };
 
 export function App() {
@@ -67,8 +61,6 @@ export function App() {
     <ToastProvider>
       <AdminProvider>
         <div className="min-h-screen bg-heritage-ivory text-heritage-charcoal selection:bg-heritage-gold/30 selection:text-heritage-maroon flex flex-col">
-          {/* Top Royal Accent Line */}
-          <div className="h-1 w-full bg-gradient-to-r from-heritage-maroon via-heritage-gold to-heritage-maroon flex-shrink-0" />
           <AppShell />
         </div>
       </AdminProvider>

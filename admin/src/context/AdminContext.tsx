@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { FamilyMember, FamilyBranch } from '../types/family';
 import { familyApi, BackendHealth, FamilyStats } from '../api/familyApi';
 
@@ -33,8 +33,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [backendInfo, setBackendInfo] = useState<BackendHealth | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Only the very first load shows the full-page loader; later refreshes update quietly.
+  const hasLoadedOnce = useRef(false);
+
   const refreshData = useCallback(async () => {
-    setIsLoading(true);
+    if (!hasLoadedOnce.current) setIsLoading(true);
     setError(null);
     try {
       const health = await familyApi.checkHealth();
@@ -61,6 +64,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsBackendConnected(false);
       setError(err instanceof Error ? err.message : 'Unable to connect to Spring Boot backend');
     } finally {
+      hasLoadedOnce.current = true;
       setIsLoading(false);
     }
   }, []);

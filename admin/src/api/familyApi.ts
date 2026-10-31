@@ -12,6 +12,25 @@ export interface FamilyStats {
   missingDetailsCount: number;
 }
 
+export interface ImportReport {
+  totalRows: number;
+  added: number;
+  updated: number;
+  unchanged: number;
+  skippedEmpty: number;
+  addedIds: string[];
+  fixes: string[];
+  possibleDuplicates: { firstId: string; firstName: string; secondId: string; secondName: string; reason: string }[];
+}
+
+/** Editable site settings. WhatsApp messages use {name} and {site}. */
+export interface SiteSettings {
+  siteUrl: string;
+  whatsappBirthday: string;
+  whatsappHello: string;
+  whatsappShare: string;
+}
+
 export interface BackendHealth {
   status: string;
   service: string;
@@ -122,6 +141,32 @@ export const familyApi = {
       body: formData,
     });
     return handleResponse<{ url: string; filename: string }>(res);
+  },
+
+  // Google Form import (.xlsx / .csv). Safe to repeat: only new people are added.
+  async importResponses(file: File): Promise<ImportReport> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE_URL}/api/admin/import`, {
+      method: 'POST',
+      body: formData,
+    });
+    return handleResponse<ImportReport>(res);
+  },
+
+  // Settings (WhatsApp messages, website link)
+  async getSettings(): Promise<SiteSettings> {
+    const res = await fetch(`${API_BASE_URL}/api/settings`);
+    return handleResponse<SiteSettings>(res);
+  },
+
+  async saveSettings(changes: Partial<SiteSettings>): Promise<SiteSettings> {
+    const res = await fetch(`${API_BASE_URL}/api/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(changes),
+    });
+    return handleResponse<SiteSettings>(res);
   },
 
   // Admin & Health

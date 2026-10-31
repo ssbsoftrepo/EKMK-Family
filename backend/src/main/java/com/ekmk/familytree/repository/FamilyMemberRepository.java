@@ -13,4 +13,5 @@ public interface FamilyMemberRepository extends JpaRepository<FamilyMember, Stri
     List<FamilyMember> findByFatherId(String fatherId);
     List<FamilyMember> findByMotherId(String motherId);
     List<FamilyMember> findBySpouseId(String spouseId);
+    List<FamilyMember> findByPhone(String phone);
 }
