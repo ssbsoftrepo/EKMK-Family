@@ -318,6 +318,12 @@ public class FamilyMemberService {
         if (updates.getBirthPlace() != null) existing.setBirthPlace(updates.getBirthPlace());
         if (updates.getCurrentCity() != null) existing.setCurrentCity(updates.getCurrentCity());
         if (updates.getBiography() != null) existing.setBiography(updates.getBiography());
+        if (updates.getPhone() != null) existing.setPhone(updates.getPhone());
+        if (updates.getEmail() != null) existing.setEmail(updates.getEmail());
+        if (updates.getAddress() != null) existing.setAddress(updates.getAddress());
+        if (updates.getNotes() != null) existing.setNotes(updates.getNotes());
+        if (updates.getNoSpouse() != null) existing.setNoSpouse(updates.getNoSpouse());
+        if (updates.getNoChildren() != null) existing.setNoChildren(updates.getNoChildren());
         // Validate death date vs birth date
         boolean isDec = updates.getIsDeceased() != null ? updates.getIsDeceased() : existing.isDeceased();
         String bDate = updates.getBirthDate() != null ? updates.getBirthDate() : existing.getBirthDate();

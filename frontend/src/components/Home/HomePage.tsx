@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useFamily } from '../../context/FamilyContext';
 import { FamilyMember } from '../../types/family';
 import { PersonAvatar } from '../Common/PersonAvatar';
+import { BirthdaysToday } from './BirthdaysToday';
 import { 
   TreePine, 
   Users, 
@@ -216,6 +217,8 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      <BirthdaysToday />
 
       {/* =========================================================================
           SECTION 2: FOUNDING PATRIARCH & MATRIARCH (DYNAMIC - ONLY SHOWN IF DATA EXISTS)
@@ -482,6 +485,10 @@ export const HomePage: React.FC = () => {
               Erode KMK Family Heritage & Genealogy Platform
             </p>
           </div>
+
+          <p className="pt-4 flex items-center justify-center gap-1.5 text-[13px] text-white/80">
+            Made with <span role="img" aria-label="love">❤️</span> by SSB Software Solutions Pvt. Ltd.
+          </p>
         </div>
       </footer>
     </div>

@@ -88,3 +88,22 @@ npm run dev
 | `GET` | `/api/branches` | Retrieve all 11 family branches |
 | `GET` | `/api/stats` | Dynamic PostgreSQL stats (total members, generations, living, deceased) |
 | `GET` | `/api/admin/health` | Backend and runtime health check |
+| `POST` | `/api/admin/import` | Upload the Google Form responses (`.xlsx` / `.csv`, field `file`). Tidies phones, names, places and jobs; safe to repeat (only new people are added) |
+| `GET` | `/api/settings` | Website link and the WhatsApp message templates (`{name}`, `{site}`) |
+| `PUT` | `/api/settings` | Change any of those settings (unknown keys are ignored) |
+
+---
+
+## 🧭 Admin in 3 steps
+
+The admin site opens on three simple steps (plus **All members** for detailed edits):
+
+1. **Add people**: upload the Google Form file. The site tidies it and only asks what it cannot guess (man or woman, possible duplicates). Upload again whenever new answers arrive.
+2. **Build the tree**: one question at a time ("Who are the children of …?", "Who is … married to?"), answered by tapping photos. Likely answers come first with a clue (same address, same phone, the form's father/mother/spouse names). Only parent → child and husband ↔ wife links are ever set. A **Still to do** list shows everyone not on the tree yet and every unanswered question, so nobody is left out. Every answer is saved at once; **Undo last** reverses the latest one.
+3. **Share the link**: the website address and the editable WhatsApp messages.
+
+**WhatsApp needs no setup.** The buttons are plain `https://wa.me/<number>?text=…` links: they open WhatsApp on the visitor's phone with the message ready, and the visitor presses send. No WhatsApp API, account or approval is involved. The public site shows **Call** and **WhatsApp** buttons on a person's profile (only when they gave a phone number) and a **Birthday today** section with a one-tap wish.
+
+> Before the site goes live, put it behind a family-only login: the members API now returns phone numbers and addresses from the form.
+
+**Tip for the Google Form:** questions named "Man / Woman" (or "Gender") and "Father's name", "Mother's name", "Spouse's name" are picked up automatically and make step 2 almost one-tap.

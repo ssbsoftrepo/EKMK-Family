@@ -58,6 +58,30 @@ public class FamilyMember {
     @Column(name = "child_id")
     private List<String> childIds;
 
+    // Contact details, as given on the Google Form (admin import)
+    private String phone;
+    private String email;
+
+    @Column(length = 1000)
+    private String address;
+
+    @Column(length = 2000)
+    private String notes;
+
+    /** Names typed on the form ("Father's name" etc.), used only as clues while building the tree. */
+    private String formFatherName;
+    private String formMotherName;
+    private String formSpouseName;
+
+    /** Where the record came from: "form-import" or "manual". */
+    private String source;
+
+    /** Admin answered "not married" in the Build-the-tree flow. */
+    private Boolean noSpouse;
+
+    /** Admin answered "no children" in the Build-the-tree flow. */
+    private Boolean noChildren;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "member_tags", joinColumns = @JoinColumn(name = "member_id"))
     @Column(name = "tag")
@@ -364,4 +388,34 @@ public class FamilyMember {
     public void setTags(List<String> tags) {
         this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
     }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
+
+    public Boolean getNoSpouse() { return noSpouse; }
+    public void setNoSpouse(Boolean noSpouse) { this.noSpouse = noSpouse; }
+
+    public Boolean getNoChildren() { return noChildren; }
+    public void setNoChildren(Boolean noChildren) { this.noChildren = noChildren; }
+
+    public String getFormFatherName() { return formFatherName; }
+    public void setFormFatherName(String formFatherName) { this.formFatherName = formFatherName; }
+
+    public String getFormMotherName() { return formMotherName; }
+    public void setFormMotherName(String formMotherName) { this.formMotherName = formMotherName; }
+
+    public String getFormSpouseName() { return formSpouseName; }
+    public void setFormSpouseName(String formSpouseName) { this.formSpouseName = formSpouseName; }
 }

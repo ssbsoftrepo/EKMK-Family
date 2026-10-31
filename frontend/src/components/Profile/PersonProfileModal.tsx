@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useFamily } from '../../context/FamilyContext';
 import { FamilyMember } from '../../types/family';
 import { PersonAvatar } from '../Common/PersonAvatar';
+import { ContactButtons } from '../Common/ContactButtons';
 import { 
   X, 
   MapPin, 
@@ -183,6 +184,9 @@ export const PersonProfileModal: React.FC<Props> = ({ member, onClose, onEdit })
               )}
             </div>
           </div>
+
+          {/* Call / WhatsApp (only when a phone number was given) */}
+          <ContactButtons member={member} />
 
           {/* Quick Details Chips */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
