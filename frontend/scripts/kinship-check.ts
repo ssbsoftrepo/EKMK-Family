@@ -18,6 +18,7 @@ const cases: [string,string,string][] = [
   ['Mani','Priya','Magal'],['Selvi','Arun','Marumagan'],['Ravi','Lakshmi','Manaivi'],['Lakshmi','Thatha','Mamanar'],['Lakshmi','Mani','Kozhundhan'],
   ['Lakshmi','Selvi','Nathanar'],['Thatha','Lakshmi','Marumagal'],['Thatha','Nila','Kollu Pethi'],['Arun','Lakshmi','Amma'],['Mani','Lakshmi','Anni'],
   ['Meena','Ravi','Mama'],['Meena','Mani','Mama'],
+  ['Kumar','Arun','Marumagan'],['Kumar','Priya','Marumagal'],['Lakshmi','Divya','Magal'],['Usha','Meena','Marumagal'],
 ];
 let bad = 0;
 for (const [a,b,want] of cases) {
