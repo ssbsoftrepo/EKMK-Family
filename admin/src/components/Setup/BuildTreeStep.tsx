@@ -79,7 +79,7 @@ export const BuildTreeStep: React.FC<{ onAddPeople: () => void; onNext: () => vo
       case 'founders':
         return pool.map((m) => asOption(m, 0));
       case 'spouse':
-        return rankCandidates(pool.filter((m) => m.id !== current.person.id), (x) => spouseClue(x, current.person)).map((c) => asOption(c.member, c.score, c.clue));
+        return rankCandidates(pool.filter((m) => m.id !== current.person.id && !(m.gender === 'female' && ((m.spouseIds?.length ?? 0) > 0 || !!m.spouseId))), (x) => spouseClue(x, current.person)).map((c) => asOption(c.member, c.score, c.clue));
       case 'children':
         return rankCandidates(pool, (x) => childClue(x, current.parents)).map((c) => asOption(c.member, c.score, c.clue));
       case 'where': {

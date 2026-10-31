@@ -88,8 +88,15 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
   const spouseWord = m.gender === 'male' ? 'wife' : m.gender === 'female' ? 'husband' : 'husband or wife';
 
   const linkedIds = new Set([m.id, father?.id, mother?.id, ...spouses.map((s) => s.id), ...children.map((c) => c.id)].filter(Boolean) as string[]);
+  // A woman can have only one husband: married women are not offered as someone's wife.
+  const isMarried = (x: FamilyMember) =>
+    (x.spouseIds?.length ?? 0) > 0 || !!x.spouseId || members.some((o) => o.spouseIds?.includes(x.id) || o.spouseId === x.id);
   const candidates = members.filter((x) => !linkedIds.has(x.id)).filter((x) =>
-    picking === 'father' ? x.gender !== 'female' : picking === 'mother' ? x.gender !== 'male' : true);
+    picking === 'father' ? x.gender !== 'female'
+      : picking === 'mother' ? x.gender !== 'male'
+      : picking === 'spouse' ? !(x.gender === 'female' && isMarried(x))
+      : true);
+  const hasHusband = m.gender === 'female' && spouses.length > 0;
 
   const pick = async (p: FamilyMember) => {
     const kind = picking;
@@ -224,7 +231,8 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
           addLabel={mother ? 'Change mother' : '+ Add mother'} onAdd={() => setPicking('mother')} />
         <LinkRow title={spouseWord[0].toUpperCase() + spouseWord.slice(1)} people={spouses} onOpen={onOpen}
           onRemove={(s) => save({ spouseIds: spouses.filter((x) => x.id !== s.id).map((x) => x.id) })}
-          addLabel={`+ Add ${spouseWord}`} onAdd={() => setPicking('spouse')} />
+          addLabel={`+ Add ${spouseWord}`} onAdd={() => setPicking('spouse')}
+          disabledHint={hasHusband ? 'A woman can have only one husband. To change him, unlink him first (×).' : undefined} />
         <LinkRow title="Children" people={children} onOpen={onOpen} onRemove={unlinkChild}
           addLabel="+ Add a child" onAdd={() => setPicking('child')}
           disabledHint={!m.gender ? 'First choose Man or Woman above, so we know if they are the father or the mother.' : undefined} />
