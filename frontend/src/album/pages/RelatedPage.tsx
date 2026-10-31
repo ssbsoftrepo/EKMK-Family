@@ -74,7 +74,7 @@ const Related: React.FC<{ family: Family; id?: string; onFirstVisit: (m: FamilyM
                 <div className="flex flex-col items-center gap-1 px-2">
                   {r.tamil && <span lang="ta" className="text-[3rem] sm:text-[3.5rem] font-extrabold leading-tight text-album-terracotta">{r.tamil}</span>}
                   {r.term && <span className="font-hand font-bold text-[1.9rem] leading-tight">{r.term}</span>}
-                  <span className={`${r.tamil ? 'text-lg pt-1' : 'text-[1.7rem] font-extrabold leading-tight'}`}>{r.description}</span>
+                  <span className={`${r.tamil ? 'text-lg pt-1' : 'text-[1.7rem] font-extrabold leading-tight'}`}>{r.tamil ? r.description : r.description.replace(/^your /, '')}</span>
                   {(r.term?.startsWith('Kollu') || r.path.length >= 5) && (
                     <span className="mt-1.5 bg-album-turmeric rounded-full px-3.5 py-0.5 text-base font-extrabold">🌟 Rare find! A far branch of the tree</span>
                   )}

@@ -149,13 +149,24 @@ function spouseOfTerm(rel: string | undefined, them: FamilyMember, me: FamilyMem
 }
 
 /** Name for a relative of my husband or wife. */
-function inLawTerm(u: number, d: number, them: FamilyMember, me: FamilyMember): { tamil: string; term: string } | null {
+function inLawTerm(u: number, d: number, them: FamilyMember, me: FamilyMember, nodes: FamilyMember[]): { tamil: string; term: string } | null {
   const m = male(them);
   if (u === 1 && d === 0) return m ? T('மாமனார்', 'Mamanar') : T('மாமியார்', 'Mamiyar');
   if (u === 0 && d === 1) return m ? T('மகன்', 'Magan') : T('மகள்', 'Magal');
   if (u === 1 && d === 1) {
     if (me.gender === 'male') return m ? T('மச்சான்', 'Machan') : T('மச்சினி', 'Machini');
     if (me.gender === 'female') return m ? T('கொழுந்தன்', 'Kozhundhan') : T('நாத்தனார்', 'Nathanar');
+  }
+  if (u === 1 && d === 2) {
+    // Your husband's or wife's nephew or niece: called the way your spouse calls them.
+    // Children of their brother if they are a man (or of their sister if a woman) are like your own;
+    // children of the other ones are Marumagan / Marumagal.
+    const spouse = nodes[1];
+    const spousesSibling = nodes[3];
+    if (!spouse?.gender || !spousesSibling?.gender || (!m && !female(them))) return null;
+    return spouse.gender === spousesSibling.gender
+      ? (m ? T('மகன்', 'Magan') : T('மகள்', 'Magal'))
+      : (m ? T('மருமகன்', 'Marumagan') : T('மருமகள்', 'Marumagal'));
   }
   return null;
 }
@@ -209,7 +220,7 @@ export function relate(family: Family, me: FamilyMember, them: FamilyMember): Re
     name = spouseOfTerm(relName?.term.split(' / ')[0], them, me);
   } else if (steps[0] === 'spouse' && isBlood(steps.slice(1))) {
     const { u, d } = isBlood(steps.slice(1))!;
-    name = inLawTerm(u, d, them, me);
+    name = inLawTerm(u, d, them, me, nodes);
   }
   return { ...(name ?? {}), description, path: nodes };
 }
