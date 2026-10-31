@@ -5,12 +5,15 @@ import { Face, Hand, Icon, PersonTile, Print, Svg, Title } from '../ui';
 import { useSiteSettings } from '../../lib/whatsapp';
 import { ContactButtons } from '../../components/Common/ContactButtons';
 import { useBirthdayPetals } from '../Magic';
+import { SurpriseMe } from '../SurpriseMe';
+import { GREETINGS, useDayPart } from '../timeOfDay';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /** Welcome page for everyone: no names on top, a big family photo, then simple big buttons. */
 export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
   const settings = useSiteSettings();
+  const greeting = GREETINGS[useDayPart()];
   const founders = family.founders();
   const today = birthdaysOn(family.members);
   const soon = upcomingBirthdays(family.members, 31).filter((b) => b.inDays > 0).slice(0, 5);
@@ -47,7 +50,11 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
           </Print>
         </div>
         <div className="flex-[1_1_300px] min-w-0 flex flex-col gap-3">
-          <Hand className="text-2xl">welcome home, everyone</Hand>
+          <div className="flex flex-col leading-tight">
+            <Hand className="text-[1.7rem]">{greeting.en}</Hand>
+            <span lang="ta" className="text-lg font-bold">{greeting.ta}</span>
+            <Hand className="text-lg text-album-leaf">{greeting.note}</Hand>
+          </div>
           <p className="m-0 text-xl leading-relaxed">Find any relative, see how you are related, and never miss a birthday.</p>
           {family.members.length > 0 && (
             <p className="m-0 text-lg">
@@ -85,6 +92,8 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
           <Tile to={href.home()} onClick={() => document.getElementById('birthdays')?.scrollIntoView({ behavior: 'smooth' })} en="Birthdays" ta="பிறந்தநாள்" icon={Icon.cake} bg="#E8A58C" />
         </div>
       </section>
+
+      <SurpriseMe family={family} />
 
       <section id="birthdays" aria-label="Coming birthdays" className="flex flex-col gap-3 scroll-mt-24">
         <Title as="h2" en="Coming birthdays" ta="வரும் பிறந்தநாட்கள்" />

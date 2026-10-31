@@ -11,6 +11,7 @@ import { TreePage } from './pages/TreePage';
 import { RelatedPage } from './pages/RelatedPage';
 import { KolamLoader, SecretDrawer } from './Magic';
 import { useSiteSettings } from '../lib/whatsapp';
+import { useDayPart } from './timeOfDay';
 
 const NAV: { id: Route['page'][]; to: string; en: string; ta: string; icon: React.ReactNode }[] = [
   { id: ['home'], to: href.home(), en: 'Home', ta: 'முகப்பு', icon: Icon.home },
@@ -25,6 +26,7 @@ export const AlbumApp: React.FC = () => {
   const route = useRoute();
   const family = useMemo(() => new Family(members), [members]);
   const settings = useSiteSettings();
+  const night = useDayPart() === 'night';
 
   // Easter egg: tap the KMK logo five times quickly to open the secret family drawer.
   const [drawer, setDrawer] = useState(false);
@@ -45,10 +47,11 @@ export const AlbumApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-album-paper text-album-leaf font-album">
-      <header className="bg-white border-b-2 border-album-line sticky top-0 z-20">
-        <div className="max-w-[1200px] mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
-          <a href={href.home()} onClick={tapLogo} className="no-underline text-album-leaf flex items-center gap-2.5">
-            <span key={wobble} className={`w-12 h-12 rounded-full bg-album-leaf text-album-turmeric flex items-center justify-center text-base font-extrabold ${wobble ? 'logo-wobble' : ''}`}>KMK</span>
+      <header className={`sticky top-0 z-20 overflow-hidden border-b-2 transition-colors ${night ? 'bg-[#16352A] border-[#16352A]' : 'bg-white border-album-line'}`}>
+        {night && <NightSky />}
+        <div className="relative max-w-[1200px] mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+          <a href={href.home()} onClick={tapLogo} className={`no-underline flex items-center gap-2.5 ${night ? 'text-white' : 'text-album-leaf'}`}>
+            <span key={wobble} className={`w-12 h-12 rounded-full flex ${night ? 'bg-album-turmeric text-album-leaf' : 'bg-album-leaf text-album-turmeric'} items-center justify-center text-base font-extrabold ${wobble ? 'logo-wobble' : ''}`}>KMK</span>
             <span className="flex flex-col leading-tight">
               <span className="text-xl font-extrabold">Our Family</span>
               <span lang="ta" className="text-[15px]">எங்கள் குடும்பம்</span>
@@ -59,7 +62,7 @@ export const AlbumApp: React.FC = () => {
               const on = n.id.includes(route.page);
               return (
                 <a key={n.to} href={n.to} aria-current={on ? 'page' : undefined}
-                  className={`no-underline min-h-[48px] px-4 rounded-full flex items-center gap-2 text-[17px] font-bold ${on ? 'bg-album-leaf text-white' : 'text-album-leaf hover:bg-album-paper'}`}>
+                  className={`no-underline min-h-[48px] px-4 rounded-full flex items-center gap-2 text-[17px] font-bold ${on ? (night ? 'bg-album-turmeric text-album-leaf' : 'bg-album-leaf text-white') : (night ? 'text-white hover:bg-white/10' : 'text-album-leaf hover:bg-album-paper')}`}>
                   <Svg icon={n.icon} className="w-5 h-5" />{n.en}
                 </a>
               );
@@ -110,6 +113,18 @@ export const AlbumApp: React.FC = () => {
     </div>
   );
 };
+
+/** Twinkling stars (and a moon) in the header at night. */
+const STARS = [[6, 22], [14, 70], [22, 35], [31, 80], [38, 18], [47, 60], [55, 28], [63, 75], [71, 40], [79, 15], [86, 68], [93, 30], [27, 55], [67, 52]];
+const NightSky: React.FC = () => (
+  <span aria-hidden="true" className="absolute inset-0 pointer-events-none">
+    {STARS.map(([x, y], i) => (
+      <span key={i} className="star absolute rounded-full bg-[#FFF6D6]"
+        style={{ left: `${x}%`, top: `${y}%`, width: i % 3 === 0 ? 4 : 3, height: i % 3 === 0 ? 4 : 3, animationDelay: `${(i * 0.37) % 2.4}s` }} />
+    ))}
+    <span className="absolute text-xl" style={{ left: '58%', top: '12%' }}>🌙</span>
+  </span>
+);
 
 const Message: React.FC<{ hand: string; text: string; children?: React.ReactNode }> = ({ hand, text, children }) => (
   <div className="flex flex-col items-center text-center gap-1 py-20">

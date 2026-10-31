@@ -79,3 +79,37 @@ export function originOf(el: Element | null): { x: number; y: number } {
   const r = el.getBoundingClientRect();
   return { x: (r.left + r.width / 2) / window.innerWidth, y: (r.top + r.height / 2) / window.innerHeight };
 }
+
+/** Emojis falling from the top of the screen for a moment (jasmine for Paati, and so on). */
+export function emojiRain(emojis: string[], duration = 1800) {
+  if (reducedMotion()) return;
+  let shapes: confetti.Shape[];
+  try {
+    shapes = emojis.map((e) => confetti.shapeFromText({ text: e, scalar: 2.4 }));
+  } catch {
+    return;
+  }
+  const end = Date.now() + duration;
+  (function frame() {
+    confetti({
+      particleCount: 2, angle: 270, spread: 40, startVelocity: 2, gravity: 0.55, drift: (Math.random() - 0.5) * 0.6,
+      ticks: 320, origin: { x: Math.random(), y: -0.08 }, shapes, scalar: 2.4, flat: true, disableForReducedMotion: true,
+    });
+    if (Date.now() < end) setTimeout(() => requestAnimationFrame(frame), 90);
+  })();
+}
+
+/** Words that make something happen when typed in a search box. Matched in English or Tamil. */
+export const FUN_WORDS: { words: string[]; emojis: string[]; say: string }[] = [
+  { words: ['paati', 'patti', 'paatti', 'பாட்டி'], emojis: ['💮', '🤍'], say: 'Jasmine for Paati! 💮' },
+  { words: ['thatha', 'tatha', 'thaatha', 'தாத்தா'], emojis: ['☕', '📰'], say: 'Thatha’s morning: filter coffee and the newspaper ☕' },
+  { words: ['murukku', 'muruku', 'முறுக்கு'], emojis: ['🥨'], say: 'Crunch! Who made the murukku? 🥨' },
+  { words: ['amma', 'அம்மா'], emojis: ['💐', '❤️'], say: 'Flowers for Amma 💐' },
+  { words: ['appa', 'அப்பா'], emojis: ['👓', '⭐'], say: 'Appa is the star! ⭐' },
+  { words: ['kmk'], emojis: ['🌼', '🎉'], say: 'That’s us! 🎉' },
+];
+
+export function funWord(text: string) {
+  const t = text.trim().toLowerCase();
+  return FUN_WORDS.find((f) => f.words.includes(t));
+}
