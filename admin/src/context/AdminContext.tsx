@@ -85,7 +85,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return savedFromServer.id;
     } catch (err) {
       console.error('Failed to create member in backend:', err);
-      return '';
+      throw err;
     }
   }, [refreshData]);
 
@@ -101,6 +101,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (err) {
       console.error('Failed to update member in backend:', err);
       await refreshData();
+      throw err;
     }
   }, [refreshData]);
 
@@ -113,6 +114,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (err) {
       console.error('Failed to delete member from backend:', err);
       await refreshData();
+      throw err;
     }
   }, [refreshData]);
 

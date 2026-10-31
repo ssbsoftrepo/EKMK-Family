@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useFamily } from '../../context/FamilyContext';
+import { FamilyMember } from '../../types/family';
 import { PersonAvatar } from '../Common/PersonAvatar';
 import { 
   TreePine, 
@@ -31,12 +32,24 @@ export const HomePage: React.FC = () => {
     return gen1Members.find((m) => m.gender === 'male') || gen1Members[0];
   }, [gen1Members]);
 
-  const founderMatriarch = useMemo(() => {
-    if (founderPatriarch?.spouseId) {
-      return members.find((m) => m.id === founderPatriarch.spouseId);
+  const founderSpouses = useMemo(() => {
+    if (!founderPatriarch) return [];
+    const sIds = (founderPatriarch.spouseIds && founderPatriarch.spouseIds.length > 0)
+      ? founderPatriarch.spouseIds
+      : (founderPatriarch.spouseId ? [founderPatriarch.spouseId] : []);
+    
+    const spouses = sIds
+      .map((id) => members.find((m) => m.id === id))
+      .filter((m): m is FamilyMember => !!m);
+
+    if (spouses.length === 0) {
+      const fallback = gen1Members.find((m) => m.gender === 'female' && m.id !== founderPatriarch.id);
+      return fallback ? [fallback] : [];
     }
-    return gen1Members.find((m) => m.gender === 'female' && m.id !== founderPatriarch?.id);
+    return spouses;
   }, [gen1Members, founderPatriarch, members]);
+
+  const founderMatriarch = founderSpouses[0];
 
   // Dynamic established year from Gen 1 founder's birthDate
   const estYear = useMemo(() => {
@@ -237,7 +250,7 @@ export const HomePage: React.FC = () => {
                     <div className="w-64 h-72 sm:w-72 sm:h-80 relative overflow-hidden bg-heritage-gold-50">
                       <PersonAvatar
                         photoUrl={founderPatriarch.couplePhotoUrl || founderMatriarch?.couplePhotoUrl || founderPatriarch.photoUrl || founderMatriarch?.photoUrl}
-                        name={founderPatriarch.couplePhotoUrl || founderMatriarch?.couplePhotoUrl ? `${founderPatriarch.fullName} & ${founderMatriarch?.fullName || ''}` : founderPatriarch.fullName}
+                        name={founderPatriarch.couplePhotoUrl || founderMatriarch?.couplePhotoUrl ? `${founderPatriarch.fullName} & ${founderSpouses.map(s => s.fullName).join(' & ')}` : founderPatriarch.fullName}
                         gender={founderPatriarch.gender}
                         className="w-full h-full"
                         imgClassName="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
@@ -254,23 +267,46 @@ export const HomePage: React.FC = () => {
                 <div className="md:col-span-7 space-y-4">
                   <div>
                     <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-heritage-gold-100 text-heritage-gold-900 border border-heritage-gold-300">
-                      Generation 1 • {founderMatriarch ? 'Founding Patriarch & Matriarch' : 'Founding Ancestor'}
+                      Generation 1 • {founderSpouses.length > 1 ? 'Founding Patriarch & Matriarchs' : founderSpouses.length === 1 ? 'Founding Patriarch & Matriarch' : 'Founding Ancestor'}
                     </span>
                     <h3 className="font-serif text-2xl font-bold text-heritage-charcoal mt-2.5 leading-snug">
                       {founderPatriarch.fullName}
-                      {founderMatriarch && (
-                        <span> & {founderMatriarch.fullName}</span>
-                      )}
+                      {founderSpouses.length > 1 ? (
+                        <span> & {founderSpouses.map((s) => s.fullName).join(' & ')}</span>
+                      ) : founderSpouses.length === 1 ? (
+                        <span> & {founderSpouses[0].fullName}</span>
+                      ) : null}
                     </h3>
-                    {founderPatriarch.tamilName && (
-                      <p className="text-sm font-tamil text-heritage-gold-700 font-semibold mt-0.5">
-                        {founderPatriarch.tamilName}
-                        {founderMatriarch?.tamilName && ` • ${founderMatriarch.tamilName}`}
-                      </p>
-                    )}
-                    <p className="text-sm font-display italic text-heritage-muted">
-                      Founding Generation of the Family Kudumbam
+                    {(() => {
+                      const tamilParts = [founderPatriarch.tamilName, ...founderSpouses.map((s) => s.tamilName)].filter(Boolean);
+                      return tamilParts.length > 0 ? (
+                        <p className="text-sm font-tamil text-heritage-gold-700 font-semibold mt-0.5">
+                          {tamilParts.join(' • ')}
+                        </p>
+                      ) : null;
+                    })()}
+                    <p className="text-sm font-display italic text-heritage-muted mt-0.5">
+                      Founding Generation of the KMK Family
                     </p>
+                    {founderSpouses.length > 1 && (
+                      <div className="flex flex-wrap items-center gap-2 pt-2">
+                        <span className="text-[11px] font-semibold text-heritage-muted">Matriarchs:</span>
+                        {founderSpouses.map((sp) => (
+                          <button
+                            key={sp.id}
+                            onClick={() => setSelectedMember(sp)}
+                            className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-[#FAF8F5] hover:bg-heritage-cream text-heritage-maroon border border-heritage-gold/50 text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                            title={`View profile for ${sp.fullName}`}
+                          >
+                            <span>{sp.fullName}</span>
+                            {sp.tamilName && <span className="font-tamil text-[10px] text-heritage-gold-800">({sp.tamilName})</span>}
+                            <span className="text-[10px] text-heritage-muted bg-white/80 px-1 rounded border border-heritage-border/60">
+                              {sp.childIds?.length || 0} {(sp.childIds?.length || 0) === 1 ? 'child' : 'children'}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <p className="text-xs sm:text-sm text-heritage-charcoalLight leading-relaxed">
@@ -335,8 +371,14 @@ export const HomePage: React.FC = () => {
               </p>
             </div>
 
-            {/* Branch Cards Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+            {/* Branch Cards Grid: Dynamically centered with max 5 columns */}
+            <div className={`mx-auto flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 ${
+              activeBranches.length === 1 ? 'max-w-xs' :
+              activeBranches.length === 2 ? 'max-w-xl' :
+              activeBranches.length === 3 ? 'max-w-3xl' :
+              activeBranches.length === 4 ? 'max-w-5xl' :
+              'max-w-7xl'
+            }`}>
               {activeBranches.map(({ branch, details }, idx) => (
                 <button
                   key={branch.id}
@@ -347,7 +389,7 @@ export const HomePage: React.FC = () => {
                       locateInTree(branch.rootPersonId);
                     }
                   }}
-                  className="bg-[#FFFEFB] hover:bg-heritage-cream/50 active:scale-98 rounded-2xl border border-heritage-border hover:border-heritage-gold shadow-heritage-sm hover:shadow-heritage p-2.5 sm:p-3 flex flex-col items-center text-center transition-all group cursor-pointer relative overflow-hidden"
+                  className="w-[calc(50%-0.5rem)] sm:w-[185px] md:w-[200px] lg:w-[215px] max-w-[230px] flex-shrink-0 bg-[#FFFEFB] hover:bg-heritage-cream/50 active:scale-98 rounded-2xl border border-heritage-border hover:border-heritage-gold shadow-heritage-sm hover:shadow-heritage p-2.5 sm:p-3 flex flex-col items-center text-center transition-all group cursor-pointer relative overflow-hidden"
                 >
                   <div
                     className="h-1 w-full absolute top-0 inset-x-0"
@@ -358,7 +400,7 @@ export const HomePage: React.FC = () => {
                     <PersonAvatar
                       photoUrl={details.leader?.photoUrl}
                       name={details.leader?.fullName || branch.name}
-                      gender={details.leader?.gender || 'male'}
+                      gender={details.leader?.gender || 'female'}
                       className="w-full h-full"
                       imgClassName="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
                     />
@@ -368,13 +410,13 @@ export const HomePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <h3 className="font-serif text-xs sm:text-sm font-bold text-heritage-charcoal group-hover:text-heritage-maroon leading-tight line-clamp-2 px-1">
+                  <h3 className="font-serif text-xs sm:text-sm font-bold text-heritage-charcoal group-hover:text-heritage-maroon leading-tight line-clamp-1 px-1">
                     {details.leader?.fullName || branch.name}
                   </h3>
-                  <p className="text-[11px] text-heritage-muted mt-0.5 line-clamp-1 font-medium">
+                  <p className="text-[11px] text-heritage-muted mt-0.5 line-clamp-1 font-medium capitalize">
                     {branch.name}
                   </p>
-                  <span className="mt-1 text-[10px] text-heritage-maroon font-bold bg-heritage-gold-50 px-2 py-0.5 rounded-full border border-heritage-gold/30">
+                  <span className="mt-1 text-[10px] text-heritage-maroon font-bold bg-heritage-gold-50 px-2.5 py-0.5 rounded-full border border-heritage-gold/30">
                     {details.totalCount} {details.totalCount === 1 ? 'Relative' : 'Relatives'}
                   </span>
                 </button>

@@ -49,14 +49,19 @@ public class FamilyMember {
     private String spouseId;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "member_spouses", joinColumns = @JoinColumn(name = "member_id"))
+    @Column(name = "spouse_id")
+    private List<String> spouseIds;
+
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "member_children", joinColumns = @JoinColumn(name = "member_id"))
     @Column(name = "child_id")
-    private List<String> childIds = new ArrayList<>();
+    private List<String> childIds;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "member_tags", joinColumns = @JoinColumn(name = "member_id"))
     @Column(name = "tag")
-    private List<String> tags = new ArrayList<>();
+    private List<String> tags;
 
     public FamilyMember() {
     }
@@ -299,11 +304,43 @@ public class FamilyMember {
     }
 
     public String getSpouseId() {
-        return spouseId;
+        if (spouseId != null && !spouseId.trim().isEmpty()) {
+            return spouseId;
+        }
+        if (spouseIds != null && !spouseIds.isEmpty()) {
+            return spouseIds.get(0);
+        }
+        return null;
     }
 
     public void setSpouseId(String spouseId) {
         this.spouseId = spouseId;
+        if (spouseId != null && !spouseId.trim().isEmpty()) {
+            if (this.spouseIds == null) {
+                this.spouseIds = new ArrayList<>();
+            }
+            if (!this.spouseIds.contains(spouseId)) {
+                this.spouseIds.add(0, spouseId);
+            }
+        }
+    }
+
+    public List<String> getSpouseIds() {
+        if ((spouseIds == null || spouseIds.isEmpty()) && spouseId != null && !spouseId.trim().isEmpty()) {
+            List<String> list = new ArrayList<>();
+            list.add(spouseId);
+            return list;
+        }
+        return spouseIds;
+    }
+
+    public void setSpouseIds(List<String> spouseIds) {
+        this.spouseIds = spouseIds != null ? new ArrayList<>(spouseIds) : new ArrayList<>();
+        if (!this.spouseIds.isEmpty()) {
+            this.spouseId = this.spouseIds.get(0);
+        } else {
+            this.spouseId = null;
+        }
     }
 
     public List<String> getChildIds() {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useFamily } from '../../context/FamilyContext';
 import { FamilyMember } from '../../types/family';
@@ -26,13 +26,31 @@ interface Props {
 }
 
 export const PersonProfileModal: React.FC<Props> = ({ member, onClose, onEdit }) => {
-  const { getMemberById, setSelectedMember, locateInTree, branches } = useFamily();
+  const { members, getMemberById, setSelectedMember, locateInTree, branches } = useFamily();
 
   if (!member) return null;
 
   const father = member.fatherId ? getMemberById(member.fatherId) : undefined;
   const mother = member.motherId ? getMemberById(member.motherId) : undefined;
-  const spouse = member.spouseId ? getMemberById(member.spouseId) : undefined;
+  // Find all spouses (supports multiple wives / multiple husbands / remarriage)
+  const spouses = useMemo(() => {
+    const list: string[] = [];
+    if (member.spouseIds && member.spouseIds.length > 0) {
+      list.push(...member.spouseIds);
+    } else if (member.spouseId) {
+      list.push(member.spouseId);
+    }
+    // Also include reciprocal marriages
+    members.forEach((m) => {
+      if (
+        (m.spouseIds && m.spouseIds.includes(member.id)) ||
+        m.spouseId === member.id
+      ) {
+        if (!list.includes(m.id)) list.push(m.id);
+      }
+    });
+    return list.map((id) => getMemberById(id)).filter(Boolean) as FamilyMember[];
+  }, [member, members, getMemberById]);
   const children = member.childIds?.map((id) => getMemberById(id)).filter(Boolean) as FamilyMember[] || [];
   
   // Find siblings (members who share either father or mother, excluding this member)
@@ -300,30 +318,44 @@ export const PersonProfileModal: React.FC<Props> = ({ member, onClose, onEdit })
               </div>
             )}
 
-            {/* Spouse */}
-            {spouse && (
+            {/* Spouses (Supports Multiple Wives / Multiple Husbands / Remarriage) */}
+            {spouses.length > 0 && (
               <div>
-                <p className="text-[11px] font-semibold text-heritage-muted mb-2">Spouse</p>
-                <button
-                  onClick={() => setSelectedMember(spouse)}
-                  className="w-full sm:w-auto p-2.5 rounded-lg bg-heritage-ivory hover:bg-heritage-cream/70 border border-heritage-gold/50 text-left flex items-center space-x-3 transition-colors group"
-                >
-                  <div className="w-9 h-9 rounded-full overflow-hidden bg-heritage-gold-100 flex-shrink-0 border border-heritage-gold">
-                    <PersonAvatar
-                      photoUrl={spouse.photoUrl}
-                      name={spouse.fullName}
-                      gender={spouse.gender}
-                      className="w-full h-full"
-                    />
-                  </div>
-                  <div className="truncate flex-1">
-                    <p className="text-xs font-semibold text-heritage-charcoal group-hover:text-heritage-maroon truncate">
-                      {spouse.fullName}
-                    </p>
-                    <p className="text-[10px] text-heritage-muted">{spouse.profession || 'Spouse'}</p>
-                  </div>
-                  <Heart className="w-4 h-4 text-heritage-maroon fill-heritage-maroon/20 ml-2" />
-                </button>
+                <p className="text-[11px] font-semibold text-heritage-muted mb-2 flex items-center space-x-1.5">
+                  <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+                  <span>
+                    {spouses.length > 1
+                      ? 'Spouses in Marriage'
+                      : (member.gender === 'female' ? 'Husband' : 'Wife')}
+                  </span>
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {spouses.map((sp) => (
+                    <button
+                      key={sp.id}
+                      onClick={() => setSelectedMember(sp)}
+                      className="p-2.5 rounded-xl bg-heritage-ivory hover:bg-heritage-cream/70 border border-heritage-gold/50 text-left flex items-center space-x-3 transition-colors group"
+                    >
+                      <div className="w-9 h-9 rounded-full overflow-hidden bg-heritage-gold-100 flex-shrink-0 border border-heritage-gold">
+                        <PersonAvatar
+                          photoUrl={sp.photoUrl}
+                          name={sp.fullName}
+                          gender={sp.gender}
+                          className="w-full h-full"
+                        />
+                      </div>
+                      <div className="truncate flex-1">
+                        <p className="text-xs font-semibold text-heritage-charcoal group-hover:text-heritage-maroon truncate">
+                          {sp.fullName}
+                        </p>
+                        <p className="text-[10px] text-heritage-muted">
+                          {sp.profession || sp.currentCity || sp.branchName || (sp.gender === 'female' ? 'Wife' : 'Husband')}
+                        </p>
+                      </div>
+                      <Heart className="w-4 h-4 text-heritage-maroon fill-heritage-maroon/20 ml-2 flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -389,7 +421,7 @@ export const PersonProfileModal: React.FC<Props> = ({ member, onClose, onEdit })
         {/* Modal Footer */}
         <div className="bg-heritage-ivory px-6 py-3.5 border-t border-heritage-border flex items-center justify-between">
           <span className="text-[11px] text-heritage-muted font-serif">
-            Erode KMK Heritage ID: {member.id}
+            Erode KMK Kudumbam • Generation {member.generation}
           </span>
           <button
             onClick={onClose}

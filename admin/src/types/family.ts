@@ -26,6 +26,7 @@ export interface FamilyMember {
   fatherId?: string;
   motherId?: string;
   spouseId?: string;
+  spouseIds?: string[];
   childIds: string[];
   tags?: string[];
 }

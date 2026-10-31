@@ -21,20 +21,46 @@ export interface BackendHealth {
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
-    const errorText = await res.text().catch(() => res.statusText);
-    throw new Error(`API error (${res.status}): ${errorText}`);
+    const raw = await res.text().catch(() => res.statusText);
+    let message = raw;
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed.message) {
+        message = parsed.message;
+      } else if (parsed.error) {
+        message = parsed.error;
+      }
+    } catch {
+      // not json, keep raw text
+    }
+    throw new Error(message || `API error (${res.status})`);
   }
   return res.json();
 }
 
 export const familyApi = {
   // Members
-  async getAllMembers(params?: { branchId?: string; generation?: number }): Promise<FamilyMember[]> {
+  async getAllMembers(params?: {
+    q?: string;
+    branchId?: string;
+    generation?: number;
+    gender?: string;
+    isDeceased?: boolean;
+  }): Promise<FamilyMember[]> {
     const searchParams = new URLSearchParams();
+    if (params?.q) searchParams.append('q', params.q);
     if (params?.branchId) searchParams.append('branchId', params.branchId);
     if (params?.generation) searchParams.append('generation', params.generation.toString());
+    if (params?.gender) searchParams.append('gender', params.gender);
+    if (params?.isDeceased !== undefined) searchParams.append('isDeceased', String(params.isDeceased));
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
     const res = await fetch(`${API_BASE_URL}/api/members${query}`);
+    return handleResponse<FamilyMember[]>(res);
+  },
+
+  async searchMembers(query: string): Promise<FamilyMember[]> {
+    if (!query.trim()) return [];
+    const res = await fetch(`${API_BASE_URL}/api/members/search?q=${encodeURIComponent(query.trim())}`);
     return handleResponse<FamilyMember[]>(res);
   },
 

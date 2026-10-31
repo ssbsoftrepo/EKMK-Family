@@ -214,7 +214,10 @@ const PersonFields: React.FC<{
 
         {/* Date of Birth + Status row */}
         <div className="grid grid-cols-2 gap-2.5 items-end">
-          <HeritageDateInput label="Date of Birth" value={form.birthDate} onChange={(v) => onChange('birthDate', v)} />
+          <div>
+            <HeritageDateInput label="Date of Birth" value={form.birthDate} onChange={(v) => onChange('birthDate', v)} />
+            {errors.birthDate && <p className="text-[10px] text-rose-600 mt-0.5 flex items-center gap-0.5"><AlertCircle className="w-2.5 h-2.5" />{errors.birthDate}</p>}
+          </div>
           <div>
             <label className="block text-[11px] font-semibold text-heritage-charcoal mb-0.5">Status</label>
             <label className="inline-flex items-center text-xs text-heritage-charcoal cursor-pointer gap-2 pt-1">
@@ -227,7 +230,10 @@ const PersonFields: React.FC<{
         {/* Date of Demise — full width row, shown only if deceased */}
         {form.isDeceased && (
           <div className="grid grid-cols-2 gap-2.5">
-            <HeritageDateInput label="Date of Demise" value={form.deathDate} onChange={(v) => onChange('deathDate', v)} />
+            <div>
+              <HeritageDateInput label="Date of Demise" value={form.deathDate} onChange={(v) => onChange('deathDate', v)} />
+              {errors.deathDate && <p className="text-[10px] text-rose-600 mt-0.5 flex items-center gap-0.5"><AlertCircle className="w-2.5 h-2.5" />{errors.deathDate}</p>}
+            </div>
             <div />
           </div>
         )}
@@ -302,17 +308,40 @@ export const Gen1SetupWizard: React.FC = () => {
   const validateHusband = () => {
     const errs: Partial<Record<keyof PersonForm, string>> = {};
     if (!husband.fullName.trim()) errs.fullName = "Husband's name is required.";
+    const today = new Date().toISOString().split('T')[0];
+    if (husband.birthDate && husband.birthDate > today) {
+      errs.birthDate = "Birth date cannot be in the future.";
+      toast.warning('Invalid Birth Date', "Husband's birth date cannot be in the future.");
+    }
+    if (husband.isDeceased && husband.birthDate && husband.deathDate && husband.deathDate < husband.birthDate) {
+      errs.deathDate = "Death date cannot precede birth date.";
+      toast.warning('Invalid Demise Date', "Husband's demise date cannot be earlier than birth date.");
+    }
     setErrors((e) => ({ ...e, husband: errs }));
-    return !errs.fullName;
+    return Object.keys(errs).length === 0;
   };
+
   const validateWife = () => {
     const errs: Partial<Record<keyof PersonForm, string>> = {};
     if (!wife.fullName.trim()) errs.fullName = "Wife's name is required.";
+    const today = new Date().toISOString().split('T')[0];
+    if (wife.birthDate && wife.birthDate > today) {
+      errs.birthDate = "Birth date cannot be in the future.";
+      toast.warning('Invalid Birth Date', "Wife's birth date cannot be in the future.");
+    }
+    if (wife.isDeceased && wife.birthDate && wife.deathDate && wife.deathDate < wife.birthDate) {
+      errs.deathDate = "Death date cannot precede birth date.";
+      toast.warning('Invalid Demise Date', "Wife's demise date cannot be earlier than birth date.");
+    }
     setErrors((e) => ({ ...e, wife: errs }));
-    return !errs.fullName;
+    return Object.keys(errs).length === 0;
   };
 
   const handleSave = async () => {
+    if (!validateHusband() || !validateWife()) {
+      setStep(validateHusband() ? 'wife' : 'husband');
+      return;
+    }
     setSaveError(null);
     setStep('saving');
     try {

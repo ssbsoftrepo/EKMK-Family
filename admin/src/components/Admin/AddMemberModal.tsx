@@ -6,7 +6,7 @@ import { HeritageSelect, SelectOption } from '../Common/HeritageSelect';
 import { HeritageDateInput } from '../Common/HeritageDateInput';
 import { PersonAvatar } from '../Common/PersonAvatar';
 import { familyApi } from '../../api/familyApi';
-import { X, UserPlus, Sparkles, CheckCircle2, Upload, Loader2, Image as ImageIcon, ArrowLeft, ArrowRight } from 'lucide-react';
+import { X, UserPlus, Sparkles, CheckCircle2, Upload, Loader2, Image as ImageIcon, ArrowLeft, ArrowRight, Heart } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useToast } from '../../context/ToastContext';
 
@@ -107,13 +107,133 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
   // Relationships
   const [fatherId, setFatherId] = useState<string>(initialRelations.fatherId);
   const [motherId, setMotherId] = useState<string>(initialRelations.motherId);
-  const [spouseId, setSpouseId] = useState<string>('');
+  const [spouseIds, setSpouseIds] = useState<string[]>([]);
   const [selectedBranchId, setSelectedBranchId] = useState<string>(initialRelations.branchId);
+  const [customBranchName, setCustomBranchName] = useState<string>('');
 
-  // Check if member is Generation 1 (no parents)
+  // Check if member is Generation 1 (no parents and not married to Gen 2+)
   const isGen1 = useMemo(() => {
-    return !fatherId && !motherId;
-  }, [fatherId, motherId]);
+    if (fatherId || motherId) return false;
+    if (spouseIds.length > 0) {
+      const sp = members.find((m) => spouseIds.includes(m.id));
+      return sp ? sp.generation === 1 : true;
+    }
+    return true;
+  }, [fatherId, motherId, spouseIds, members]);
+
+  // Collect all direct ancestor IDs (Father, Mother, Grandparents, Great-grandparents...)
+  const ancestorIds = useMemo(() => {
+    const set = new Set<string>();
+    const queue: string[] = [];
+    if (fatherId) queue.push(fatherId);
+    if (motherId) queue.push(motherId);
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      if (!set.has(current)) {
+        set.add(current);
+        const found = members.find((m) => m.id === current);
+        if (found?.fatherId) queue.push(found.fatherId);
+        if (found?.motherId) queue.push(found.motherId);
+      }
+    }
+    return set;
+  }, [fatherId, motherId, members]);
+
+  // Collect direct sibling IDs (brothers and sisters sharing same father or mother)
+  const siblingIds = useMemo(() => {
+    const set = new Set<string>();
+    if (!fatherId && !motherId) return set;
+
+    members.forEach((m) => {
+      if (fatherId && m.fatherId === fatherId) set.add(m.id);
+      if (motherId && m.motherId === motherId) set.add(m.id);
+    });
+    return set;
+  }, [fatherId, motherId, members]);
+
+  // Spouses of ancestors
+  const inLawIds = useMemo(() => {
+    const set = new Set<string>();
+    members.forEach((m) => {
+      if (ancestorIds.has(m.id)) {
+        if (m.spouseIds) m.spouseIds.forEach((id) => set.add(id));
+        if (m.spouseId) set.add(m.spouseId);
+      }
+    });
+    return set;
+  }, [members, ancestorIds]);
+
+  // Build Select Options for HeritageSelect
+  const fatherOptions: SelectOption[] = useMemo(() => {
+    return members
+      .filter((m) => m.gender === 'male' && !spouseIds.includes(m.id) && m.id !== motherId && !siblingIds.has(m.id))
+      .map((m) => ({
+        value: m.id,
+        label: m.fullName,
+        badge: `Gen ${m.generation}`,
+        sublabel: `${m.branchName || 'Family Branch'}${m.profession ? ` • ${m.profession}` : ''}`,
+      }));
+  }, [members, spouseIds, motherId, siblingIds]);
+
+  const motherOptions: SelectOption[] = useMemo(() => {
+    return members
+      .filter((m) => m.gender === 'female' && !spouseIds.includes(m.id) && m.id !== fatherId && !siblingIds.has(m.id))
+      .map((m) => ({
+        value: m.id,
+        label: m.fullName,
+        badge: `Gen ${m.generation}`,
+        sublabel: `${m.branchName || 'Family Branch'}${m.profession ? ` • ${m.profession}` : ''}`,
+      }));
+  }, [members, spouseIds, fatherId, siblingIds]);
+
+  const spouseOptions: SelectOption[] = useMemo(() => {
+    return members
+      .filter((m) => {
+        // Exclude already added spouses
+        if (spouseIds.includes(m.id)) return false;
+        // Exclude ancestors (father, mother, grandfather, grandmother, etc.)
+        if (ancestorIds.has(m.id)) return false;
+        // Exclude siblings (brother, sister)
+        if (siblingIds.has(m.id)) return false;
+        // Exclude parent's spouses / in-laws
+        if (inLawIds.has(m.id)) return false;
+        // Tamil Hindu tradition: opposite gender for marriage
+        if (gender === 'male' && m.gender !== 'female') return false;
+        if (gender === 'female' && m.gender !== 'male') return false;
+        return true;
+      })
+      .map((m) => {
+        let sub = `${m.branchName || 'Family Branch'}${m.profession ? ` • ${m.profession}` : ''}`;
+        if (m.spouseIds && m.spouseIds.length > 0) {
+          const names = m.spouseIds.map((id) => members.find((s) => s.id === id)?.fullName).filter(Boolean).join(', ');
+          sub += ` • (Linked with ${names})`;
+        } else if (m.spouseId) {
+          const currentSpouse = members.find((s) => s.id === m.spouseId);
+          sub += ` • (Linked with ${currentSpouse?.fullName || m.spouseId})`;
+        }
+        return {
+          value: m.id,
+          label: m.fullName,
+          badge: `Gen ${m.generation}`,
+          sublabel: sub,
+        };
+      });
+  }, [members, spouseIds, ancestorIds, siblingIds, gender]);
+
+  const branchOptions: SelectOption[] = useMemo(() => {
+    return branches.map((b) => ({
+      value: b.id,
+      label: b.name,
+      sublabel: b.tamilName,
+    }));
+  }, [branches]);
+
+  const genderOptions: SelectOption[] = [
+    { value: 'male', label: 'Male' },
+    { value: 'female', label: 'Female' },
+    { value: 'other', label: 'Other' },
+  ];
 
   // Prevent background scroll when modal is mounted
   useEffect(() => {
@@ -124,13 +244,98 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
     };
   }, []);
 
+  const validateDates = (): boolean => {
+    const today = new Date().toISOString().split('T')[0];
+    if (birthDate && birthDate > today) {
+      toast.warning('Invalid Birth Date', 'Date of birth cannot be in the future.');
+      return false;
+    }
+    if (isDeceased && birthDate && deathDate && deathDate < birthDate) {
+      toast.warning('Invalid Demise Date', 'Date of demise cannot be earlier than date of birth.');
+      return false;
+    }
+    return true;
+  };
+
+  const validateParentChildDates = (): boolean => {
+    if (!birthDate) return true;
+    if (fatherId) {
+      const f = members.find((m) => m.id === fatherId);
+      if (f?.birthDate && birthDate <= f.birthDate) {
+        toast.warning('Chronology Conflict', `Child birth date (${birthDate}) cannot be before or equal to father's birth date (${f.birthDate}).`);
+        return false;
+      }
+    }
+    if (motherId) {
+      const m = members.find((m) => m.id === motherId);
+      if (m?.birthDate && birthDate <= m.birthDate) {
+        toast.warning('Chronology Conflict', `Child birth date (${birthDate}) cannot be before or equal to mother's birth date (${m.birthDate}).`);
+        return false;
+      }
+      if (m?.isDeceased && m?.deathDate && birthDate > m.deathDate) {
+        toast.warning('Chronology Conflict', `Child birth date (${birthDate}) cannot be after mother's date of demise (${m.deathDate}).`);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleNextStep = () => {
+    if (step === 1) {
+      if (!fullName.trim()) {
+        toast.warning('Name Required', 'Please enter Full Name.');
+        return;
+      }
+      if (!validateDates()) return;
+      setStep(2);
+    } else if (step === 2) {
+      if (!validateParentChildDates()) return;
+      setStep(3);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent submission if user is not on final step (Step 3)
+    if (step < 3) {
+      handleNextStep();
+      return;
+    }
 
     if (!fullName.trim()) {
       toast.warning('Name Required', 'Please enter Full Name.');
       setStep(1);
       return;
+    }
+
+    if (!validateDates()) {
+      setStep(1);
+      return;
+    }
+
+    if (!validateParentChildDates()) {
+      setStep(2);
+      return;
+    }
+
+    // Tamil Hindu Kinship Validation for Spouses
+    for (const spId of spouseIds) {
+      if (ancestorIds.has(spId)) {
+        toast.warning('Kinship Rule', 'In Tamil Hindu tradition, a person cannot select their father, mother, grandfather, or grandmother as spouse.');
+        setStep(2);
+        return;
+      }
+      if (siblingIds.has(spId)) {
+        toast.warning('Kinship Rule', 'Cannot select brother or sister as spouse.');
+        setStep(2);
+        return;
+      }
+      if (inLawIds.has(spId)) {
+        toast.warning('Kinship Rule', 'In Tamil Hindu tradition, cannot select parent\'s spouse or direct in-law as spouse.');
+        setStep(2);
+        return;
+      }
     }
 
     let calculatedGen = 1;
@@ -142,20 +347,44 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
       const f = members.find((m) => m.id === fatherId);
       if (f) {
         calculatedGen = f.generation + 1;
-        branchId = f.branchId || 'root';
-        branchName = f.branchName || 'Founding Roots';
-        branchNameTamil = f.branchNameTamil || branchName;
+        if (f.generation === 1) {
+          const bName = customBranchName.trim() || `${fullName.trim() || 'Family'} Branch`;
+          branchId = 'branch-' + bName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+          branchName = bName;
+          branchNameTamil = bName;
+        } else if (customBranchName.trim()) {
+          const bName = customBranchName.trim();
+          branchId = 'branch-' + bName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+          branchName = bName;
+          branchNameTamil = bName;
+        } else {
+          branchId = f.branchId || 'root';
+          branchName = f.branchName || 'Founding Roots';
+          branchNameTamil = f.branchNameTamil || branchName;
+        }
       }
     } else if (motherId) {
       const m = members.find((m) => m.id === motherId);
       if (m) {
         calculatedGen = m.generation + 1;
-        branchId = m.branchId || 'root';
-        branchName = m.branchName || 'Founding Roots';
-        branchNameTamil = m.branchNameTamil || branchName;
+        if (m.generation === 1) {
+          const bName = customBranchName.trim() || `${fullName.trim() || 'Family'} Branch`;
+          branchId = 'branch-' + bName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+          branchName = bName;
+          branchNameTamil = bName;
+        } else if (customBranchName.trim()) {
+          const bName = customBranchName.trim();
+          branchId = 'branch-' + bName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+          branchName = bName;
+          branchNameTamil = bName;
+        } else {
+          branchId = m.branchId || 'root';
+          branchName = m.branchName || 'Founding Roots';
+          branchNameTamil = m.branchNameTamil || branchName;
+        }
       }
-    } else if (spouseId) {
-      const s = members.find((m) => m.id === spouseId);
+    } else if (spouseIds.length > 0) {
+      const s = members.find((m) => m.id === spouseIds[0]);
       if (s) {
         calculatedGen = s.generation;
         branchId = s.branchId || 'root';
@@ -194,7 +423,8 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
         branchNameTamil,
         fatherId: fatherId || undefined,
         motherId: motherId || undefined,
-        spouseId: spouseId || undefined,
+        spouseId: spouseIds.length > 0 ? spouseIds[0] : undefined,
+        spouseIds: spouseIds,
         childIds: [],
         tags: ['Newly Added'],
       });
@@ -221,61 +451,6 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
       setIsSubmitting(false);
     }
   };
-
-  // Build Select Options for HeritageSelect
-  const fatherOptions: SelectOption[] = useMemo(() => {
-    return members
-      .filter((m) => m.gender === 'male')
-      .map((m) => ({
-        value: m.id,
-        label: m.fullName,
-        badge: `Gen ${m.generation}`,
-        sublabel: `${m.branchName || 'Family Branch'}${m.profession ? ` • ${m.profession}` : ''}`,
-      }));
-  }, [members]);
-
-  const motherOptions: SelectOption[] = useMemo(() => {
-    return members
-      .filter((m) => m.gender === 'female')
-      .map((m) => ({
-        value: m.id,
-        label: m.fullName,
-        badge: `Gen ${m.generation}`,
-        sublabel: `${m.branchName || 'Family Branch'}${m.profession ? ` • ${m.profession}` : ''}`,
-      }));
-  }, [members]);
-
-  const spouseOptions: SelectOption[] = useMemo(() => {
-    return members.map((m) => {
-      let sub = `${m.branchName || 'Family Branch'}`;
-      if (m.spouseId) {
-        const currentSpouse = members.find((s) => s.id === m.spouseId);
-        sub += ` (Currently spouse of ${currentSpouse?.fullName || m.spouseId})`;
-      } else {
-        sub += ' • Unmarried / Available';
-      }
-      return {
-        value: m.id,
-        label: m.fullName,
-        badge: `Gen ${m.generation}`,
-        sublabel: sub,
-      };
-    });
-  }, [members]);
-
-  const branchOptions: SelectOption[] = useMemo(() => {
-    return branches.map((b) => ({
-      value: b.id,
-      label: b.name,
-      sublabel: b.tamilName,
-    }));
-  }, [branches]);
-
-  const genderOptions: SelectOption[] = [
-    { value: 'male', label: 'Male' },
-    { value: 'female', label: 'Female' },
-    { value: 'other', label: 'Other' },
-  ];
 
   return createPortal(
     <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[9999] w-screen h-screen flex items-center justify-center p-3 sm:p-6 bg-heritage-charcoal/75 backdrop-blur-sm animate-fadeIn overflow-y-auto">
@@ -553,27 +728,125 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                 />
               </div>
 
-              <HeritageSelect
-                label="Select Spouse (if already registered in family archive)"
-                value={spouseId}
-                onChange={setSpouseId}
-                options={spouseOptions}
-                placeholder="Search & choose spouse..."
-                emptyOptionLabel="None / Not Married / Unregistered"
-                searchable
-                allowClear
-              />
+              {/* Spouses Section (Supports Multiple Wives / Multiple Husbands / Remarriage) */}
+              <div className="space-y-2.5 p-3.5 bg-heritage-ivory/50 rounded-2xl border border-heritage-border">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-heritage-charcoal flex items-center space-x-1.5">
+                    <Heart className="w-3.5 h-3.5 text-rose-600 fill-rose-600/30" />
+                    <span>
+                      Spouse(s) in Marriage ({spouseIds.length})
+                    </span>
+                  </label>
+                  <span className="text-[10px] text-heritage-muted font-medium">
+                    Supports multiple spouses &amp; remarriages
+                  </span>
+                </div>
 
-              {!isGen1 && branchOptions.length > 0 && (
-                <HeritageSelect
-                  label="Primary Family Branch"
-                  value={selectedBranchId}
-                  onChange={setSelectedBranchId}
-                  options={branchOptions}
-                  placeholder="Select primary branch..."
-                  allowClear={false}
-                  searchable={false}
-                />
+                {/* List of currently selected spouses */}
+                {spouseIds.length > 0 && (
+                  <div className="space-y-2">
+                    {spouseIds.map((spId) => {
+                      const sp = members.find((m) => m.id === spId);
+                      if (!sp) return null;
+                      return (
+                        <div
+                          key={spId}
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-heritage-border shadow-2xs"
+                        >
+                          <div className="flex items-center space-x-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-lg overflow-hidden bg-heritage-gold-100 flex-shrink-0 border border-heritage-border">
+                              <PersonAvatar
+                                photoUrl={sp.photoUrl}
+                                name={sp.fullName}
+                                gender={sp.gender}
+                                className="w-full h-full"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-heritage-charcoal truncate">
+                                {sp.fullName}
+                                <span className="ml-1.5 text-[10px] font-medium text-heritage-maroon bg-heritage-maroon/10 px-1.5 py-0.2 rounded border border-heritage-maroon/20">
+                                  Spouse
+                                </span>
+                              </p>
+                              <p className="text-[10px] text-heritage-muted truncate">
+                                {sp.branchName || 'Family Branch'} {sp.profession ? `• ${sp.profession}` : ''}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setSpouseIds(spouseIds.filter((id) => id !== spId))}
+                            className="p-1.5 rounded-lg text-heritage-muted hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Unlink this spouse"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Add spouse dropdown */}
+                <div className="pt-1">
+                  <HeritageSelect
+                    label={spouseIds.length === 0 ? "Select Spouse (if already registered)" : "+ Add Another Spouse (Remarriage / Multiple Spouses)"}
+                    value=""
+                    onChange={(val) => {
+                      if (val && !spouseIds.includes(val)) {
+                        setSpouseIds([...spouseIds, val]);
+                      }
+                    }}
+                    options={spouseOptions}
+                    placeholder={spouseIds.length === 0 ? "Search & choose spouse..." : "Select another spouse to link..."}
+                    emptyOptionLabel="-- Select partner in marriage to link --"
+                    helperText="Selecting spouses automatically establishes reciprocal links without unlinking previous marriages."
+                    searchable
+                  />
+                </div>
+              </div>
+
+              {!isGen1 && (
+                <div className="space-y-1.5 p-3.5 bg-heritage-ivory rounded-xl border border-heritage-border">
+                  <label className="block text-xs font-semibold text-heritage-charcoal">
+                    Family Branch Name
+                  </label>
+                  <p className="text-[11px] text-heritage-muted leading-relaxed">
+                    {(() => {
+                      const parent = (fatherId ? members.find((m) => m.id === fatherId) : null) || (motherId ? members.find((m) => m.id === motherId) : null);
+                      const spouse = spouseIds.length > 0 ? members.find((m) => m.id === spouseIds[0]) : null;
+                      if (parent?.generation === 1) {
+                        return 'As a direct child of Generation 1 founders, this relative establishes a new family branch.';
+                      }
+                      if (parent?.branchName && parent.branchName !== 'Founding Roots') {
+                        return `Inherits "${parent.branchName}" from parent by default, or specify a custom branch name.`;
+                      }
+                      if (!parent && spouse?.branchName && spouse.branchName !== 'Founding Roots') {
+                        return `Inherits "${spouse.branchName}" from spouse by default, or specify a custom branch name.`;
+                      }
+                      return "Inherits parent's branch by default, or specify a custom branch name.";
+                    })()}
+                  </p>
+                  <input
+                    type="text"
+                    value={customBranchName}
+                    onChange={(e) => setCustomBranchName(e.target.value)}
+                    placeholder={(() => {
+                      const parent = (fatherId ? members.find((m) => m.id === fatherId) : null) || (motherId ? members.find((m) => m.id === motherId) : null);
+                      const spouse = spouseIds.length > 0 ? members.find((m) => m.id === spouseIds[0]) : null;
+                      if (parent && parent.generation > 1 && parent.branchName && parent.branchName !== 'Founding Roots') {
+                        return `${parent.branchName} (Inherited from parent)`;
+                      }
+                      if (!parent && spouse?.branchName && spouse.branchName !== 'Founding Roots') {
+                        return `${spouse.branchName} (Inherited from spouse)`;
+                      }
+                      return `${fullName.trim() || 'Family'} Branch`;
+                    })()}
+                    className="w-full px-3 py-2 text-xs bg-[#FFFEFB] border border-heritage-border rounded-xl focus:outline-none focus:border-heritage-maroon"
+                  />
+                </div>
               )}
             </div>
           )}
@@ -665,8 +938,9 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
             <div className="flex items-center space-x-2">
               {step < 3 ? (
                 <button
+                  key="continue-step-btn"
                   type="button"
-                  onClick={() => setStep(step + 1)}
+                  onClick={handleNextStep}
                   className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold bg-heritage-maroon hover:bg-heritage-maroon-800 text-[#FAF7EE] rounded-xl shadow-heritage-sm transition-all duration-200 group active:scale-95 cursor-pointer"
                 >
                   <span>Continue</span>
@@ -674,6 +948,7 @@ export const AddMemberModal: React.FC<Props> = ({ onClose, defaultParentId }) =>
                 </button>
               ) : (
                 <button
+                  key="submit-step-btn"
                   type="submit"
                   disabled={isSubmitting}
                   className="px-6 py-2 text-xs font-semibold bg-heritage-maroon hover:bg-heritage-maroon-800 disabled:opacity-50 text-[#FAF7EE] rounded-xl shadow-heritage-sm flex items-center space-x-1.5 transition-colors cursor-pointer"

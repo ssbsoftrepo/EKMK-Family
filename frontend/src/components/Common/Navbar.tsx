@@ -10,13 +10,15 @@ import {
   Sparkles,
   Flame
 } from 'lucide-react';
-import { ViewTab } from '../../types/family';
+import { ViewTab, FamilyMember } from '../../types/family';
+import { familyApi } from '../../api/familyApi';
 
 export const Navbar: React.FC = () => {
   const { activeTab, setActiveTab, stats, members, locateInTree } = useFamily();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [backendResults, setBackendResults] = useState<FamilyMember[]>([]);
 
   const navItems: { id: ViewTab; label: string; icon: React.ReactNode }[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-4 h-4" /> },
@@ -38,12 +40,35 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const searchResults = searchQuery.trim() === '' ? [] : members.filter(
-    (m) =>
-      m.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (m.profession && m.profession.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (m.currentCity && m.currentCity.toLowerCase().includes(searchQuery.toLowerCase()))
-  ).slice(0, 6);
+  // Backend search debounced query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setBackendResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await familyApi.searchMembers(searchQuery);
+        setBackendResults(res);
+      } catch {
+        // Fallback silently to client filter
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const searchResults = React.useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    if (backendResults.length > 0) return backendResults.slice(0, 8);
+    const q = searchQuery.toLowerCase().trim();
+    return members.filter(
+      (m) =>
+        (m.fullName && m.fullName.toLowerCase().includes(q)) ||
+        (m.tamilName && m.tamilName.toLowerCase().includes(q)) ||
+        (m.profession && m.profession.toLowerCase().includes(q)) ||
+        (m.currentCity && m.currentCity.toLowerCase().includes(q))
+    ).slice(0, 8);
+  }, [searchQuery, backendResults, members]);
 
   return (
     <header className="sticky top-0 z-50 bg-[#FFFEFB]/95 backdrop-blur-md border-b border-heritage-border shadow-heritage-sm">

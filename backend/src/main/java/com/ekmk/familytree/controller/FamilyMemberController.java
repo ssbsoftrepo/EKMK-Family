@@ -21,15 +21,21 @@ public class FamilyMemberController {
 
     @GetMapping
     public ResponseEntity<List<FamilyMember>> getAllMembers(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) String branchId,
-            @RequestParam(required = false) Integer generation) {
-        List<FamilyMember> members = memberService.getAllMembers();
-        if (branchId != null && !branchId.trim().isEmpty()) {
-            members = members.stream().filter(m -> branchId.equalsIgnoreCase(m.getBranchId())).toList();
-        }
-        if (generation != null) {
-            members = members.stream().filter(m -> m.getGeneration() == generation).toList();
-        }
+            @RequestParam(required = false) Integer generation,
+            @RequestParam(required = false) String gender,
+            @RequestParam(required = false) Boolean isDeceased) {
+        String searchTerm = (q != null && !q.trim().isEmpty()) ? q : search;
+        List<FamilyMember> members = memberService.searchMembers(searchTerm, branchId, generation, gender, isDeceased);
+        return ResponseEntity.ok(members);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<FamilyMember>> searchMembers(
+            @RequestParam(required = false, defaultValue = "") String q) {
+        List<FamilyMember> members = memberService.searchMembers(q, null, null, null, null);
         return ResponseEntity.ok(members);
     }
 
@@ -48,12 +54,8 @@ public class FamilyMemberController {
 
     @PutMapping("/{id}")
     public ResponseEntity<FamilyMember> updateMember(@PathVariable String id, @RequestBody FamilyMember member) {
-        try {
-            FamilyMember updated = memberService.updateMember(id, member);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        FamilyMember updated = memberService.updateMember(id, member);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")

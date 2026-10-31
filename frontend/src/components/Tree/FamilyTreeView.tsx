@@ -29,14 +29,22 @@ export const FamilyTreeView: React.FC = () => {
 
   // Root ancestor ID (Gen 1 Patriarch: KMK Sengottaiyan Gounder)
   const rootMember = useMemo(() => {
-    return members.find((m) => m.generation === 1 && m.gender === 'male') || members[0];
+    return members.find((m) => m.generation === 1 && m.gender === 'male') || members.find((m) => m.generation === 1) || members[0];
   }, [members]);
 
   // Current active couple in focus (primary member ID)
-  const [activePersonId, setActivePersonId] = useState<string>(rootMember?.id || 'ekmk-101');
+  const [activePersonId, setActivePersonId] = useState<string>(rootMember?.id || '');
   
   // Navigation history trail for breadcrumbs and Back navigation
-  const [history, setHistory] = useState<string[]>([rootMember?.id || 'ekmk-101']);
+  const [history, setHistory] = useState<string[]>(rootMember?.id ? [rootMember.id] : []);
+
+  // Sync activePersonId and history when members load from backend
+  useEffect(() => {
+    if (rootMember?.id && (!activePersonId || !members.some((m) => m.id === activePersonId))) {
+      setActivePersonId(rootMember.id);
+      setHistory([rootMember.id]);
+    }
+  }, [rootMember?.id, members, activePersonId]);
 
   // Person selected for Detail & Tree Navigation Sheet
   const [detailPerson, setDetailPerson] = useState<FamilyMember | null>(null);
@@ -64,14 +72,29 @@ export const FamilyTreeView: React.FC = () => {
     }
   }, [highlightedMemberId]);
 
-  // Active primary member and their spouse
+  // Active primary member and their spouses (supports multiple wives / multiple husbands / remarriages)
   const activePrimary = useMemo(() => {
     return members.find((m) => m.id === activePersonId) || rootMember;
   }, [members, activePersonId, rootMember]);
 
-  const activeSpouse = useMemo(() => {
-    if (!activePrimary?.spouseId) return undefined;
-    return members.find((m) => m.id === activePrimary.spouseId);
+  const activeSpouses = useMemo(() => {
+    if (!activePrimary) return [];
+    const list: string[] = [];
+    if (activePrimary.spouseIds && activePrimary.spouseIds.length > 0) {
+      list.push(...activePrimary.spouseIds);
+    } else if (activePrimary.spouseId) {
+      list.push(activePrimary.spouseId);
+    }
+    // Check reciprocal links
+    members.forEach((m) => {
+      if (
+        (m.spouseIds && m.spouseIds.includes(activePrimary.id)) ||
+        m.spouseId === activePrimary.id
+      ) {
+        if (!list.includes(m.id)) list.push(m.id);
+      }
+    });
+    return list.map((id) => members.find((m) => m.id === id)).filter(Boolean) as FamilyMember[];
   }, [members, activePrimary]);
 
   // Active branch
@@ -80,22 +103,39 @@ export const FamilyTreeView: React.FC = () => {
     return branches.find((b) => b.id === activePrimary.branchId) || branches[0];
   }, [branches, activePrimary]);
 
-  // Children of the active couple
+  // Children of the active primary and spouses
   const childrenList = useMemo(() => {
     if (!activePrimary) return [];
-    const childIds = activePrimary.childIds || [];
-    return childIds.map((cid) => members.find((m) => m.id === cid)).filter(Boolean) as FamilyMember[];
-  }, [members, activePrimary]);
+    const pId = activePrimary.id;
 
-  // Siblings of the active primary member (for quick peer navigation)
+    const pChildIds = new Set(activePrimary.childIds || []);
+    activeSpouses.forEach((sp) => {
+      if (sp.childIds) sp.childIds.forEach((id) => pChildIds.add(id));
+    });
+
+    return members.filter((m) => {
+      if (m.id === pId || activeSpouses.some((sp) => sp.id === m.id)) return false;
+      return (
+        pChildIds.has(m.id) ||
+        m.fatherId === pId ||
+        m.motherId === pId ||
+        activeSpouses.some((sp) => m.fatherId === sp.id || m.motherId === sp.id)
+      );
+    });
+  }, [members, activePrimary, activeSpouses]);
+
+  // Siblings of the active primary member (sharing either father or mother)
   const siblingsList = useMemo(() => {
     if (!activePrimary || (!activePrimary.fatherId && !activePrimary.motherId)) return [];
-    const father = activePrimary.fatherId ? members.find((m) => m.id === activePrimary.fatherId) : undefined;
-    const mother = activePrimary.motherId ? members.find((m) => m.id === activePrimary.motherId) : undefined;
-    const allChildIds = father?.childIds || mother?.childIds || [];
-    return allChildIds
-      .map((id) => members.find((m) => m.id === id))
-      .filter((m): m is FamilyMember => !!m && m.id !== activePrimary.id);
+    const fId = activePrimary.fatherId;
+    const mId = activePrimary.motherId;
+
+    return members.filter((m) => {
+      if (m.id === activePrimary.id) return false;
+      if (fId && m.fatherId === fId) return true;
+      if (mId && m.motherId === mId) return true;
+      return false;
+    });
   }, [members, activePrimary]);
 
   // Navigate to a child / couple (drill-down to next generation)
@@ -143,7 +183,8 @@ export const FamilyTreeView: React.FC = () => {
     return members
       .filter(
         (m) =>
-          m.fullName.toLowerCase().includes(q) ||
+          (m.fullName && m.fullName.toLowerCase().includes(q)) ||
+          (m.tamilName && m.tamilName.toLowerCase().includes(q)) ||
           (m.profession && m.profession.toLowerCase().includes(q)) ||
           (m.currentCity && m.currentCity.toLowerCase().includes(q)) ||
           (m.branchName && m.branchName.toLowerCase().includes(q))
@@ -248,15 +289,19 @@ export const FamilyTreeView: React.FC = () => {
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-heritage-maroon flex items-center space-x-1.5">
               <Users className="w-3.5 h-3.5 text-heritage-gold-600" />
-              <span>{genNumber === 1 ? 'Founding Couple' : `Generation ${genNumber} Couple`}</span>
+              <span>
+                {genNumber === 1
+                  ? (activeSpouses.length > 1 ? 'Founding Ancestor & Spouses' : 'Founding Couple')
+                  : (activeSpouses.length > 1 ? `Generation ${genNumber} Head & Spouses` : `Generation ${genNumber} Couple`)}
+              </span>
             </span>
             <span className="text-[10px] bg-heritage-ivory px-2.5 py-0.5 rounded-full border border-heritage-border text-heritage-muted font-medium">
               Tap card for details
             </span>
           </div>
 
-          {/* Couple Cards: Photo and Name Only */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 items-stretch">
+          {/* Couple / Spouses Presentation - Primary & All Spouses Displayed Together */}
+          <div className={`grid ${activeSpouses.length > 1 ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3' : 'grid-cols-2'} gap-3 sm:gap-6 items-stretch`}>
             
             {/* Primary Person */}
             <button
@@ -276,37 +321,49 @@ export const FamilyTreeView: React.FC = () => {
               <h2 className="font-serif text-xs sm:text-sm font-bold text-heritage-charcoal group-hover:text-heritage-maroon leading-snug line-clamp-2">
                 {activePrimary.fullName}
               </h2>
+              {activePrimary.tamilName && activePrimary.tamilName !== activePrimary.fullName && (
+                <p className="text-[10px] text-heritage-muted mt-0.5 line-clamp-1">
+                  {activePrimary.tamilName}
+                </p>
+              )}
             </button>
 
-            {/* Spouse */}
-            {activeSpouse ? (
-              <button
-                onClick={() => setDetailPerson(activeSpouse)}
-                className="bg-heritage-ivory/60 hover:bg-heritage-cream/60 active:scale-98 rounded-xl border border-heritage-border p-2.5 sm:p-3 flex flex-col items-center text-center transition-all group"
-              >
-                <div className="w-full aspect-[3/4] max-w-[140px] rounded-xl overflow-hidden border-2 border-heritage-gold/70 bg-heritage-cream shadow-xs mb-2 relative">
-                  <PersonAvatar
-                    photoUrl={activeSpouse.photoUrl}
-                    name={activeSpouse.fullName}
-                    gender={activeSpouse.gender}
-                    className="w-full h-full"
-                    imgClassName="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-1 right-1 p-1 rounded-full bg-black/40 backdrop-blur-xs z-10">
-                    <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
+            {/* Spouse Area - All Spouses Displayed in the Same Area with Their Names */}
+            {activeSpouses.length > 0 ? (
+              activeSpouses.map((sp) => (
+                <button
+                  key={sp.id}
+                  onClick={() => setDetailPerson(sp)}
+                  className="bg-heritage-ivory/60 hover:bg-heritage-cream/60 active:scale-98 rounded-xl border border-heritage-border p-2.5 sm:p-3 flex flex-col items-center text-center transition-all group"
+                >
+                  <div className="w-full aspect-[3/4] max-w-[140px] rounded-xl overflow-hidden border-2 border-heritage-gold/70 bg-heritage-cream shadow-xs mb-2 relative">
+                    <PersonAvatar
+                      photoUrl={sp.photoUrl}
+                      name={sp.fullName}
+                      gender={sp.gender}
+                      className="w-full h-full"
+                      imgClassName="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-1 right-1 p-1 rounded-full bg-black/40 backdrop-blur-xs z-10 flex items-center space-x-1" title="Spouse in Marriage">
+                      <Heart className="w-3 h-3 text-rose-400 fill-rose-400" />
+                    </div>
                   </div>
-                </div>
 
-                <h3 className="font-serif text-xs sm:text-sm font-bold text-heritage-charcoal group-hover:text-heritage-maroon leading-snug line-clamp-2">
-                  {activeSpouse.fullName}
-                </h3>
-              </button>
+                  <h3 className="font-serif text-xs sm:text-sm font-bold text-heritage-charcoal group-hover:text-heritage-maroon leading-snug line-clamp-2">
+                    {sp.fullName}
+                  </h3>
+                  {sp.tamilName && sp.tamilName !== sp.fullName && (
+                    <p className="text-[10px] text-heritage-muted mt-0.5 line-clamp-1">
+                      {sp.tamilName}
+                    </p>
+                  )}
+                </button>
+              ))
             ) : (
-              <div className="bg-heritage-ivory/30 rounded-xl border border-dashed border-heritage-border p-3 flex flex-col items-center justify-center text-center">
+              <div className="bg-heritage-ivory/30 rounded-xl border border-dashed border-heritage-border p-3 flex flex-col items-center justify-center text-center flex-1 min-h-[140px]">
                 <p className="text-xs text-heritage-muted">Unmarried / No spouse recorded</p>
               </div>
             )}
-
           </div>
 
           {/* Sibling Switcher (if any) */}
@@ -499,15 +556,43 @@ export const FamilyTreeView: React.FC = () => {
               </div>
 
               {/* Spouse Info (if married) */}
-              {detailPerson.spouseId && (() => {
-                const sp = members.find((m) => m.id === detailPerson.spouseId);
-                return sp ? (
-                  <div className="p-2.5 rounded-xl bg-heritage-ivory border border-heritage-border flex items-center space-x-2 text-xs text-heritage-charcoal">
-                    <Heart className="w-4 h-4 text-rose-500 fill-rose-500/20 flex-shrink-0" />
-                    <span>Spouse: <strong>{sp.fullName}</strong></span>
+              {(() => {
+                const spIds = (detailPerson.spouseIds && detailPerson.spouseIds.length > 0)
+                  ? detailPerson.spouseIds
+                  : (detailPerson.spouseId ? [detailPerson.spouseId] : []);
+                if (spIds.length === 0) return null;
+                const spMembers = spIds.map((id) => members.find((m) => m.id === id)).filter(Boolean) as FamilyMember[];
+                if (spMembers.length === 0) return null;
+                return (
+                  <div className="p-2.5 rounded-xl bg-heritage-ivory border border-heritage-border space-y-1.5 text-xs text-heritage-charcoal">
+                    <div className="flex items-center space-x-2 font-semibold text-heritage-maroon">
+                      <Heart className="w-4 h-4 text-rose-500 fill-rose-500/20 flex-shrink-0" />
+                      <span>{spMembers.length > 1 ? `Spouses (${spMembers.length})` : 'Spouse'}</span>
+                    </div>
+                    <div className="space-y-1 pl-6">
+                      {spMembers.map((sp) => (
+                        <p key={sp.id} className="text-xs">
+                          <strong>{sp.fullName}</strong>
+                          <span className="text-[10px] text-heritage-muted ml-1.5">({sp.branchName || 'Family Branch'})</span>
+                        </p>
+                      ))}
+                    </div>
                   </div>
-                ) : null;
+                );
               })()}
+
+              {/* Parent Info (if any) */}
+              {(detailPerson.fatherId || detailPerson.motherId) && (
+                <div className="p-2.5 rounded-xl bg-heritage-cream/40 border border-heritage-border text-xs text-heritage-charcoal flex items-center justify-between">
+                  <span className="text-heritage-muted font-medium">Parents:</span>
+                  <span className="font-semibold text-heritage-charcoal">
+                    {[
+                      members.find((m) => m.id === detailPerson.fatherId)?.fullName,
+                      members.find((m) => m.id === detailPerson.motherId)?.fullName,
+                    ].filter(Boolean).join(' & ') || 'Ancestors'}
+                  </span>
+                </div>
+              )}
 
               {/* Biography snippet (if available) */}
               {detailPerson.biography && (

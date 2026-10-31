@@ -120,19 +120,19 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const updated = [...prev, optimisticMember];
       if (optimisticMember.fatherId) {
         const fIdx = updated.findIndex((m) => m.id === optimisticMember.fatherId);
-        if (fIdx >= 0 && !updated[fIdx].childIds.includes(temporaryId)) {
+        if (fIdx >= 0 && !(updated[fIdx].childIds || []).includes(temporaryId)) {
           updated[fIdx] = {
             ...updated[fIdx],
-            childIds: [...updated[fIdx].childIds, temporaryId],
+            childIds: [...(updated[fIdx].childIds || []), temporaryId],
           };
         }
       }
       if (optimisticMember.motherId) {
         const mIdx = updated.findIndex((m) => m.id === optimisticMember.motherId);
-        if (mIdx >= 0 && !updated[mIdx].childIds.includes(temporaryId)) {
+        if (mIdx >= 0 && !(updated[mIdx].childIds || []).includes(temporaryId)) {
           updated[mIdx] = {
             ...updated[mIdx],
-            childIds: [...updated[mIdx].childIds, temporaryId],
+            childIds: [...(updated[mIdx].childIds || []), temporaryId],
           };
         }
       }
@@ -153,9 +153,30 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const savedFromServer = await familyApi.createMember(optimisticMember);
       const actualId = savedFromServer.id;
 
-      // Reconcile server response
+      // Reconcile server response (update temporaryId references if server gave a new ID)
       setMembers((prev) =>
-        prev.map((m) => (m.id === temporaryId ? savedFromServer : m))
+        prev.map((m) => {
+          if (m.id === temporaryId) return savedFromServer;
+          if (actualId !== temporaryId) {
+            let changed = false;
+            let newFatherId = m.fatherId;
+            let newMotherId = m.motherId;
+            let newSpouseId = m.spouseId;
+            let newChildIds = m.childIds;
+
+            if (m.fatherId === temporaryId) { newFatherId = actualId; changed = true; }
+            if (m.motherId === temporaryId) { newMotherId = actualId; changed = true; }
+            if (m.spouseId === temporaryId) { newSpouseId = actualId; changed = true; }
+            if (m.childIds && m.childIds.includes(temporaryId)) {
+              newChildIds = m.childIds.map((cid) => (cid === temporaryId ? actualId : cid));
+              changed = true;
+            }
+            if (changed) {
+              return { ...m, fatherId: newFatherId, motherId: newMotherId, spouseId: newSpouseId, childIds: newChildIds };
+            }
+          }
+          return m;
+        })
       );
 
       // Refresh dynamic stats from backend
@@ -202,7 +223,7 @@ export const FamilyProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           fatherId: m.fatherId === id ? undefined : m.fatherId,
           motherId: m.motherId === id ? undefined : m.motherId,
           spouseId: m.spouseId === id ? undefined : m.spouseId,
-          childIds: m.childIds.filter((cid) => cid !== id),
+          childIds: (m.childIds || []).filter((cid) => cid !== id),
         }))
     );
 
