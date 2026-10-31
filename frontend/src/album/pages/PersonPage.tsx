@@ -4,10 +4,14 @@ import { Family, firstName, whoLine } from '../family';
 import { href } from '../router';
 import { Face, Hand, Icon, Print, Svg, btnSecondary } from '../ui';
 import { ContactButtons } from '../../components/Common/ContactButtons';
+import { useBirthdayPetals } from '../Magic';
+import { birthdaysOn } from '../family';
 
 /** One person: a big photo, who they are, their close family as photos, and Call / WhatsApp. */
 export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, id }) => {
   const m = family.get(id);
+  const isBirthday = !!m && birthdaysOn([m]).length > 0;
+  useBirthdayPetals(isBirthday, `person-${id}`);
   if (!m) {
     return (
       <div className="py-16 text-center flex flex-col items-center gap-3">
@@ -51,6 +55,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
             <span className="text-lg pt-1">{whoLine(family, m)}</span>
             {facts && <span className="text-lg">{facts}</span>}
             {m.isDeceased && <span className="text-lg pt-1">🕯️ In loving memory</span>}
+            {isBirthday && <span className="mt-2 self-start bg-album-turmeric rounded-full px-4 py-1 text-lg font-extrabold magic-pop">🎂 Happy birthday, {firstName(m)}!</span>}
           </div>
           {about && (
             <p className="m-0 bg-white rounded-2xl p-3.5 text-[17px] leading-relaxed">
@@ -77,7 +82,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
           </div>
           <div className="grid gap-x-2 gap-y-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(92px, 1fr))' }}>
             {close.map(({ person, label }) => (
-              <a key={person.id + label} href={href.person(person.id)} className="no-underline text-album-leaf flex flex-col items-center gap-1 text-center">
+              <a key={person.id + label} href={href.person(person.id)} className="no-underline text-album-leaf flex flex-col items-center gap-1 text-center lift">
                 <Face member={person} className="w-[78px] h-[78px]" rounded="rounded-full" ring="border-[3px] border-white shadow-[0_2px_6px_rgba(30,70,54,0.18)]" />
                 <span className="text-base font-bold leading-tight">{firstName(person)}</span>
                 <span className="text-[13px] leading-tight">{label}</span>

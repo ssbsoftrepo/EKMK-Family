@@ -73,7 +73,7 @@ export const FamilyPage: React.FC<{ family: Family; id?: string }> = ({ family, 
           const hasFamily = kc.length > 1 || grandkids > 0;
           return (
             <a key={k.id} href={hasFamily ? href.family(k.id) : href.person(k.id)}
-              className="no-underline text-album-leaf bg-white rounded-[20px] p-2 pr-3.5 min-h-[88px] flex items-center gap-3 shadow-[0_3px_0_#DCE6D2]">
+              className="no-underline text-album-leaf bg-white rounded-[20px] p-2 pr-3.5 min-h-[88px] flex items-center gap-3 shadow-[0_3px_0_#DCE6D2] lift">
               <span className="flex -space-x-3 flex-shrink-0">
                 {kc.map((p) => <Face key={p.id} member={p} className="w-[66px] h-[66px]" rounded="rounded-2xl" ring="border-[3px] border-white" />)}
               </span>

@@ -89,7 +89,7 @@ export const Svg: React.FC<{ icon: React.ReactNode; className?: string; stroke?:
 
 /** A photo tile used in grids: photo, name, one line under it. */
 export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: string }> = ({ member, line, href }) => (
-  <a href={href} className="no-underline text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-[0_3px_0_#DCE6D2] hover:shadow-[0_3px_0_#1E4636] transition">
+  <a href={href} className="no-underline text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-[0_3px_0_#DCE6D2] hover:shadow-[0_3px_0_#1E4636] lift">
     <Face member={member} className="w-full aspect-square" rounded="rounded-[13px]" />
     <span className="text-[17px] font-extrabold leading-tight px-1">{member.fullName}</span>
     {line && <span className="text-sm leading-tight px-1">{line}</span>}

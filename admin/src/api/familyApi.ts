@@ -27,6 +27,8 @@ export interface ImportReport {
 export interface SiteSettings {
   siteUrl: string;
   homePhotoUrl: string;
+  secretNote: string;
+  secretPhotoUrl: string;
   whatsappBirthday: string;
   whatsappHello: string;
   whatsappShare: string;

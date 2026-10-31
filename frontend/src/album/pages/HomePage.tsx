@@ -4,6 +4,7 @@ import { href } from '../router';
 import { Face, Hand, Icon, PersonTile, Print, Svg, Title } from '../ui';
 import { useSiteSettings } from '../../lib/whatsapp';
 import { ContactButtons } from '../../components/Common/ContactButtons';
+import { useBirthdayPetals } from '../Magic';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -14,6 +15,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
   const today = birthdaysOn(family.members);
   const soon = upcomingBirthdays(family.members, 31).filter((b) => b.inDays > 0).slice(0, 5);
   const placed = useMemo(() => placedIds(family.members), [family]);
+  useBirthdayPetals(today.length > 0, `home-${new Date().toDateString()}`);
 
   // Photos first, then everyone else; a stable pick so the page doesn't jump around.
   const faces = useMemo(() => {
