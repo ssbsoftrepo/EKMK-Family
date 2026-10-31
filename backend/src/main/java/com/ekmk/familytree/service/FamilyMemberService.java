@@ -98,6 +98,7 @@ public class FamilyMemberService {
 
         List<String> spouseIds = member.getSpouseIds();
         validateKinshipRelations(member.getId(), member.getFatherId(), member.getMotherId(), member.getChildIds(), spouseIds, member.getBirthDate());
+        checkOneHusband(member.getId(), member.getGender(), spouseIds, memberRepository::findById);
 
         // Auto-calculate generation from parent or spouse
         String pId = (member.getFatherId() != null && !member.getFatherId().trim().isEmpty()) ? member.getFatherId() : member.getMotherId();
@@ -219,6 +220,8 @@ public class FamilyMemberService {
         String effectiveMotherId = updates.getMotherId() != null ? (updates.getMotherId().trim().isEmpty() ? null : updates.getMotherId()) : existing.getMotherId();
         String effectiveBirthDate = updates.getBirthDate() != null ? updates.getBirthDate() : existing.getBirthDate();
         validateKinshipRelations(id, effectiveFatherId, effectiveMotherId, existing.getChildIds(), effectiveSpouseIds, effectiveBirthDate);
+        String effectiveGender = updates.getGender() != null ? updates.getGender() : existing.getGender();
+        checkOneHusband(id, effectiveGender, effectiveSpouseIds, memberRepository::findById);
 
         // Detect father change
         if (updates.getFatherId() != null && !updates.getFatherId().equals(existing.getFatherId())) {
@@ -458,6 +461,33 @@ public class FamilyMemberService {
                     propagateBranchToChildren(child);
                 }
             });
+        }
+    }
+
+    /**
+     * A woman can have only one husband in the family tree. A man may have more than one wife
+     * (some elders did), so that stays allowed. People whose gender is not known are not checked.
+     */
+    static void checkOneHusband(String memberId, String gender, List<String> spouseIds,
+                                java.util.function.Function<String, Optional<FamilyMember>> find) {
+        if (spouseIds == null) return;
+        List<String> targets = spouseIds.stream()
+                .filter(sid -> sid != null && !sid.isBlank() && !sid.equals(memberId))
+                .distinct().toList();
+        if ("female".equals(gender) && targets.size() > 1) {
+            throw new IllegalArgumentException("A woman can have only one husband in the family tree. Remove the current husband first.");
+        }
+        for (String sid : targets) {
+            Optional<FamilyMember> spouse = find.apply(sid);
+            if (spouse.isEmpty() || !"female".equals(spouse.get().getGender())) continue;
+            FamilyMember wife = spouse.get();
+            List<String> herHusbands = new ArrayList<>(wife.getSpouseIds() != null ? wife.getSpouseIds() : List.of());
+            if (wife.getSpouseId() != null && !herHusbands.contains(wife.getSpouseId())) herHusbands.add(wife.getSpouseId());
+            herHusbands.removeIf(h -> h == null || h.isBlank() || h.equals(memberId));
+            if (!herHusbands.isEmpty()) {
+                String name = wife.getFullName() != null ? wife.getFullName() : "She";
+                throw new IllegalArgumentException(name + " already has a husband in the family tree. A woman can have only one husband.");
+            }
         }
     }
 
