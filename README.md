@@ -80,7 +80,8 @@ npm run dev
 
 | HTTP Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/members` | Retrieve all family members from PostgreSQL |
+| `GET` | `/api/members` | All family members for the public website (no addresses, emails or form notes; phone numbers stay for the Call / WhatsApp buttons) |
+| `GET` | `/api/admin/members` | All family members with every detail, for the admin site (also `/api/admin/members/search`, `/api/admin/members/{id}`) |
 | `GET` | `/api/members/{id}` | Retrieve specific member with relationship hierarchy |
 | `POST` | `/api/members` | Insert new family member (updates parents' `childIds` and spouse link) |
 | `PUT` | `/api/members/{id}` | Update member profile and reciprocal relations |
@@ -121,6 +122,6 @@ The admin site opens on three simple steps (plus **All members** for detailed ed
 
 **WhatsApp needs no setup.** The buttons are plain `https://wa.me/<number>?text=…` links: they open WhatsApp on the visitor's phone with the message ready, and the visitor presses send. No WhatsApp API, account or approval is involved. The public site shows **Call** and **WhatsApp** buttons on a person's profile (only when they gave a phone number) and a **Birthday today** section with a one-tap wish.
 
-> Before the site goes live, put it behind a family-only login: the members API now returns phone numbers and addresses from the form.
+> There is no login for now. The public `/api/members` therefore leaves out addresses, emails and the admin's form notes (`PublicMembers`); phone numbers stay public for the Call and WhatsApp buttons. The full records are only on `/api/admin/members`.
 
 **Tip for the Google Form:** questions named "Man / Woman" (or "Gender") and "Father's name", "Mother's name", "Spouse's name" are picked up automatically and make step 2 almost one-tap.
