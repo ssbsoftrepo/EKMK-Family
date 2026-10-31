@@ -41,6 +41,61 @@ export interface BackendHealth {
   java: string;
 }
 
+// ---- Admin sign-in -------------------------------------------------------
+// One shared admin password. Signing in gives a token that is kept on this device
+// (30 days) and sent with every request; the family website never needs it.
+const TOKEN_KEY = 'kmk-admin-token';
+export const SIGNED_OUT_EVENT = 'kmk-admin-signed-out';
+
+export const adminSession = {
+  get(): string | null {
+    try { return window.localStorage.getItem(TOKEN_KEY); } catch { return null; }
+  },
+  set(token: string | null) {
+    try {
+      if (token) window.localStorage.setItem(TOKEN_KEY, token);
+      else window.localStorage.removeItem(TOKEN_KEY);
+    } catch { /* storage blocked: signed in for this page only */ }
+  },
+};
+
+async function authFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  const token = adminSession.get();
+  const headers = new Headers(init.headers);
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  const res = await fetch(url, { ...init, headers });
+  if (res.status === 401 || res.status === 503) {
+    // Expired, password changed, or not set on the server: back to the sign-in page.
+    if (res.status === 401) adminSession.set(null);
+    window.dispatchEvent(new CustomEvent(SIGNED_OUT_EVENT, { detail: res.status }));
+  }
+  return res;
+}
+
+/** Signs in with the admin password; returns the error to show, or null on success. */
+export async function signIn(password: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (res.ok && body.token) {
+      adminSession.set(body.token);
+      return null;
+    }
+    return body.error || 'Could not sign in. Please try again.';
+  } catch {
+    return 'The family server is not answering. Please check your internet and try again.';
+  }
+}
+
+export function signOut() {
+  adminSession.set(null);
+  window.dispatchEvent(new CustomEvent(SIGNED_OUT_EVENT, { detail: 0 }));
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const raw = await res.text().catch(() => res.statusText);
@@ -77,23 +132,23 @@ export const familyApi = {
     if (params?.gender) searchParams.append('gender', params.gender);
     if (params?.isDeceased !== undefined) searchParams.append('isDeceased', String(params.isDeceased));
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    const res = await fetch(`${API_BASE_URL}/api/admin/members${query}`);
+    const res = await authFetch(`${API_BASE_URL}/api/admin/members${query}`);
     return handleResponse<FamilyMember[]>(res);
   },
 
   async searchMembers(query: string): Promise<FamilyMember[]> {
     if (!query.trim()) return [];
-    const res = await fetch(`${API_BASE_URL}/api/admin/members/search?q=${encodeURIComponent(query.trim())}`);
+    const res = await authFetch(`${API_BASE_URL}/api/admin/members/search?q=${encodeURIComponent(query.trim())}`);
     return handleResponse<FamilyMember[]>(res);
   },
 
   async getMemberById(id: string): Promise<FamilyMember> {
-    const res = await fetch(`${API_BASE_URL}/api/admin/members/${encodeURIComponent(id)}`);
+    const res = await authFetch(`${API_BASE_URL}/api/admin/members/${encodeURIComponent(id)}`);
     return handleResponse<FamilyMember>(res);
   },
 
   async createMember(member: Partial<FamilyMember>): Promise<FamilyMember> {
-    const res = await fetch(`${API_BASE_URL}/api/members`, {
+    const res = await authFetch(`${API_BASE_URL}/api/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(member),
@@ -102,7 +157,7 @@ export const familyApi = {
   },
 
   async updateMember(id: string, updates: Partial<FamilyMember>): Promise<FamilyMember> {
-    const res = await fetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`, {
+    const res = await authFetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
@@ -111,7 +166,7 @@ export const familyApi = {
   },
 
   async deleteMember(id: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`, {
+    const res = await authFetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     if (!res.ok && res.status !== 204) {
@@ -121,18 +176,18 @@ export const familyApi = {
 
   // Branches
   async getAllBranches(): Promise<FamilyBranch[]> {
-    const res = await fetch(`${API_BASE_URL}/api/branches`);
+    const res = await authFetch(`${API_BASE_URL}/api/branches`);
     return handleResponse<FamilyBranch[]>(res);
   },
 
   async getBranchById(id: string): Promise<FamilyBranch> {
-    const res = await fetch(`${API_BASE_URL}/api/branches/${encodeURIComponent(id)}`);
+    const res = await authFetch(`${API_BASE_URL}/api/branches/${encodeURIComponent(id)}`);
     return handleResponse<FamilyBranch>(res);
   },
 
   // Stats
   async getStats(): Promise<FamilyStats> {
-    const res = await fetch(`${API_BASE_URL}/api/stats`);
+    const res = await authFetch(`${API_BASE_URL}/api/stats`);
     return handleResponse<FamilyStats>(res);
   },
 
@@ -140,7 +195,7 @@ export const familyApi = {
   async uploadPhoto(file: File): Promise<{ url: string; filename: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch(`${API_BASE_URL}/api/media/upload`, {
+    const res = await authFetch(`${API_BASE_URL}/api/media/upload`, {
       method: 'POST',
       body: formData,
     });
@@ -151,7 +206,7 @@ export const familyApi = {
   async importResponses(file: File): Promise<ImportReport> {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch(`${API_BASE_URL}/api/admin/import`, {
+    const res = await authFetch(`${API_BASE_URL}/api/admin/import`, {
       method: 'POST',
       body: formData,
     });
@@ -160,12 +215,12 @@ export const familyApi = {
 
   // Settings (WhatsApp messages, website link)
   async getSettings(): Promise<SiteSettings> {
-    const res = await fetch(`${API_BASE_URL}/api/settings`);
+    const res = await authFetch(`${API_BASE_URL}/api/settings`);
     return handleResponse<SiteSettings>(res);
   },
 
   async saveSettings(changes: Partial<SiteSettings>): Promise<SiteSettings> {
-    const res = await fetch(`${API_BASE_URL}/api/settings`, {
+    const res = await authFetch(`${API_BASE_URL}/api/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(changes),
@@ -175,7 +230,7 @@ export const familyApi = {
 
   // Admin & Health
   async checkHealth(): Promise<BackendHealth> {
-    const res = await fetch(`${API_BASE_URL}/api/admin/health`);
+    const res = await authFetch(`${API_BASE_URL}/api/admin/health`);
     return handleResponse<BackendHealth>(res);
   },
 };

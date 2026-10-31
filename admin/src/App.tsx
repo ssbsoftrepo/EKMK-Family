@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ToastProvider } from './context/ToastContext';
 import { AdminProvider, useAdmin } from './context/AdminContext';
 import { SetupShell } from './components/Setup/SetupShell';
+import { SignIn } from './components/Setup/SignIn';
+import { adminSession, SIGNED_OUT_EVENT } from './api/familyApi';
 
 /** Shows a friendly message while loading or when the server can't be reached; otherwise the admin steps. */
 const AppShell: React.FC = () => {
@@ -34,14 +36,32 @@ const AppShell: React.FC = () => {
   return <SetupShell />;
 };
 
+/** Shows the sign-in page until this device has a valid admin session. */
 export function App() {
+  const [signedIn, setSignedIn] = useState(() => !!adminSession.get());
+  const [notice, setNotice] = useState<string | undefined>();
+
+  useEffect(() => {
+    const onSignedOut = (e: Event) => {
+      const status = (e as CustomEvent<number>).detail;
+      setNotice(status === 401 ? 'Please sign in again.' : status === 503 ? 'The admin password is not set on the server yet. Set ADMIN_PASSWORD and restart the backend.' : undefined);
+      setSignedIn(false);
+    };
+    window.addEventListener(SIGNED_OUT_EVENT, onSignedOut);
+    return () => window.removeEventListener(SIGNED_OUT_EVENT, onSignedOut);
+  }, []);
+
   return (
     <ToastProvider>
-      <AdminProvider>
-        <div className="min-h-screen flex flex-col">
-          <AppShell />
-        </div>
-      </AdminProvider>
+      {signedIn ? (
+        <AdminProvider>
+          <div className="min-h-screen flex flex-col">
+            <AppShell />
+          </div>
+        </AdminProvider>
+      ) : (
+        <SignIn notice={notice} onSignedIn={() => { setNotice(undefined); setSignedIn(true); }} />
+      )}
     </ToastProvider>
   );
 }

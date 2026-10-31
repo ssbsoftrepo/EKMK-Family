@@ -5,6 +5,7 @@ import { BuildTreeStep } from './BuildTreeStep';
 import { ShareStep } from './ShareStep';
 import { MembersStep } from './MembersStep';
 import { Check } from './ui';
+import { signOut } from '../../api/familyApi';
 
 type StepId = 'import' | 'build' | 'share' | 'members';
 
@@ -74,9 +75,9 @@ export const SetupShell: React.FC = () => {
               );
             })}
           </nav>
-          <span className="flex items-center gap-1.5 text-[15px]">
-            <Check className="w-5 h-5" color="#F2B705" />
-            Saved automatically
+          <span className="flex items-center gap-3 text-[15px]">
+            <span className="flex items-center gap-1.5"><Check className="w-5 h-5" color="#F2B705" />Saved automatically</span>
+            <button type="button" onClick={signOut} className="min-h-[44px] px-3.5 rounded-full border-2 border-white/70 text-white font-bold hover:bg-white/10">Sign out</button>
           </span>
         </div>
       </header>

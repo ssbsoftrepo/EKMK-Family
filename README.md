@@ -49,8 +49,10 @@ PostgreSQL database is configured with database name `"kmk-family"` on port 5432
 
 ```bash
 cd backend
-./gradlew bootRun
+ADMIN_PASSWORD='choose-a-long-family-password' ./gradlew bootRun
 ```
+
+**Admin password.** The admin site, and every change to the family, needs one shared password, set as `ADMIN_PASSWORD` on the server (never in a file in this repository). Without it the backend starts but keeps the admin locked, and logs a warning. Signing in keeps that device signed in for 30 days (`app.admin.session-days`); changing the password signs every device out. After 5 wrong passwords from one address, signing in pauses for 10 minutes. The family website needs no password: it only reads the public answers.
 - **Backend Port**: `http://localhost:8081`
 - **PostgreSQL Database**: `kmk-family` (PostgreSQL 16)
 - **Health Check**: `http://localhost:8081/api/admin/health`
@@ -89,6 +91,7 @@ npm run dev
 | `GET` | `/api/branches` | Retrieve all 11 family branches |
 | `GET` | `/api/stats` | Dynamic PostgreSQL stats (total members, generations, living, deceased) |
 | `GET` | `/api/admin/health` | Backend and runtime health check |
+| `POST` | `/api/admin/login` | `{"password"}` → `{"token"}`; send it as `Authorization: Bearer <token>` with every change and every `/api/admin/...` read |
 | `POST` | `/api/admin/import` | Upload the Google Form responses (`.xlsx` / `.csv`, field `file`). Tidies phones, names, places and jobs; safe to repeat (only new people are added) |
 | `GET` | `/api/settings` | Website link and the WhatsApp message templates (`{name}`, `{site}`) |
 | `PUT` | `/api/settings` | Change any of those settings (unknown keys are ignored) |
@@ -134,6 +137,6 @@ The admin site opens on three simple steps, plus **All members**:
 
 **WhatsApp needs no setup.** The buttons are plain `https://wa.me/<number>?text=…` links: they open WhatsApp on the visitor's phone with the message ready, and the visitor presses send. No WhatsApp API, account or approval is involved. The public site shows **Call** and **WhatsApp** buttons on a person's profile (only when they gave a phone number) and a **Birthday today** section with a one-tap wish.
 
-> There is no login for now. The public `/api/members` therefore leaves out addresses, emails and the admin's form notes (`PublicMembers`); phone numbers stay public for the Call and WhatsApp buttons. The full records are only on `/api/admin/members`.
+> The family website has no login. The public `/api/members` therefore leaves out addresses, emails and the admin's form notes (`PublicMembers`); phone numbers stay public for the Call and WhatsApp buttons. The full records are only on `/api/admin/members`.
 
 **Tip for the Google Form:** questions named "Man / Woman" (or "Gender") and "Father's name", "Mother's name", "Spouse's name" are picked up automatically and make step 2 almost one-tap.
