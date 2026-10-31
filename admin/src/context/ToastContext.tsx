@@ -76,7 +76,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           return (
             <div
               key={t.id}
-              className={`pointer-events-auto rounded-[18px] border-[3px] bg-white text-album-leaf font-album shadow-[0_8px_24px_rgba(30,70,54,0.22)] p-3.5 flex items-start gap-3 transition-all duration-300 animate-slideDown ${
+              className={`pointer-events-auto rounded-[18px] border-[3px] bg-white text-album-leaf font-album shadow-[0_8px_24px_rgb(var(--c-leaf)/0.22)] p-3.5 flex items-start gap-3 transition-all duration-300 animate-slideDown ${
                 isSuccess
                   ? 'border-album-moss'
                   : isError

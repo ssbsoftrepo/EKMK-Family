@@ -4,13 +4,13 @@ import { FamilyMember } from '../types/family';
 /** Shared pieces of the "family album" look. Text sizes start at 15px and tap targets at 44px. */
 
 export const btnPrimary =
-  'inline-flex items-center justify-center gap-2 min-h-[56px] px-6 rounded-2xl bg-album-terracotta text-white font-extrabold text-lg no-underline shadow-[0_4px_0_#1E4636] active:translate-y-[2px] active:shadow-[0_2px_0_#1E4636] transition';
+  'inline-flex items-center justify-center gap-2 min-h-[56px] px-6 rounded-2xl bg-album-terracotta text-white font-extrabold text-lg no-underline shadow-pop active:translate-y-[2px] active:shadow-pop-pressed transition';
 export const btnSecondary =
   'inline-flex items-center justify-center gap-2 min-h-[52px] px-5 rounded-2xl border-2 border-album-leaf bg-white text-album-leaf font-bold text-[17px] no-underline hover:bg-album-paper transition';
 export const btnDark =
   'inline-flex items-center justify-center gap-2 min-h-[52px] px-5 rounded-2xl bg-album-leaf text-white font-extrabold text-[17px] no-underline hover:brightness-110 transition';
 
-const tones = ['#BFD8B0', '#F2C6B4', '#F6D77A', '#E8A58C'];
+const tones = ['rgb(var(--c-sage))', 'rgb(var(--c-blush))', 'rgb(var(--c-sun))', 'rgb(var(--c-peach))'];
 export const toneFor = (id: string) => tones[Array.from(id).reduce((n, c) => n + c.charCodeAt(0), 0) % tones.length];
 
 /** A person's photo, or a friendly coloured silhouette while there is none. */
@@ -61,13 +61,13 @@ export const JasmineGarland: React.FC<{ className?: string }> = ({ className = '
   </svg>
 );
 
-/** A printed photo: white border, a strip of tape, slightly tilted. */
+/** A printed photo: white border, a strip of tape, slightly tilted (in Kaveri: a floating rounded card, see themes.css). */
 export const Print: React.FC<{ children: React.ReactNode; tilt?: number; tape?: 'turmeric' | 'terracotta' | 'none'; className?: string }> = ({
   children, tilt = -1.2, tape = 'turmeric', className = '',
 }) => (
-  <figure className={`relative m-0 bg-white p-2.5 pb-3 rounded-[10px] shadow-[0_10px_24px_rgba(30,70,54,0.18)] ${className}`} style={{ transform: `rotate(${tilt}deg)` }}>
+  <figure className={`print relative m-0 bg-white p-2.5 pb-3 rounded-[10px] shadow-[0_10px_24px_rgb(var(--c-leaf)/0.18)] ${className}`} style={{ '--tilt': `${tilt}deg` } as React.CSSProperties}>
     {tape !== 'none' && (
-      <span aria-hidden="true" className="absolute left-1/2 -top-3 -ml-12 w-24 h-7 rotate-3"
+      <span aria-hidden="true" className="print-tape absolute left-1/2 -top-3 -ml-12 w-24 h-7 rotate-3"
         style={{ background: tape === 'turmeric' ? 'rgba(242,183,5,0.75)' : 'rgba(196,80,47,0.55)' }} />
     )}
     {children}
@@ -114,7 +114,7 @@ export const Svg: React.FC<{ icon: React.ReactNode; className?: string; stroke?:
 
 /** A photo tile used in grids: photo, name, one line under it. */
 export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: string }> = ({ member, line, href }) => (
-  <a href={href} className="no-underline text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-[0_3px_0_#DCE6D2] hover:shadow-[0_3px_0_#1E4636] lift">
+  <a href={href} className="no-underline text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm lift">
     <Face member={member} className="w-full aspect-square" rounded="rounded-[13px]" />
     <span className="text-[17px] font-extrabold leading-tight px-1">{member.fullName}</span>
     {line && <span className="text-sm leading-tight px-1">{line}</span>}

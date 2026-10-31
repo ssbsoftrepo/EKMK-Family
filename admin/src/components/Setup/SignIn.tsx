@@ -25,7 +25,7 @@ export const SignIn: React.FC<{ notice?: string; onSignedIn: () => void }> = ({ 
 
   return (
     <div className="min-h-screen bg-album-paper text-album-leaf font-album flex flex-col items-center justify-center p-5">
-      <form onSubmit={submit} className="w-full max-w-[420px] bg-white rounded-[28px] p-6 sm:p-7 flex flex-col gap-4 shadow-[0_6px_0_#1E4636] border-[3px] border-album-leaf">
+      <form onSubmit={submit} className="w-full max-w-[420px] bg-white rounded-[28px] p-6 sm:p-7 flex flex-col gap-4 shadow-pop-lg border-[3px] border-album-edge">
         <div className="flex items-center gap-3">
           <span className="w-14 h-14 rounded-full bg-album-turmeric text-album-leaf flex items-center justify-center text-lg font-extrabold flex-shrink-0">KMK</span>
           <div className="flex flex-col leading-tight">

@@ -98,7 +98,11 @@ npm run dev
 
 ---
 
-## 📸 The family website ("family album" look)
+## 🎨 Two looks: Family Album and Kaveri
+
+Both sites come in two looks, switched with the **Look** button at the top. The admin picks the look everyone sees in **Share the link**. Only the look changes; see [docs/THEMES.md](docs/THEMES.md) for what differs, how it works and the contrast report.
+
+## 📸 The family website
 
 A photo album, phone first, bilingual labels (English + Tamil), big buttons, no login screens yet:
 

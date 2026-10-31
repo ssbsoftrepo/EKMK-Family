@@ -1,15 +1,24 @@
+@import './themes.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* "Family album" look: leaf green, turmeric and terracotta on a pale leaf ground. */
 @layer base {
   html, body {
-    background-color: #F3F7EC;
-    color: #1E4636;
-    font-family: 'Baloo Thambi 2', 'Noto Sans Tamil', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background-color: rgb(var(--c-paper));
+    color: rgb(var(--c-leaf));
+    font-family: var(--font-body);
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-image:
+      radial-gradient(rgb(var(--page-dot) / var(--page-dot-alpha)) 1.5px, transparent 1.8px),
+      linear-gradient(180deg, rgb(var(--page-glow)) 0, rgb(var(--c-paper)) 520px);
+    background-size: 24px 24px, 100% 100%;
+    background-attachment: scroll;
   }
 
   #root {
@@ -23,7 +32,7 @@
   }
 
   :focus-visible {
-    outline: 3px solid #C4502F;
+    outline: 3px solid rgb(var(--c-terracotta));
     outline-offset: 2px;
   }
 
@@ -37,7 +46,7 @@
   /* Photos lift like a print picked off the table. */
   .lift { transition: transform .18s ease, box-shadow .18s ease; }
   .lift:hover { transform: translateY(-3px) rotate(-1deg); }
-  .lift:active { transform: translateY(-6px) rotate(-2.5deg) scale(1.03); box-shadow: 0 14px 24px rgba(30, 70, 54, .22); }
+  .lift:active { transform: translateY(-6px) rotate(-2.5deg) scale(1.03); box-shadow: 0 14px 24px rgb(var(--c-leaf) / .22); }
 
   /* The kolam loader draws itself. */
   .kolam-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: kolam-draw 1.4s ease-in-out forwards infinite alternate; }
@@ -51,9 +60,9 @@
   /* Scratch card cover: turmeric foil with kolam dots. */
   .scratch-cover {
     background:
-      radial-gradient(circle, rgba(30, 70, 54, .25) 1.5px, transparent 2px) 0 0 / 16px 16px,
+      radial-gradient(circle, rgb(var(--c-leaf) / .25) 1.5px, transparent 2px) 0 0 / 16px 16px,
       linear-gradient(135deg, #F6D77A, #F2B705 45%, #FFE69A 55%, #F2B705);
-    border: 2px dashed rgba(30, 70, 54, .4);
+    border: 2px dashed rgb(var(--c-leaf) / .4);
   }
 
   /* The birthday wish button sparkles. */
@@ -66,7 +75,7 @@
 
   /* Marigolds bloom on the tree along the path from the elders, then sway gently. */
   .bloom { animation: bloom .6s cubic-bezier(.2, 1.5, .4, 1) both, sway 2.6s ease-in-out .6s infinite alternate; transform-origin: 50% 80%; }
-  .trail-glow { box-shadow: 0 0 0 4px #F2B705, 0 0 22px 6px rgba(242, 183, 5, .45); }
+  .trail-glow { box-shadow: 0 0 0 4px rgb(var(--c-turmeric)), 0 0 22px 6px rgb(var(--c-turmeric) / .45); }
 
   /* Stars in the header at night. */
   .star { animation: twinkle 2.4s ease-in-out infinite; opacity: .5; }

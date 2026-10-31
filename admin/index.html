@@ -5,12 +5,30 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KMK Family • Admin</title>
-    <!-- Google Fonts for Tamil & Heritage Elegance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Noto+Serif+Tamil:wght@400;600;700;800&family=Baloo+Thambi+2:wght@400;500;600;700;800&family=Kalam:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#1E4636" />
+    <!-- The admin's look (Family Album or Kaveri) and its fonts, chosen before the page draws. Same rules as src/lib/theme.ts. -->
+    <script>
+      (function () {
+        var fonts = {
+          album: 'https://fonts.googleapis.com/css2?family=Baloo+Thambi+2:wght@400;500;600;700;800&family=Kalam:wght@400;700&display=swap',
+          kaveri: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap'
+        };
+        var read = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+        var t = read('kmk-admin-theme');
+        if (!fonts[t]) t = read('kmk-theme-site');
+        if (!fonts[t]) t = 'album';
+        document.documentElement.setAttribute('data-theme', t);
+        var link = document.createElement('link');
+        link.id = 'theme-fonts-' + t;
+        link.rel = 'stylesheet';
+        link.href = fonts[t];
+        document.head.appendChild(link);
+      })();
+    </script>
   </head>
-  <body class="bg-album-paper text-album-leaf antialiased">
+  <body class="antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

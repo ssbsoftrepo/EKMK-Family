@@ -15,6 +15,9 @@ import java.util.Map;
  * WhatsApp messages are plain text templates. {name} becomes the person's
  * first name and {site} the website link. They are sent through ordinary
  * https://wa.me links on the visitor's own phone: no WhatsApp API or account.
+ *
+ * siteTheme is the look everyone sees on the family website ("album" or "kaveri");
+ * visitors can still pick their own look on their phone.
  */
 @Service
 @Transactional
@@ -33,8 +36,12 @@ public class SettingsService {
         d.put("whatsappBirthday", "Happy birthday {name}! Wishing you a wonderful year ahead. With love, from the KMK family");
         d.put("whatsappHello", "Hi {name}, I found you on our KMK family website! {site}");
         d.put("whatsappShare", "Hello everyone! Our KMK family website is ready. Find yourself on the family tree: {site}");
+        d.put("siteTheme", "album");
         DEFAULTS = Map.copyOf(d);
     }
+
+    /** The looks the family website has (frontend/src/lib/theme.ts). */
+    public static final java.util.Set<String> THEMES = java.util.Set.of("album", "kaveri");
 
     /** Settings that may be left empty (the messages fall back to their defaults instead). */
     private static final java.util.Set<String> OPTIONAL = java.util.Set.of("siteUrl", "homePhotoUrl", "secretNote", "secretPhotoUrl");
@@ -61,6 +68,9 @@ public class SettingsService {
                     continue;
                 }
                 String value = e.getValue() == null ? "" : e.getValue().trim();
+                if (e.getKey().equals("siteTheme") && !value.isEmpty() && !THEMES.contains(value)) {
+                    throw new IllegalArgumentException("Unknown look: choose album or kaveri");
+                }
                 if (value.length() > MAX_LENGTH) {
                     throw new IllegalArgumentException("Message is too long (more than " + MAX_LENGTH + " letters)");
                 }
@@ -76,6 +86,6 @@ public class SettingsService {
     }
 
     private static String[] orderedKeys() {
-        return new String[] {"siteUrl", "homePhotoUrl", "secretNote", "secretPhotoUrl", "whatsappBirthday", "whatsappHello", "whatsappShare"};
+        return new String[] {"siteUrl", "homePhotoUrl", "secretNote", "secretPhotoUrl", "whatsappBirthday", "whatsappHello", "whatsappShare", "siteTheme"};
     }
 }

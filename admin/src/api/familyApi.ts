@@ -32,6 +32,8 @@ export interface SiteSettings {
   whatsappBirthday: string;
   whatsappHello: string;
   whatsappShare: string;
+  /** The look of the family website for everyone: 'album' or 'kaveri'. */
+  siteTheme: string;
 }
 
 export interface BackendHealth {

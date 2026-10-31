@@ -270,7 +270,7 @@ export const BuildTreeStep: React.FC<{ onAddPeople: () => void; onNext: () => vo
       )}
 
       <div className="flex flex-wrap gap-6 items-start">
-        <section aria-label="Family question" className="flex-[999_1_600px] min-w-0 bg-white border-[3px] border-album-leaf rounded-[28px] shadow-[0_6px_0_#1E4636] p-5 sm:p-6 flex flex-col gap-4.5 gap-5">
+        <section aria-label="Family question" className="flex-[999_1_600px] min-w-0 bg-white border-[3px] border-album-edge rounded-[28px] shadow-pop-lg p-5 sm:p-6 flex flex-col gap-4.5 gap-5">
           {members.length === 0 ? (
             <Empty title="No family members yet" text="Start by uploading the Google Form file.">
               <button type="button" className={btnPrimary} onClick={onAddPeople}>Add people</button>
@@ -378,7 +378,7 @@ export const BuildTreeStep: React.FC<{ onAddPeople: () => void; onNext: () => vo
               {done[0]?.undo && <button type="button" disabled={busy} className={`${btnSecondary} min-h-[44px] rounded-full`} onClick={undoLast}>Undo last</button>}
             </div>
             {done.length === 0 && <span className="font-hand text-[19px]">nothing yet. Answer the first question!</span>}
-            {done.map((d, i) => <span key={i} className="bg-white rounded-2xl px-3 py-2 text-[15px] shadow-[0_2px_0_#DCE6D2]">{d.text}</span>)}
+            {done.map((d, i) => <span key={i} className="bg-white rounded-2xl px-3 py-2 text-[15px] shadow-soft">{d.text}</span>)}
           </section>
         </aside>
       </div>
@@ -473,7 +473,7 @@ const AddPerson: React.FC<{ deceasedHint: boolean; onAdded: (m: FamilyMember) =>
           </button>
         ))}
         <label className="flex items-center gap-2 min-h-[44px] text-base">
-          <input type="checkbox" checked={deceased} onChange={(e) => setDeceased(e.target.checked)} className="w-5 h-5 accent-[#1E4636]" />
+          <input type="checkbox" checked={deceased} onChange={(e) => setDeceased(e.target.checked)} className="w-5 h-5 accent-album-leaf" />
           Has passed away{deceasedHint ? ' (common for the elders)' : ''}
         </label>
       </div>
@@ -499,11 +499,11 @@ const TreeSoFar: React.FC<{ members: FamilyMember[]; placed: Set<string>; highli
   }
   const levels = Array.from(gens.keys()).sort((a, b) => a - b);
   return (
-    <section aria-label="Your tree so far" className="bg-white rounded-[24px] p-4.5 p-5 shadow-[0_8px_20px_rgba(30,70,54,0.12)] flex flex-col gap-3">
+    <section aria-label="Your tree so far" className="bg-white rounded-[24px] p-4.5 p-5 shadow-[0_8px_20px_rgb(var(--c-leaf)/0.12)] flex flex-col gap-3">
       <span className="font-hand text-[22px] leading-none text-album-terracotta">your tree so far</span>
       {levels.length === 0 && <span className="text-[15px]">Empty for now. The first question starts it.</span>}
       {levels.map((g) => (
-        <div key={g} className="flex flex-col gap-1.5 border-t-2 border-dotted border-[#9BB58C] pt-2.5">
+        <div key={g} className="flex flex-col gap-1.5 border-t-2 border-dotted border-album-moss/60 pt-2.5">
           <span className="text-[13px] font-extrabold tracking-[1px]">{titles[g - 1] ?? `GENERATION ${g}`}</span>
           <div className="flex flex-wrap gap-1.5">
             {gens.get(g)!.map((f) => (

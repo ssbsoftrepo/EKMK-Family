@@ -5,8 +5,14 @@ import { reducedMotion } from '../magic';
 import { href } from '../router';
 import { Face, Hand, Icon, Svg } from '../ui';
 import { TreeSwitch } from './FamilyPage';
+import { ThemeId, useTheme } from '../../lib/theme';
 
-const BRANCH_COLOURS = ['#C4502F', '#D99A00', '#5C8A4A', '#1E4636', '#B5652B', '#7A8F2C'];
+// One set of branch colours per look; strong enough to see on white.
+const BRANCH_COLOURS: Record<ThemeId, string[]> = {
+  album: ['#C4502F', '#D99A00', '#5C8A4A', '#1E4636', '#B5652B', '#7A8F2C'],
+  kaveri: ['#0B6E77', '#E08A00', '#2E8C78', '#0F3B45', '#D0603F', '#4A6FC9'],
+};
+const TRAIL = { album: '#F2B705', kaveri: '#F4A51C' };
 const MIN = 0.3;
 const TOP = 56; // room above the elders for their marigold
 const MAX = 1.2;
@@ -18,6 +24,7 @@ export const TreePage: React.FC<{ family: Family; focusId?: string }> = ({ famil
   const [query, setQuery] = useState('');
   const [focus, setFocus] = useState<string | undefined>(focusId);
   const [notFound, setNotFound] = useState(false);
+  const theme = useTheme();
 
   const onTree = useMemo(() => {
     const placed = placedIds(family.members);
@@ -43,9 +50,10 @@ export const TreePage: React.FC<{ family: Family; focusId?: string }> = ({ famil
     });
     return (personId: string) => {
       const i = headOf.get(personId);
-      return i === undefined ? '#1E4636' : BRANCH_COLOURS[i % BRANCH_COLOURS.length];
+      const colours = BRANCH_COLOURS[theme];
+      return i === undefined ? colours[3] : colours[i % colours.length];
     };
-  }, [family]);
+  }, [family, theme]);
   // Marigolds bloom, one generation at a time, from the elders down to the person you looked for.
   const trailPath = useMemo(() => {
     const onTreeIds = new Set(onTree.map((m) => m.id));
@@ -141,7 +149,7 @@ export const TreePage: React.FC<{ family: Family; focusId?: string }> = ({ famil
       </div>
       {notFound && <span className="text-lg font-bold" role="status">No one called “{query}” on the tree yet.</span>}
 
-      <div ref={box} className="relative overflow-auto bg-white rounded-[22px] shadow-[0_8px_20px_rgba(30,70,54,0.14)] h-[68vh] min-h-[420px] overscroll-contain"
+      <div ref={box} className="relative overflow-auto bg-white rounded-[22px] shadow-[0_8px_20px_rgb(var(--c-leaf)/0.14)] h-[68vh] min-h-[420px] overscroll-contain"
         aria-label="Family tree. Scroll to move around.">
         <div style={{ width: bounds.width * s, height: (bounds.height + TOP) * s }} className="relative">
           <div className="absolute left-0 top-0 origin-top-left" style={{ width: bounds.width, height: bounds.height + TOP, transform: `scale(${s})` }}>
@@ -149,7 +157,7 @@ export const TreePage: React.FC<{ family: Family; focusId?: string }> = ({ famil
               {layout.edges.map((e) => {
                 const fx = e.fromX - bounds.minX, fy = e.fromY - bounds.minY + TOP, tx = e.toX - bounds.minX, ty = e.toY - bounds.minY + TOP;
                 const mid = (fy + ty) / 2;
-                return <path key={e.id} d={`M${fx} ${fy} V${mid} H${tx} V${ty}`} fill="none" stroke={lit.has(childAt(e.toX, e.toY)) ? '#F2B705' : branchColour(childAt(e.toX, e.toY))} strokeWidth={lit.has(childAt(e.toX, e.toY)) ? 8 : e.isHighlighted ? 6 : 4} strokeLinejoin="round" />;
+                return <path key={e.id} d={`M${fx} ${fy} V${mid} H${tx} V${ty}`} fill="none" stroke={lit.has(childAt(e.toX, e.toY)) ? TRAIL[theme] : branchColour(childAt(e.toX, e.toY))} strokeWidth={lit.has(childAt(e.toX, e.toY)) ? 8 : e.isHighlighted ? 6 : 4} strokeLinejoin="round" />;
               })}
             </svg>
             {layout.nodes.map((n) => {

@@ -5,7 +5,9 @@ import { BuildTreeStep } from './BuildTreeStep';
 import { ShareStep } from './ShareStep';
 import { MembersStep } from './MembersStep';
 import { Check } from './ui';
-import { signOut } from '../../api/familyApi';
+import { familyApi, signOut } from '../../api/familyApi';
+import { ThemeSwitch } from './ThemeSwitch';
+import { useSiteTheme } from '../../lib/theme';
 
 type StepId = 'import' | 'build' | 'share' | 'members';
 
@@ -32,6 +34,11 @@ export const SetupShell: React.FC = () => {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
+  // The admin site follows the family website's look, unless the admin picked their own with the Look button.
+  const [siteTheme, setSiteTheme] = useState<string>();
+  useEffect(() => { familyApi.getSettings().then((s) => setSiteTheme(s.siteTheme)).catch(() => undefined); }, []);
+  useSiteTheme(siteTheme);
+
   // Bumped on every menu tap, so tapping "All members" while editing someone goes back to the list.
   const [visit, setVisit] = useState(0);
 
@@ -45,8 +52,8 @@ export const SetupShell: React.FC = () => {
   const doneBefore = (id: StepId) => STEPS.findIndex((s) => s.id === id) < STEPS.findIndex((s) => s.id === step) && id !== 'members';
 
   return (
-    <div className="min-h-screen bg-album-paper text-album-leaf font-album flex flex-col">
-      <header className="bg-album-leaf text-white">
+    <div className="admin-shell min-h-screen bg-album-paper text-album-leaf font-album flex flex-col">
+      <header className="admin-header bg-album-leaf text-white">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-3">
           <span className="flex items-center gap-2.5">
             <span className="w-[46px] h-[46px] rounded-full bg-album-turmeric text-album-leaf flex items-center justify-center text-[15px] font-extrabold">KMK</span>
@@ -77,6 +84,7 @@ export const SetupShell: React.FC = () => {
           </nav>
           <span className="flex items-center gap-3 text-[15px]">
             <span className="flex items-center gap-1.5"><Check className="w-5 h-5" color="#F2B705" />Saved automatically</span>
+            <ThemeSwitch night />
             <button type="button" onClick={signOut} className="min-h-[44px] px-3.5 rounded-full border-2 border-white/70 text-white font-bold hover:bg-white/10">Sign out</button>
           </span>
         </div>

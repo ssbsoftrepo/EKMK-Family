@@ -7,18 +7,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        // "Family album" look (design option B): leaf green, turmeric, terracotta
         album: {
-          leaf: '#1E4636',
-          paper: '#F3F7EC',
-          line: '#DCE6D2',
-          sage: '#BFD8B0',
-          moss: '#5C8A4A',
-          turmeric: '#F2B705',
-          sun: '#F6D77A',
-          terracotta: '#C4502F',
-          peach: '#E8A58C',
-          blush: '#F2C6B4',
+          // Theme tokens: set per look in index.css (<html data-theme="album|kaveri">).
+          leaf: 'rgb(var(--c-leaf) / <alpha-value>)',
+          paper: 'rgb(var(--c-paper) / <alpha-value>)',
+          line: 'rgb(var(--c-line) / <alpha-value>)',
+          sage: 'rgb(var(--c-sage) / <alpha-value>)',
+          moss: 'rgb(var(--c-moss) / <alpha-value>)',
+          turmeric: 'rgb(var(--c-turmeric) / <alpha-value>)',
+          sun: 'rgb(var(--c-sun) / <alpha-value>)',
+          terracotta: 'rgb(var(--c-terracotta) / <alpha-value>)',
+          peach: 'rgb(var(--c-peach) / <alpha-value>)',
+          blush: 'rgb(var(--c-blush) / <alpha-value>)',
+          edge: 'rgb(var(--c-edge) / <alpha-value>)',
+          night: 'rgb(var(--c-night) / <alpha-value>)',
         },
         heritage: {
           ivory: '#F8F4EC',
@@ -71,14 +73,20 @@ export default {
         }
       },
       fontFamily: {
-        album: ['"Baloo Thambi 2"', 'system-ui', 'sans-serif'],
-        hand: ['"Kalam"', 'cursive'],
+        album: ['var(--font-body)'],
+        hand: ['var(--font-hand)'],
         serif: ['"Cinzel"', '"Noto Serif Tamil"', 'Georgia', 'serif'],
         display: ['"Playfair Display"', '"Noto Serif Tamil"', 'serif'],
         sans: ['"Plus Jakarta Sans"', '"Noto Sans Tamil"', 'system-ui', 'sans-serif'],
         tamil: ['"Noto Serif Tamil"', '"Noto Sans Tamil"', 'serif'],
       },
       boxShadow: {
+        // Theme shadows: sticker-style offsets in Family Album, soft glows in Kaveri.
+        pop: 'var(--shadow-pop)',
+        'pop-lg': 'var(--shadow-pop-lg)',
+        'pop-sm': 'var(--shadow-pop-sm)',
+        'pop-pressed': 'var(--shadow-pop-pressed)',
+        soft: 'var(--shadow-soft)',
         'heritage-sm': '0 2px 6px -1px rgba(112, 45, 59, 0.06), 0 1px 3px -1px rgba(41, 37, 34, 0.04)',
         'heritage': '0 8px 24px -4px rgba(112, 45, 59, 0.08), 0 4px 12px -2px rgba(182, 149, 91, 0.06)',
         'heritage-lg': '0 16px 36px -6px rgba(112, 45, 59, 0.12), 0 8px 16px -4px rgba(182, 149, 91, 0.1)',
