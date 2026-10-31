@@ -76,26 +76,26 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           return (
             <div
               key={t.id}
-              className={`pointer-events-auto rounded-2xl border-2 shadow-heritage-lg p-3.5 flex items-start gap-3 backdrop-blur-md transition-all duration-300 animate-slideDown ${
+              className={`pointer-events-auto rounded-[18px] border-[3px] bg-white text-album-leaf font-album shadow-[0_8px_24px_rgba(30,70,54,0.22)] p-3.5 flex items-start gap-3 transition-all duration-300 animate-slideDown ${
                 isSuccess
-                  ? 'border-emerald-600/50 bg-[#FFFEFB] text-emerald-950 ring-1 ring-emerald-500/20'
+                  ? 'border-album-moss'
                   : isError
-                  ? 'border-rose-600/50 bg-[#FFFEFB] text-rose-950 ring-1 ring-rose-500/20'
+                  ? 'border-album-terracotta'
                   : isWarning
-                  ? 'border-heritage-gold bg-[#FFFEFB] text-heritage-charcoal ring-1 ring-heritage-gold/30'
-                  : 'border-blue-600/50 bg-[#FFFEFB] text-blue-950 ring-1 ring-blue-500/20'
+                  ? 'border-album-turmeric'
+                  : 'border-album-leaf'
               }`}
             >
               {/* Theme Icon Badge */}
               <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm ${
+                className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                   isSuccess
-                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                    ? 'bg-album-sage text-album-leaf'
                     : isError
-                    ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                    ? 'bg-album-blush text-album-terracotta'
                     : isWarning
-                    ? 'bg-heritage-gold-100 text-heritage-gold-800 border border-heritage-gold-300'
-                    : 'bg-blue-100 text-blue-700 border border-blue-200'
+                    ? 'bg-album-sun text-album-leaf'
+                    : 'bg-album-paper text-album-leaf'
                 }`}
               >
                 {isSuccess && <CheckCircle2 className="w-4 h-4" />}
@@ -106,11 +106,11 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
               {/* Text content */}
               <div className="flex-1 min-w-0 pr-1">
-                <p className="font-serif text-xs font-bold tracking-tight text-heritage-charcoal">
+                <p className="font-album text-base font-extrabold leading-snug">
                   {t.title}
                 </p>
                 {t.message && (
-                  <p className="text-[11px] text-heritage-muted leading-relaxed mt-0.5 break-words">
+                  <p className="font-album text-[15px] leading-snug mt-0.5 break-words">
                     {t.message}
                   </p>
                 )}
@@ -120,10 +120,10 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               <button
                 type="button"
                 onClick={() => removeToast(t.id)}
-                className="text-heritage-muted hover:text-heritage-charcoal p-1 rounded-lg hover:bg-black/5 transition-colors cursor-pointer flex-shrink-0"
-                title="Dismiss"
+                className="text-album-leaf w-10 h-10 -m-1 rounded-full hover:bg-album-paper flex items-center justify-center cursor-pointer flex-shrink-0"
+                aria-label="Close"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-5 h-5" />
               </button>
             </div>
           );

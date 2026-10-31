@@ -114,11 +114,13 @@ The relation names live in `frontend/src/album/kinship.ts`; `npm run check:kinsh
 
 ## 🧭 Admin in 3 steps
 
-The admin site opens on three simple steps (plus **All members** for detailed edits):
+The admin site opens on three simple steps, plus **All members**:
 
 1. **Add people**: upload the Google Form file. The site tidies it and only asks what it cannot guess (man or woman, possible duplicates). Upload again whenever new answers arrive.
 2. **Build the tree**: one question at a time ("Who are the children of …?", "Who is … married to?"), answered by tapping photos. Likely answers come first with a clue (same address, same phone, the form's father/mother/spouse names). Only parent → child and husband ↔ wife links are ever set. A **Still to do** list shows everyone not on the tree yet and every unanswered question, so nobody is left out. Every answer is saved at once; **Undo last** reverses the latest one.
 3. **Share the link**: the website address, the home page photo and the editable WhatsApp messages.
+
+**All members** shows everyone as photos (search, and filters such as "No photo yet" and "Not on the tree yet"). Tapping a person opens one page with every detail, a big **Change photo** button, "Has passed away", their family links (father, mother, husband or wife, children; each changed by tapping a photo) and **Delete**, which asks first. Every change saves on its own.
 
 **WhatsApp needs no setup.** The buttons are plain `https://wa.me/<number>?text=…` links: they open WhatsApp on the visitor's phone with the message ready, and the visitor presses send. No WhatsApp API, account or approval is involved. The public site shows **Call** and **WhatsApp** buttons on a person's profile (only when they gave a phone number) and a **Birthday today** section with a one-tap wish.
 

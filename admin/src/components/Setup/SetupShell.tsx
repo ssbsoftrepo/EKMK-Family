@@ -3,7 +3,7 @@ import { useAdmin } from '../../context/AdminContext';
 import { ImportStep } from './ImportStep';
 import { BuildTreeStep } from './BuildTreeStep';
 import { ShareStep } from './ShareStep';
-import { AdminDashboard } from '../Admin/AdminDashboard';
+import { MembersStep } from './MembersStep';
 import { Check } from './ui';
 
 type StepId = 'import' | 'build' | 'share' | 'members';
@@ -31,9 +31,13 @@ export const SetupShell: React.FC = () => {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
+  // Bumped on every menu tap, so tapping "All members" while editing someone goes back to the list.
+  const [visit, setVisit] = useState(0);
+
   const go = (id: StepId) => {
     window.location.hash = id;
     setStep(id);
+    setVisit((v) => v + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -77,19 +81,14 @@ export const SetupShell: React.FC = () => {
         </div>
       </header>
 
-      {step === 'members' ? (
-        <div className="bg-heritage-ivory text-heritage-charcoal font-sans flex-1">
-          <AdminDashboard />
-        </div>
-      ) : (
-        <main className="w-full max-w-[1200px] mx-auto px-4 sm:px-5 pt-7 pb-12 flex flex-col gap-6 flex-1">
-          {step === 'import' && <ImportStep onNext={() => go('build')} />}
-          {step === 'build' && <BuildTreeStep onAddPeople={() => go('import')} onNext={() => go('share')} />}
-          {step === 'share' && <ShareStep />}
-        </main>
-      )}
+      <main className="w-full max-w-[1200px] mx-auto px-4 sm:px-5 pt-7 pb-12 flex flex-col gap-6 flex-1">
+        {step === 'import' && <ImportStep onNext={() => go('build')} />}
+        {step === 'build' && <BuildTreeStep onAddPeople={() => go('import')} onNext={() => go('share')} />}
+        {step === 'share' && <ShareStep />}
+        {step === 'members' && <MembersStep key={visit} />}
+      </main>
 
-      <footer className="border-t-2 border-album-line py-5 px-4 flex items-center justify-center gap-1.5 font-hand text-lg text-album-leaf">
+      <footer className="border-t-2 border-album-line py-5 px-4 text-center font-hand text-lg text-album-leaf">
         Made with <span role="img" aria-label="love">❤️</span> by SSB Software Solutions Pvt. Ltd.
       </footer>
     </div>
