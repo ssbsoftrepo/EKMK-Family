@@ -122,10 +122,23 @@ const Picker: React.FC<{
   const [limit, setLimit] = useState(36);
   const list = useMemo(() => {
     const s = q.trim().toLowerCase();
+    const words = s.split(/\s+/).filter(Boolean);
     return family.members
-      .filter((m) => m.id !== exclude && !m.isDeceased)
-      .filter((m) => !s || m.fullName.toLowerCase().includes(s))
-      .sort((a, b) => a.fullName.localeCompare(b.fullName));
+      .filter((m) => m.id !== exclude)
+      .filter((m) =>
+        words.length === 0 ||
+        words.every((w) =>
+          [m.fullName, m.tamilName, m.currentCity, m.profession].some(
+            (val) => val && val.toLowerCase().includes(w)
+          )
+        )
+      )
+      .sort(
+        (a, b) =>
+          (a.generation || 99) - (b.generation || 99) ||
+          (a.birthDate ?? '9999').localeCompare(b.birthDate ?? '9999') ||
+          a.fullName.localeCompare(b.fullName)
+      );
   }, [family, q, exclude]);
   return (
     <div className="flex flex-col gap-4">
@@ -137,16 +150,23 @@ const Picker: React.FC<{
         <input id="pick-name" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type a name"
           className="w-full min-h-[60px] rounded-[18px] border-2 border-album-leaf bg-white pl-[52px] pr-4 text-[19px]" />
       </div>
-      <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 30%), 1fr))' }}>
-        {list.slice(0, limit).map((m) => (
-          <button key={m.id} type="button" onClick={() => onPick(m)}
-            className="text-left text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm lift">
-            <Face member={m} className="w-full aspect-square" rounded="rounded-[13px]" />
-            <span className="text-[17px] font-extrabold leading-tight px-1">{m.fullName}</span>
-            <span className="text-sm leading-tight px-1">{whoLine(family, m)}</span>
-          </button>
-        ))}
-      </div>
+      {list.length === 0 ? (
+        <div className="py-8 text-center flex flex-col gap-1">
+          <Hand className="text-2xl">no one found</Hand>
+          <span className="text-lg">Try fewer letters, or check the spelling.</span>
+        </div>
+      ) : (
+        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 30%), 1fr))' }}>
+          {list.slice(0, limit).map((m) => (
+            <button key={m.id} type="button" onClick={() => onPick(m)}
+              className="text-left text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm lift">
+              <Face member={m} className="w-full aspect-square" rounded="rounded-[13px]" />
+              <span className="text-[17px] font-extrabold leading-tight px-1">{m.fullName}</span>
+              <span className="text-sm leading-tight px-1">{whoLine(family, m)}</span>
+            </button>
+          ))}
+        </div>
+      )}
       {list.length > limit && (
         <button type="button" onClick={() => setLimit((l) => l + 36)} className={`${btnSecondary} self-center`}>Show more ({list.length - limit} left)</button>
       )}

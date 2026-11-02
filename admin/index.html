@@ -10,6 +10,27 @@
     <meta name="theme-color" content="#1E4636" />
     <!-- The admin's look (Family Album or Kaveri) and its fonts, chosen before the page draws. Same rules as src/lib/theme.ts. -->
     <script>
+      window.addEventListener('error', function (e) {
+        var el = document.getElementById('fatal-error-overlay');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'fatal-error-overlay';
+          el.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;color:#d32f2f;padding:24px;z-index:999999;font-family:monospace;white-space:pre-wrap;overflow:auto;';
+          document.body ? document.body.appendChild(el) : document.documentElement.appendChild(el);
+        }
+        el.textContent += '\n[Script Error]: ' + (e.error ? (e.error.stack || e.error.message) : e.message) + '\n';
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        var el = document.getElementById('fatal-error-overlay');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'fatal-error-overlay';
+          el.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;color:#d32f2f;padding:24px;z-index:999999;font-family:monospace;white-space:pre-wrap;overflow:auto;';
+          document.body ? document.body.appendChild(el) : document.documentElement.appendChild(el);
+        }
+        el.textContent += '\n[Unhandled Promise Rejection]: ' + (e.reason ? (e.reason.stack || e.reason.message || e.reason) : 'Unknown rejection') + '\n';
+      });
+
       (function () {
         var fonts = {
           album: 'https://fonts.googleapis.com/css2?family=Baloo+Thambi+2:wght@400;500;600;700;800&family=Kalam:wght@400;700&display=swap',

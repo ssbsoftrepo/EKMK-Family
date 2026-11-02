@@ -29,7 +29,7 @@ export interface Family {
 
 const thisYear = new Date().getFullYear();
 
-export const firstName = (m: FamilyMember) => m.firstName || m.fullName?.split(' ')[0] || 'Someone';
+export const firstName = (m: FamilyMember) => m.fullName || m.firstName || 'Someone';
 
 export const birthYear = (m: FamilyMember): number | null => {
   const y = m.birthDate ? parseInt(m.birthDate.slice(0, 4), 10) : NaN;
@@ -40,7 +40,7 @@ export const birthYear = (m: FamilyMember): number | null => {
 export const coupleOrder = (a: FamilyMember, b: FamilyMember): FamilyMember[] =>
   a.gender === 'female' && b.gender !== 'female' ? [b, a] : [a, b];
 
-export const familyLabel = (parents: FamilyMember[]) => parents.map(firstName).join(' & ');
+export const familyLabel = (parents: FamilyMember[]) => parents.map((p) => p.fullName || firstName(p)).join(' & ');
 
 /** People connected (through any link) to the elders at the top of the tree. */
 export function placedIds(members: FamilyMember[]): Set<string> {

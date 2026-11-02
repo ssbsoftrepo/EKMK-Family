@@ -105,7 +105,7 @@ export const TreePage: React.FC<{ family: Family; focusId?: string }> = ({ famil
     e.preventDefault();
     const q = query.trim().toLowerCase();
     if (!q) return;
-    const m = onTree.find((p) => p.fullName.toLowerCase().includes(q));
+    const m = onTree.find((p) => [p.fullName, p.tamilName].some((v) => v && v.toLowerCase().includes(q)));
     setNotFound(!m);
     if (m) setFocus(m.id);
   };

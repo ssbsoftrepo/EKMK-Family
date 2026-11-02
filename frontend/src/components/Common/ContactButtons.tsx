@@ -3,7 +3,7 @@ import { FamilyMember } from '../../types/family';
 import { callLink, fillMessage, useSiteSettings, whatsappLink } from '../../lib/whatsapp';
 import { Icon, Svg } from '../../album/ui';
 
-const firstName = (m: FamilyMember) => m.firstName || m.fullName.split(' ')[0];
+const firstName = (m: FamilyMember) => m.fullName || m.firstName;
 
 /**
  * Big Call and WhatsApp buttons, shown only when the person gave a phone number.

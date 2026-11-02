@@ -3,9 +3,7 @@ import { FamilyMember } from '../types/family';
 /** Small helpers over the member list. Relations are read from both sides, so one-sided links still count. */
 
 export const firstName = (m: FamilyMember) => {
-  const fn = m.firstName?.trim();
-  if (fn && fn.length > 2) return fn;
-  return m.fullName;
+  return m.fullName || m.firstName || 'Someone';
 };
 
 export const birthYear = (m: FamilyMember): number | null => {

@@ -47,10 +47,11 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     const chosen = branches.find((b) => b.id === branch);
+    const words = q.split(/\s+/).filter(Boolean);
     return [...family.members]
       .filter((m) => !chosen || chosen.ids.has(m.id))
-      .filter((m) => !q || [m.fullName, m.tamilName, m.currentCity, m.profession].some((v) => v?.toLowerCase().includes(q)))
-      .sort((a, b) => a.fullName.localeCompare(b.fullName));
+      .filter((m) => words.length === 0 || words.every((w) => [m.fullName, m.tamilName, m.currentCity, m.profession].some((v) => v && v.toLowerCase().includes(w))))
+      .sort((a, b) => (a.generation || 99) - (b.generation || 99) || a.fullName.localeCompare(b.fullName));
   }, [family, query, branch, branches]);
 
   return (

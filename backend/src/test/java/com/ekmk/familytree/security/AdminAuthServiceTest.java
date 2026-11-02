@@ -1,15 +1,20 @@
 package com.ekmk.familytree.security;
 
+import com.ekmk.familytree.model.AdminCredential;
+import com.ekmk.familytree.repository.AdminCredentialRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 class AdminAuthServiceTest {
 
@@ -31,6 +36,24 @@ class AdminAuthServiceTest {
         AdminAuthService auth = service("murukku-2026", NOW);
         assertEquals(AdminAuthService.Result.WRONG_PASSWORD, auth.login("murukku", "1.2.3.4"));
         assertEquals(AdminAuthService.Result.WRONG_PASSWORD, auth.login(null, "1.2.3.4"));
+    }
+
+    @Test
+    void databaseEncryptedPasswordWorks() {
+        AdminCredentialRepository repo = Mockito.mock(AdminCredentialRepository.class);
+        String salt = AdminCrypto.generateSalt();
+        String hash = AdminCrypto.hashPassword("kmkfamilyadmin1@3$", salt, AdminCrypto.DEFAULT_ITERATIONS);
+        AdminCredential cred = new AdminCredential("admin", hash, salt, AdminCrypto.DEFAULT_ITERATIONS, AdminCrypto.ALGORITHM);
+
+        when(repo.findById("admin")).thenReturn(Optional.of(cred));
+
+        AdminAuthService auth = new AdminAuthService(repo, "", Duration.ofDays(30), Clock.fixed(NOW, ZoneOffset.UTC));
+        assertTrue(auth.isConfigured());
+        assertEquals(AdminAuthService.Result.OK, auth.login("kmkfamilyadmin1@3$", "127.0.0.1"));
+        assertEquals(AdminAuthService.Result.WRONG_PASSWORD, auth.login("wrongpass", "127.0.0.1"));
+
+        String token = auth.issueToken();
+        assertTrue(auth.isValid(token));
     }
 
     @Test

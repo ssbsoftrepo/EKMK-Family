@@ -11,7 +11,7 @@ export const btnDark =
 export const card = 'bg-white rounded-[24px] p-5 sm:p-6';
 
 const tones = ['rgb(var(--c-sage))', 'rgb(var(--c-blush))', 'rgb(var(--c-sun))', 'rgb(var(--c-peach))'];
-const toneFor = (id: string) => tones[Array.from(id).reduce((n, c) => n + c.charCodeAt(0), 0) % tones.length];
+const toneFor = (id?: string) => tones[Array.from(id || '').reduce((n, c) => n + c.charCodeAt(0), 0) % tones.length];
 
 /** A person's photo, or a friendly coloured silhouette when there is none yet. */
 export const Face: React.FC<{ member: FamilyMember; className?: string; rounded?: string }> = ({ member, className = 'w-14 h-14', rounded = 'rounded-2xl' }) => (

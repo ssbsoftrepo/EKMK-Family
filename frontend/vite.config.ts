@@ -4,6 +4,9 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    include: ['canvas-confetti', 'lucide-react'],
+  },
   server: {
     host: true, // Listen on all network addresses (0.0.0.0) including 192.168.1.84
     port: 5173,
