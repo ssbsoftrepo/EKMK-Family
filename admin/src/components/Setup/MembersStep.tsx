@@ -7,10 +7,11 @@ import { birthYear, placedIds } from '../../lib/treeQuestions';
 import { MemberEditor } from './MemberEditor';
 import { Face, StepTitle, btnPrimary, btnSecondary } from './ui';
 
-type Filter = 'all' | 'photo' | 'tree' | 'details' | 'memory';
+type Filter = 'all' | 'gen1' | 'photo' | 'tree' | 'details' | 'memory';
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'Everyone' },
+  { id: 'gen1', label: 'First gen (elders)' },
   { id: 'photo', label: 'No photo yet' },
   { id: 'tree', label: 'Not on the tree yet' },
   { id: 'details', label: 'Missing birthday' },
@@ -30,6 +31,7 @@ export const MembersStep: React.FC = () => {
   const placed = useMemo(() => placedIds(members), [members]);
   const counts = useMemo(() => ({
     all: members.length,
+    gen1: members.filter((m) => m.generation === 1).length,
     photo: members.filter((m) => !m.photoUrl).length,
     tree: members.filter((m) => !placed.has(m.id)).length,
     details: members.filter((m) => !m.birthDate).length,
@@ -39,6 +41,7 @@ export const MembersStep: React.FC = () => {
   const list = useMemo(() => {
     const s = q.trim().toLowerCase();
     return members
+      .filter((m) => filter !== 'gen1' || m.generation === 1)
       .filter((m) => filter !== 'photo' || !m.photoUrl)
       .filter((m) => filter !== 'tree' || !placed.has(m.id))
       .filter((m) => filter !== 'details' || !m.birthDate)
@@ -115,6 +118,7 @@ export const MembersStep: React.FC = () => {
               <span className="text-sm leading-tight px-1">
                 {[birthYear(m) && `born ${birthYear(m)}`, m.isDeceased && 'in loving memory'].filter(Boolean).join(' · ') || m.currentCity || ' '}
               </span>
+              {m.generation === 1 && <span className="font-hand text-[15px] text-album-leaf bg-album-turmeric/35 rounded-full px-2 py-0.5 self-start leading-tight">1st gen · elder</span>}
               {!placed.has(m.id) && <span className="font-hand text-[15px] text-album-terracotta px-1 leading-tight">not on the tree yet</span>}
             </button>
           ))}

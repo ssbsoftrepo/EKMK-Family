@@ -2,7 +2,11 @@ import { FamilyMember } from '../types/family';
 
 /** Small helpers over the member list. Relations are read from both sides, so one-sided links still count. */
 
-export const firstName = (m: FamilyMember) => m.firstName || m.fullName.split(' ')[0];
+export const firstName = (m: FamilyMember) => {
+  const fn = m.firstName?.trim();
+  if (fn && fn.length > 2) return fn;
+  return m.fullName;
+};
 
 export const birthYear = (m: FamilyMember): number | null => {
   const y = m.birthDate ? parseInt(m.birthDate.slice(0, 4), 10) : NaN;
@@ -119,12 +123,12 @@ export function placedIds(members: FamilyMember[]): Set<string> {
   return seen;
 }
 
-/** A short line saying who someone is, e.g. "Ravi's son" or "Mani's wife". */
+/** A short line saying who someone is, showing full names, e.g. "Ravi Kumar's son" or "Mani's wife". */
 export function whoLine(family: Family, m: FamilyMember): string {
   const parent = family.parents(m).find((p) => p.gender === 'male') ?? family.parents(m)[0];
-  if (parent) return `${firstName(parent)}’s ${m.gender === 'female' ? 'daughter' : m.gender === 'male' ? 'son' : 'child'}`;
+  if (parent) return `${parent.fullName}’s ${m.gender === 'female' ? 'daughter' : m.gender === 'male' ? 'son' : 'child'}`;
   const spouse = family.spouses(m)[0];
-  if (spouse) return `${firstName(spouse)}’s ${m.gender === 'female' ? 'wife' : m.gender === 'male' ? 'husband' : 'spouse'}`;
+  if (spouse) return `${spouse.fullName}’s ${m.gender === 'female' ? 'wife' : m.gender === 'male' ? 'husband' : 'spouse'}`;
   if (m.generation === 1) return 'Family elder';
   return m.currentCity ?? '';
 }

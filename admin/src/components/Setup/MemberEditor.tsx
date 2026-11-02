@@ -37,9 +37,14 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
   const [picking, setPicking] = useState<Picking>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);
+  const couplePhotoInput = useRef<HTMLInputElement>(null);
 
   // Opening someone else (e.g. tapping a family link) starts from their saved details.
-  useEffect(() => { setDraft(toDraft(m)); setConfirmDelete(false); setStatus('idle'); }, [m.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setDraft(toDraft(m));
+    setConfirmDelete(false);
+    setStatus('idle');
+  }, [m.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const save = async (changes: Partial<FamilyMember>, others: [string, Partial<FamilyMember>][] = []) => {
     setStatus('saving');
@@ -86,6 +91,32 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
   const spouses = members.filter((x) => x.id !== m.id && ((m.spouseIds ?? []).includes(x.id) || m.spouseId === x.id || x.spouseIds?.includes(m.id) || x.spouseId === m.id));
   const children = members.filter((x) => x.fatherId === m.id || x.motherId === m.id);
   const spouseWord = m.gender === 'male' ? 'wife' : m.gender === 'female' ? 'husband' : 'husband or wife';
+
+  const couplePhoto = m.couplePhotoUrl || spouses.find((s) => s.generation === 1)?.couplePhotoUrl || '';
+
+  const uploadCouplePhoto = async (file?: File) => {
+    if (!file) return;
+    setStatus('saving');
+    try {
+      const res = await familyApi.uploadPhoto(file);
+      const gen1Others = members.filter((x) => x.generation === 1 && x.id !== m.id);
+      const others: [string, Partial<FamilyMember>][] = gen1Others.map((s) => [s.id, { couplePhotoUrl: res.url }]);
+      await save({ couplePhotoUrl: res.url }, others);
+      toast.success('Couple photo updated', 'Saved for the first generation elders');
+    } catch (e) {
+      setStatus('idle');
+      toast.error('Could not upload couple photo', e instanceof Error ? e.message : undefined);
+    } finally {
+      if (couplePhotoInput.current) couplePhotoInput.current.value = '';
+    }
+  };
+
+  const removeCouplePhoto = async () => {
+    const gen1Others = members.filter((x) => x.generation === 1 && x.id !== m.id);
+    const others: [string, Partial<FamilyMember>][] = gen1Others.map((s) => [s.id, { couplePhotoUrl: '' }]);
+    await save({ couplePhotoUrl: '' }, others);
+    toast.success('Couple photo removed');
+  };
 
   const linkedIds = new Set([m.id, father?.id, mother?.id, ...spouses.map((s) => s.id), ...children.map((c) => c.id)].filter(Boolean) as string[]);
   // A woman can have only one husband: married women are not offered as someone's wife.
@@ -190,6 +221,47 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
           </label>
         </div>
       </section>
+
+      {m.generation === 1 && (
+        <section className={`${card} border-[3px] border-album-turmeric flex flex-wrap gap-6 items-center`}>
+          <div className="flex flex-col items-center gap-2.5 flex-[0_0_auto]">
+            <div className="bg-white p-2 rounded-[10px] shadow-[0_8px_20px_rgba(30,70,54,0.16)] rotate-1">
+              <div className="w-[200px] h-[150px] rounded-md bg-album-peach overflow-hidden flex items-center justify-center">
+                {couplePhoto ? (
+                  <img src={couplePhoto} alt="First generation couple" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-hand text-lg text-album-leaf text-center p-2">no couple photo yet</span>
+                )}
+              </div>
+            </div>
+            <input ref={couplePhotoInput} type="file" accept="image/*" className="hidden" onChange={(e) => uploadCouplePhoto(e.target.files?.[0])} />
+            <div className="flex flex-wrap justify-center gap-2">
+              <button type="button" className={btnDark} onClick={() => couplePhotoInput.current?.click()}>
+                {couplePhoto ? 'Change couple photo' : 'Add couple photo'}
+              </button>
+              {couplePhoto && (
+                <button type="button" className={`${btnSecondary} min-h-[52px]`} onClick={removeCouplePhoto}>
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="flex-[1_1_280px] min-w-0 flex flex-col gap-2.5">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full bg-album-turmeric text-album-leaf flex items-center justify-center text-xs font-extrabold">1st</span>
+              <h2 className="m-0 font-album text-[1.4rem] font-extrabold" style={{ letterSpacing: 0 }}>First Generation Couple Photo</h2>
+            </div>
+            <p className="m-0 text-[16px] leading-relaxed">
+              Portrait of the elders together. Shown on the family website home page and at the top of the tree.
+            </p>
+            {spouses.length > 0 && (
+              <span className="text-sm font-bold text-album-terracotta">
+                Linked with {spouses.map(firstName).join(', ')} (changes update both)
+              </span>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className={`${card} flex flex-col gap-4`}>
         <h2 className="m-0 font-album text-[1.5rem] font-extrabold" style={{ letterSpacing: 0 }}>Details</h2>

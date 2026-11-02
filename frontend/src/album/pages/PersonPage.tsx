@@ -72,7 +72,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
           )}
           <a href={href.related(m.id)} className="no-underline bg-album-terracotta text-white rounded-[20px] min-h-[64px] px-4.5 py-2 px-5 flex items-center justify-between gap-2.5 shadow-pop">
             <span className="flex flex-col leading-tight">
-              <span className="text-[19px] font-extrabold">How is {firstName(m)} related to me?</span>
+              <span className="text-[19px] font-extrabold">How is {m.fullName} related to me?</span>
               <span lang="ta" className="text-sm">இவர் எனக்கு என்ன உறவு?</span>
             </span>
             <Svg icon={Icon.next} className="w-6 h-6" stroke={2.4} />
@@ -86,7 +86,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
       {close.length > 0 && (
         <section className="flex flex-col gap-2.5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="m-0 text-[1.4rem] font-extrabold">{firstName(m)}'s family</h2>
+            <h2 className="m-0 text-[1.4rem] font-extrabold">{m.fullName}'s family</h2>
             <a href={href.family(m.id)} className="text-lg font-extrabold text-album-terracotta min-h-[44px] flex items-center">See the family ›</a>
           </div>
           <div className="grid gap-x-2 gap-y-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(92px, 1fr))' }}>

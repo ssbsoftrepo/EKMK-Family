@@ -78,8 +78,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [members]);
 
   const locateInTree = useCallback((memberId: string) => {
-    // Open public interactive tree focusing on member
-    window.open(`http://localhost:5173/?focusMember=${memberId}`, '_blank');
+    // Determine the corresponding frontend port (7301 -> 7300, 5174 -> 5173, or fallback)
+    const port = window.location.port;
+    const targetPort = port === '7301' ? ':7300' : (port === '5174' ? ':5173' : (port ? `:${port}` : ''));
+    const url = `${window.location.protocol}//${window.location.hostname}${targetPort}/?focusMember=${memberId}`;
+    window.open(url, '_blank');
   }, []);
 
   const addMember = useCallback(async (newMemberData: Omit<FamilyMember, 'id'>): Promise<string> => {

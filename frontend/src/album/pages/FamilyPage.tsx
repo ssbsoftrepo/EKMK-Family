@@ -32,6 +32,7 @@ export const FamilyPage: React.FC<{ family: Family; id?: string }> = ({ family, 
   const bornIn = couple.find((p) => family.parents(p).length > 0);
   const up = bornIn ? family.couple(family.parents(bornIn)[0]) : null;
   const isTop = couple.some((p) => p.generation === 1);
+  const couplePhoto = isTop ? couple.find((p) => p.couplePhotoUrl)?.couplePhotoUrl : undefined;
 
   return (
     <div className="flex flex-col gap-5 max-w-[760px] mx-auto">
@@ -47,7 +48,18 @@ export const FamilyPage: React.FC<{ family: Family; id?: string }> = ({ family, 
         </a>
       )}
 
-      <Print tilt={-1} className="mt-2">
+      {couplePhoto && (
+        <Print tilt={-1} className="mt-2">
+          <div className="aspect-[16/10] rounded-md overflow-hidden relative bg-album-peach flex items-center justify-center">
+            <img src={couplePhoto} alt={coupleLabel(couple)} className="w-full h-full object-cover" />
+          </div>
+          <figcaption className="pt-2 px-1 text-center font-hand font-bold text-xl text-album-leaf">
+            {coupleLabel(couple)}
+          </figcaption>
+        </Print>
+      )}
+
+      <Print tilt={couplePhoto ? 1 : -1} className="mt-2">
         <div className={`grid gap-2.5 relative ${couple.length === 2 ? 'grid-cols-2' : 'grid-cols-1 max-w-[260px] mx-auto'}`}>
           {couple.map((p) => (
             <a key={p.id} href={href.person(p.id)} className="no-underline text-album-leaf flex flex-col gap-1">

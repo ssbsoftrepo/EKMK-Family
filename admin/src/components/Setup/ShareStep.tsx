@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { HomePhoto } from './HomePhoto';
 import { SecretDrawerSettings } from './SecretDrawerSettings';
 import { useToast } from '../../context/ToastContext';
+import { useAdmin } from '../../context/AdminContext';
 import { familyApi, SiteSettings } from '../../api/familyApi';
 import { StepTitle, btnPrimary, btnSecondary, card, Check } from './ui';
 import { THEMES, ThemeId, useSiteTheme } from '../../lib/theme';
@@ -99,6 +100,8 @@ export const ShareStep: React.FC = () => {
 
           <HomePhoto url={settings.homePhotoUrl} onChange={(url) => change('homePhotoUrl', url)} />
 
+          <EldersCouplePhoto />
+
           <SecretDrawerSettings note={settings.secretNote} photoUrl={settings.secretPhotoUrl}
             onNote={(v) => change('secretNote', v)} onPhoto={(url) => change('secretPhotoUrl', url)} />
 
@@ -173,3 +176,88 @@ const SiteLook: React.FC<{ value: string; onChange: (id: ThemeId) => void }> = (
     </div>
   </section>
 );
+
+/** The first generation elders' couple photo, displayed on the website home page (until a group photo is added) and in the family album. */
+const EldersCouplePhoto: React.FC = () => {
+  const { members, refreshData } = useAdmin();
+  const toast = useToast();
+  const input = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const founders = members.filter((m) => m.generation === 1);
+  if (founders.length === 0) return null;
+
+  const currentPhoto = founders.find((f) => f.couplePhotoUrl)?.couplePhotoUrl || '';
+  const foundersNames = founders.map((f) => f.fullName).join(' & ');
+
+  const upload = async (file?: File) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await familyApi.uploadPhoto(file);
+      for (const f of founders) {
+        await familyApi.updateMember(f.id, { couplePhotoUrl: res.url });
+      }
+      await refreshData();
+      toast.success('Couple photo updated', 'Saved for the first generation elders');
+    } catch (e) {
+      toast.error('Could not upload the couple photo', e instanceof Error ? e.message : undefined);
+    } finally {
+      setUploading(false);
+      if (input.current) input.current.value = '';
+    }
+  };
+
+  const remove = async () => {
+    setUploading(true);
+    try {
+      for (const f of founders) {
+        await familyApi.updateMember(f.id, { couplePhotoUrl: '' });
+      }
+      await refreshData();
+      toast.success('Couple photo removed');
+    } catch (e) {
+      toast.error('Could not remove photo', e instanceof Error ? e.message : undefined);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <section className={`${card} flex flex-wrap gap-5 items-center border-2 border-album-turmeric`}>
+      <div className="flex-[1_1_260px] max-w-[360px] bg-white p-2 rounded-[10px] shadow-[0_8px_20px_rgba(30,70,54,0.16)] rotate-1">
+        <div className="aspect-[16/10] rounded-md bg-album-peach overflow-hidden flex items-center justify-center">
+          {currentPhoto ? (
+            <img src={currentPhoto} alt="First generation couple" className="w-full h-full object-cover" />
+          ) : (
+            <span className="font-hand text-xl text-album-leaf">no couple photo yet</span>
+          )}
+        </div>
+      </div>
+      <div className="flex-[1_1_280px] min-w-0 flex flex-col gap-2.5">
+        <div className="flex items-center gap-2">
+          <span className="w-7 h-7 rounded-full bg-album-turmeric text-album-leaf flex items-center justify-center text-xs font-extrabold">1st</span>
+          <h2 className="font-album text-[1.5rem] font-extrabold m-0" style={{ letterSpacing: 0 }}>
+            First generation couple photo
+          </h2>
+        </div>
+        <p className="m-0 text-[17px]">
+          {foundersNames ? <>Portrait of <strong>{foundersNames}</strong> together.</> : 'Portrait of the elders together.'}{' '}
+          Shown on the family website home page (until a family group photo is added) and at the top of the tree.
+        </p>
+        <input ref={input} type="file" accept="image/*" className="hidden" onChange={(e) => upload(e.target.files?.[0])} />
+        <div className="flex flex-wrap gap-2.5">
+          <button type="button" className={btnPrimary} disabled={uploading} onClick={() => input.current?.click()}>
+            {uploading ? 'Uploading…' : currentPhoto ? 'Change couple photo' : 'Upload couple photo'}
+          </button>
+          {currentPhoto && (
+            <button type="button" className={btnSecondary} disabled={uploading} onClick={remove}>
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+};
+

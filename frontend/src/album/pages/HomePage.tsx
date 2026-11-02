@@ -23,14 +23,18 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
   const placed = useMemo(() => placedIds(family.members), [family]);
   useBirthdayPetals(today.length > 0, `home-${new Date().toDateString()}`);
 
-  // Photos first, then everyone else; a stable pick so the page doesn't jump around.
+  // Show all family members at once: elders first, then by generation, photos, birth date and name.
   const faces = useMemo(() => {
-    const onTree = family.members.filter((m) => placed.has(m.id));
-    const pool = onTree.length ? onTree : family.members;
-    return [...pool].sort((a, b) => Number(!!b.photoUrl) - Number(!!a.photoUrl) || (a.birthDate ?? '9999').localeCompare(b.birthDate ?? '9999')).slice(0, 8);
-  }, [family, placed]);
+    return [...family.members].sort(
+      (a, b) =>
+        (a.generation || 99) - (b.generation || 99) ||
+        Number(!!b.photoUrl) - Number(!!a.photoUrl) ||
+        (a.birthDate ?? '9999').localeCompare(b.birthDate ?? '9999') ||
+        a.fullName.localeCompare(b.fullName)
+    );
+  }, [family]);
 
-  const photo = settings.homePhotoUrl || founders[0]?.couplePhotoUrl || '';
+  const photo = settings.homePhotoUrl || founders.find((f) => f.couplePhotoUrl)?.couplePhotoUrl || '';
   const generations = Math.max(0, ...family.members.filter((m) => placed.has(m.id)).map((m) => m.generation || 0));
   const places = new Set(family.members.map((m) => (m.currentCity ?? '').split(',')[0].trim().toLowerCase()).filter(Boolean)).size;
 
@@ -74,8 +78,8 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
               <a href={href.person(m.id)} className="no-underline text-album-leaf flex items-center gap-3 flex-[1_1_220px] min-w-0">
                 <Face member={m} className="w-16 h-16" rounded="rounded-full" />
                 <span className="flex flex-col leading-tight">
-                  <span className="text-xl font-extrabold">🎂 Today is {firstName(m)}'s birthday!</span>
-                  <span lang="ta" className="text-[15px]">இன்று {firstName(m)} பிறந்தநாள்</span>
+                  <span className="text-xl font-extrabold">🎂 Today is {m.fullName}'s birthday!</span>
+                  <span lang="ta" className="text-[15px]">இன்று {m.fullName} பிறந்தநாள்</span>
                 </span>
               </a>
               <div className="flex-[0_1_240px] min-w-[200px]">
@@ -135,8 +139,8 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
       {!kaveri && faces.length > 0 && (
         <section className="flex flex-col gap-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2.5">
-            <Title as="h2" en="Some of our family" ta="நம் குடும்பத்தில் சிலர்" />
-            <a href={href.find()} className="text-lg font-extrabold text-album-terracotta min-h-[44px] flex items-center">See everyone ›</a>
+            <Title as="h2" en="Our family members" ta="நம் குடும்ப உறுப்பினர்கள்" />
+            <a href={href.find()} className="text-lg font-extrabold text-album-terracotta min-h-[44px] flex items-center">Find & filter ›</a>
           </div>
           <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
             {faces.map((m) => <PersonTile key={m.id} member={m} href={href.person(m.id)} line={whoLine(family, m)} />)}

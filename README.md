@@ -144,3 +144,16 @@ The admin site opens on three simple steps, plus **All members**:
 > The family website has no login. The public `/api/members` therefore leaves out addresses, emails and the admin's form notes (`PublicMembers`); phone numbers stay public for the Call and WhatsApp buttons. The full records are only on `/api/admin/members`.
 
 **Tip for the Google Form:** questions named "Man / Woman" (or "Gender") and "Father's name", "Mother's name", "Spouse's name" are picked up automatically and make step 2 almost one-tap.
+
+---
+
+## 🚀 Production Server & Deployment
+
+The platform is deployed and running on the local server with Nginx reverse proxy and systemd service:
+
+- **Server IP**: `192.168.1.70` (Static WAN IP: `136.185.1.251`)
+- **Public Family Website**: [http://192.168.1.70:7300](http://192.168.1.70:7300) (or `http://136.185.1.251:7300` when port-forwarded)
+- **Admin Management Portal**: [http://192.168.1.70:7301](http://192.168.1.70:7301) (or `http://136.185.1.251:7301` when port-forwarded)
+- **One-Click Deploy Script**: `./deploy-to-server.sh`
+- **Full Guide & Port Forwarding Rules**: See [DEPLOYMENT.md](file:///home/ssb/Desktop/Family-Tree-EKMK/DEPLOYMENT.md) for full instructions.
+
