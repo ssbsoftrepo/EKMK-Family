@@ -13,8 +13,6 @@ export type Route =
   | { page: 'home' }
   | { page: 'find' }
   | { page: 'person'; id: string }
-  | { page: 'family'; id?: string }
-  | { page: 'tree'; id?: string }
   | { page: 'related'; id?: string };
 
 export function parseRoute(hash: string): Route {
@@ -23,9 +21,13 @@ export function parseRoute(hash: string): Route {
   switch (page) {
     case 'find': return { page: 'find' };
     case 'person': return id ? { page: 'person', id } : { page: 'find' };
-    case 'family': return { page: 'family', id };
-    case 'tree': return { page: 'tree', id };
     case 'related': return { page: 'related', id };
+    case 'family':
+    case 'tree':
+      if (typeof window !== 'undefined') {
+        window.location.hash = '#/';
+      }
+      return { page: 'home' };
     default: return { page: 'home' };
   }
 }
@@ -34,8 +36,8 @@ export const href = {
   home: () => '#/',
   find: () => '#/find',
   person: (id: string) => `#/person/${encodeURIComponent(id)}`,
-  family: (id?: string) => (id ? `#/family/${encodeURIComponent(id)}` : '#/family'),
-  tree: (id?: string) => (id ? `#/tree/${encodeURIComponent(id)}` : '#/tree'),
+  family: () => '#/',
+  tree: () => '#/',
   related: (id?: string) => (id ? `#/related/${encodeURIComponent(id)}` : '#/related'),
 };
 

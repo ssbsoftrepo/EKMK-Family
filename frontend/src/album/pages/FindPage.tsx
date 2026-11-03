@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FamilyMember } from '../../types/family';
-import { Family, coupleLabel, firstName, whoLine } from '../family';
+import { Family, byAge, coupleLabel, firstName, whoLine } from '../family';
 import { href } from '../router';
 import { Hand, Icon, PersonTile, Svg, Title } from '../ui';
 import { emojiRain, funWord } from '../magic';
@@ -48,10 +48,10 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
     const q = query.trim().toLowerCase();
     const chosen = branches.find((b) => b.id === branch);
     const words = q.split(/\s+/).filter(Boolean);
-    return [...family.members]
+    const filtered = [...family.members]
       .filter((m) => !chosen || chosen.ids.has(m.id))
-      .filter((m) => words.length === 0 || words.every((w) => [m.fullName, m.tamilName, m.currentCity, m.profession].some((v) => v && v.toLowerCase().includes(w))))
-      .sort((a, b) => (a.generation || 99) - (b.generation || 99) || a.fullName.localeCompare(b.fullName));
+      .filter((m) => words.length === 0 || words.every((w) => [m.fullName, m.tamilName, m.currentCity, m.profession].some((v) => v && v.toLowerCase().includes(w))));
+    return byAge(filtered);
   }, [family, query, branch, branches]);
 
   return (
@@ -67,7 +67,7 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
       </div>
 
       {branches.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4" role="group" aria-label="Choose a branch of the family">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4" role="group" aria-label="Choose a branch of the family">
           <Chip on={!branch} onClick={() => setBranch(null)}>Everyone</Chip>
           {branches.map((b) => <Chip key={b.id} on={branch === b.id} onClick={() => { setBranch(b.id); setLimit(STEP); }}>{b.label}</Chip>)}
         </div>
@@ -92,11 +92,6 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
         </button>
       )}
       <div className="pt-4"><SurpriseMe family={family} /></div>
-      {branch && (
-        <a href={href.family(branch)} className="self-start text-lg font-extrabold text-album-terracotta min-h-[44px] flex items-center">
-          See {coupleLabel(family.couple(family.get(branch)!))}'s family as a tree ›
-        </a>
-      )}
     </div>
   );
 };

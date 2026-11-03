@@ -6,19 +6,15 @@ import { Icon, Svg } from './ui';
 import { HomePage } from './pages/HomePage';
 import { FindPage } from './pages/FindPage';
 import { PersonPage } from './pages/PersonPage';
-import { FamilyPage } from './pages/FamilyPage';
-import { TreePage } from './pages/TreePage';
 import { RelatedPage } from './pages/RelatedPage';
 import { KolamLoader, SecretDrawer } from './Magic';
 import { useSiteSettings } from '../lib/whatsapp';
 import { useDayPart } from './timeOfDay';
-import { ThemeSwitch } from './ThemeSwitch';
 import { useSiteTheme } from '../lib/theme';
 
 const NAV: { id: Route['page'][]; to: string; en: string; ta: string; icon: React.ReactNode }[] = [
   { id: ['home'], to: href.home(), en: 'Home', ta: 'முகப்பு', icon: Icon.home },
   { id: ['find', 'person'], to: href.find(), en: 'Find', ta: 'தேடு', icon: Icon.search },
-  { id: ['family', 'tree'], to: href.family(), en: 'Family', ta: 'குடும்பம்', icon: Icon.tree },
   { id: ['related'], to: href.related(), en: 'Related?', ta: 'உறவு', icon: Icon.link },
 ];
 
@@ -60,7 +56,6 @@ export const AlbumApp: React.FC = () => {
               <span lang="ta" className="text-[15px]">எங்கள் குடும்பம்</span>
             </span>
           </a>
-          <div className="flex items-center gap-2">
           <nav aria-label="Main" className="hidden md:flex gap-1.5">
             {NAV.map((n) => {
               const on = n.id.includes(route.page);
@@ -72,8 +67,6 @@ export const AlbumApp: React.FC = () => {
               );
             })}
           </nav>
-          <ThemeSwitch night={night} />
-          </div>
         </div>
       </header>
 
@@ -89,8 +82,6 @@ export const AlbumApp: React.FC = () => {
             {route.page === 'home' && <HomePage family={family} />}
             {route.page === 'find' && <FindPage family={family} />}
             {route.page === 'person' && <PersonPage family={family} id={route.id} />}
-            {route.page === 'family' && <FamilyPage family={family} id={route.id} />}
-            {route.page === 'tree' && <TreePage family={family} focusId={route.id} />}
             {route.page === 'related' && <RelatedPage family={family} id={route.id} />}
           </>
         )}

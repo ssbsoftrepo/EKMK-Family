@@ -1,20 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FamilyMember } from '../../types/family';
-import { Family, firstName, whoLine } from '../family';
+import { Family, byAge, firstName, whoLine } from '../family';
 import { href } from '../router';
-import { Face, Hand, Icon, JasmineGarland, Print, Svg, btnSecondary } from '../ui';
+import { Face, Hand, Icon, JasmineGarland, PersonTile, Print, Svg, btnSecondary } from '../ui';
 import { ContactButtons } from '../../components/Common/ContactButtons';
 import { useBirthdayPetals } from '../Magic';
 import { birthdaysOn } from '../family';
-import { useTheme } from '../../lib/theme';
-import { LifeStory } from '../Kaveri';
 
-/** One person: a big photo, who they are, their close family as photos, and Call / WhatsApp. */
+/** One person: photo and name on main page; click photo to turn card and reveal details & kinship button. */
 export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, id }) => {
   const m = family.get(id);
+  const [turnedMember, setTurnedMember] = useState<FamilyMember | null>(null);
+
   const isBirthday = !!m && birthdaysOn([m]).length > 0;
-  const kaveri = useTheme() === 'kaveri';
   useBirthdayPetals(isBirthday, `person-${id}`);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setTurnedMember(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   if (!m) {
     return (
       <div className="py-16 text-center flex flex-col items-center gap-3">
@@ -25,80 +33,255 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
     );
   }
 
-  const g = (male: string, female: string, other: string) => (p: FamilyMember) => (p.gender === 'male' ? male : p.gender === 'female' ? female : other);
-  const close: { person: FamilyMember; label: string }[] = [
-    ...family.parents(m).map((p) => ({ person: p, label: g('father', 'mother', 'parent')(p) })),
-    ...family.spouses(m).map((p) => ({ person: p, label: g('husband', 'wife', 'spouse')(p) })),
-    ...family.siblings(m).map((p) => {
-      const older = p.birthDate && m.birthDate ? p.birthDate < m.birthDate : null;
-      return { person: p, label: (older === null ? '' : older ? 'elder ' : 'younger ') + g('brother', 'sister', 'sibling')(p) };
-    }),
-    ...family.children(m).map((p) => ({ person: p, label: g('son', 'daughter', 'child')(p) })),
-  ];
-  const about = m.biography || m.coupleAbout || m.notes;
-  const facts = [m.currentCity && `Lives in ${m.currentCity}`, m.profession].filter(Boolean).join(' · ');
+  const spouses = family.spouses(m);
+  const children = byAge(family.children(m));
 
   return (
-    <div className="flex flex-col gap-5 max-w-[760px] mx-auto">
-      <button type="button" onClick={() => (window.history.length > 1 ? window.history.back() : (window.location.hash = href.find()))}
-        className={`${btnSecondary} self-start rounded-full min-h-[48px] pl-3`}>
-        <Svg icon={Icon.back} className="w-5 h-5" stroke={2.4} /> Back
+    <div className="flex flex-col gap-6 max-w-[760px] mx-auto">
+      <button
+        type="button"
+        onClick={() => (window.history.length > 1 ? window.history.back() : (window.location.hash = href.find()))}
+        className={`${btnSecondary} self-start rounded-full min-h-[42px] px-4 py-1.5`}
+      >
+        <Svg icon={Icon.back} className="w-4 h-4" stroke={2.4} /> Back
       </button>
 
-      <div className="flex flex-wrap gap-6 items-start">
-        <div className="flex-[1_1_280px] min-w-0 max-w-[420px]">
-          <Print tilt={1.2} tape="terracotta">
-            <Face member={m} className="w-full aspect-[4/5]" rounded="rounded-md" />
-          </Print>
-        </div>
-        <div className="flex-[1_1_280px] min-w-0 flex flex-col gap-3">
-          <div className="flex flex-col leading-tight">
-            <h1 className="m-0 text-[2.2rem] font-extrabold">{m.fullName}</h1>
-            {m.tamilName && <span lang="ta" className="text-xl">{m.tamilName}</span>}
-            <span className="text-lg pt-1">{whoLine(family, m)}</span>
-            {facts && <span className="text-lg">{facts}</span>}
-            {m.isDeceased && (
-              <span className="flex items-center gap-2 text-lg pt-1">
-                <JasmineGarland className="w-14 h-auto" /> In loving memory
+      {/* Main photo row: Center aligned, only photo and name are displayed */}
+      <div className="flex flex-wrap justify-center items-start gap-6 sm:gap-8 pt-1">
+        {/* Person Photo Card */}
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            onClick={() => setTurnedMember(m)}
+            className="w-[150px] sm:w-[175px] flex flex-col gap-2 text-center group cursor-pointer focus:outline-none bg-transparent border-0 p-0 lift"
+            title="Click photo to view details"
+          >
+            <div className="relative w-full">
+              <Print tilt={0} tape="none">
+                <Face member={m} className="w-full aspect-[4/5] group-hover:brightness-95 transition" rounded="rounded-md" />
+              </Print>
+            </div>
+            <div className="flex flex-col items-center text-center leading-tight w-full">
+              <span className="text-base sm:text-lg font-extrabold text-album-leaf group-hover:text-album-terracotta transition truncate max-w-full">
+                {m.fullName}
               </span>
-            )}
-            {isBirthday && <span className="mt-2 self-start bg-album-turmeric rounded-full px-4 py-1 text-lg font-extrabold magic-pop">🎂 Happy birthday, {firstName(m)}!</span>}
-          </div>
-          {about && (
-            <p className="m-0 bg-white rounded-2xl p-3.5 text-[17px] leading-relaxed">
-              <span className="text-sm font-bold block">In their words</span>
-              {about}
-            </p>
-          )}
-          <a href={href.related(m.id)} className="no-underline bg-album-terracotta text-white rounded-[20px] min-h-[64px] px-4.5 py-2 px-5 flex items-center justify-between gap-2.5 shadow-pop">
-            <span className="flex flex-col leading-tight">
-              <span className="text-[19px] font-extrabold">How is {m.fullName} related to me?</span>
-              <span lang="ta" className="text-sm">இவர் எனக்கு என்ன உறவு?</span>
-            </span>
-            <Svg icon={Icon.next} className="w-6 h-6" stroke={2.4} />
-          </a>
-          <ContactButtons member={m} />
+              {m.tamilName && m.tamilName.trim() !== m.fullName.trim() && (
+                <span lang="ta" className="text-xs text-album-leaf/75 pt-0.5">{m.tamilName}</span>
+              )}
+            </div>
+          </button>
         </div>
+
+        {/* Spouse photo right next to person's photo */}
+        {spouses.map((s) => (
+          <div key={s.id} className="flex flex-col items-center">
+            <button
+              type="button"
+              onClick={() => setTurnedMember(s)}
+              className="w-[150px] sm:w-[175px] flex flex-col gap-2 text-center group cursor-pointer focus:outline-none bg-transparent border-0 p-0 lift"
+              title="Click photo to view details"
+            >
+              <div className="relative w-full">
+                <Print tilt={0} tape="none">
+                  <Face member={s} className="w-full aspect-[4/5] group-hover:brightness-95 transition" rounded="rounded-md" />
+                </Print>
+              </div>
+              <div className="flex flex-col items-center text-center leading-tight w-full">
+                <span className="text-base sm:text-lg font-extrabold text-album-leaf group-hover:text-album-terracotta transition truncate max-w-full">
+                  {s.fullName}
+                </span>
+                <span className="text-[12px] font-semibold text-album-leaf/70 pt-0.5">
+                  {s.gender === 'female' ? 'Wife · மனைவி' : s.gender === 'male' ? 'Husband · கணவர்' : 'Spouse · துணைவர்'}
+                </span>
+              </div>
+            </button>
+          </div>
+        ))}
       </div>
 
-      {kaveri && <LifeStory family={family} m={m} />}
-
-      {close.length > 0 && (
-        <section className="flex flex-col gap-2.5">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="m-0 text-[1.4rem] font-extrabold">{m.fullName}'s family</h2>
-            <a href={href.family(m.id)} className="text-lg font-extrabold text-album-terracotta min-h-[44px] flex items-center">See the family ›</a>
+      {/* Children only, displayed below */}
+      {children.length > 0 && (
+        <section className="flex flex-col gap-3 pt-5 border-t border-album-line/60">
+          <div className="flex items-baseline justify-between gap-2">
+            <h2 className="m-0 text-lg sm:text-xl font-extrabold text-album-leaf">
+              Children <span className="text-sm font-semibold text-album-leaf/70">({children.length})</span>
+            </h2>
+            <span lang="ta" className="text-xs font-semibold text-album-leaf/70">
+              பிள்ளைகள்
+            </span>
           </div>
-          <div className="grid gap-x-2 gap-y-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(92px, 1fr))' }}>
-            {close.map(({ person, label }) => (
-              <a key={person.id + label} href={href.person(person.id)} className="no-underline text-album-leaf flex flex-col items-center gap-1 text-center lift">
-                <Face member={person} className="w-[78px] h-[78px]" rounded="rounded-full" ring="border-[3px] border-white shadow-[0_2px_6px_rgb(var(--c-leaf)/0.18)]" />
-                <span className="text-base font-bold leading-tight">{firstName(person)}</span>
-                <span className="text-[13px] leading-tight">{label}</span>
-              </a>
+          <div
+            className="grid gap-3.5 sm:gap-5 md:gap-6 lg:gap-8 items-stretch justify-center w-full mx-auto"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 140px), 165px))',
+              maxWidth: '1000px',
+            }}
+          >
+            {children.map((c) => (
+              <PersonTile
+                key={c.id}
+                member={c}
+                href={href.person(c.id)}
+                line={c.gender === 'female' ? 'Daughter · மகள்' : c.gender === 'male' ? 'Son · மகன்' : 'Child · பிள்ளை'}
+              />
             ))}
           </div>
         </section>
+      )}
+
+      {/* Turned Card: Comes up and turns with 3D animation on photo click */}
+      {turnedMember && (
+        <div
+          className="fixed inset-0 z-50 bg-album-leaf/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+          onClick={() => setTurnedMember(null)}
+        >
+          <div
+            className="animate-card-turn bg-[#fffefb] border-2 border-album-terracotta/30 rounded-2xl shadow-2xl p-5 sm:p-6 max-w-[480px] w-full relative flex flex-col gap-4 text-album-leaf my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header: Photo avatar, Name, Relationship, and Close button */}
+            <div className="flex items-start justify-between gap-3 border-b border-album-line/60 pb-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <Face member={turnedMember} className="w-12 h-12 flex-shrink-0" rounded="rounded-full" ring="border-2 border-album-terracotta/40" />
+                <div className="flex flex-col leading-tight min-w-0">
+                  <span className="text-lg sm:text-xl font-extrabold text-album-leaf truncate">
+                    {turnedMember.fullName}
+                  </span>
+                  {turnedMember.tamilName && turnedMember.tamilName.trim() !== turnedMember.fullName.trim() && (
+                    <span lang="ta" className="text-xs text-album-leaf/75">{turnedMember.tamilName}</span>
+                  )}
+                  <span className="text-xs text-album-leaf/70 pt-0.5">{whoLine(family, turnedMember)}</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setTurnedMember(null)}
+                className="p-1.5 rounded-full hover:bg-album-line/40 text-album-leaf/70 hover:text-album-leaf transition cursor-pointer bg-transparent border-0"
+                title="Turn card back / Close"
+              >
+                <Svg icon={Icon.close} className="w-5 h-5" stroke={2.4} />
+              </button>
+            </div>
+
+            {/* Details List */}
+            <div className="flex flex-col gap-2.5 text-sm">
+              {/* Qualification */}
+              {turnedMember.education && (
+                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
+                  <Svg icon={Icon.academic} className="w-4 h-4 text-album-terracotta mt-0.5 shrink-0" stroke={2.2} />
+                  <div className="flex flex-col leading-snug">
+                    <span className="text-[11px] font-bold text-album-leaf/70 uppercase tracking-wide">
+                      Qualification · கல்வி தகுதி
+                    </span>
+                    <span className="font-semibold text-album-leaf">{turnedMember.education}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Business */}
+              {turnedMember.business && (
+                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
+                  <Svg icon={Icon.briefcase} className="w-4 h-4 text-album-terracotta mt-0.5 shrink-0" stroke={2.2} />
+                  <div className="flex flex-col leading-snug">
+                    <span className="text-[11px] font-bold text-album-leaf/70 uppercase tracking-wide">
+                      Business · தொழில்
+                    </span>
+                    <span className="font-semibold text-album-leaf">{turnedMember.business}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Profession (if distinct) */}
+              {turnedMember.profession && turnedMember.profession !== turnedMember.business && (
+                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
+                  <Svg icon={Icon.briefcase} className="w-4 h-4 text-album-terracotta mt-0.5 shrink-0" stroke={2.2} />
+                  <div className="flex flex-col leading-snug">
+                    <span className="text-[11px] font-bold text-album-leaf/70 uppercase tracking-wide">
+                      Profession · பணி
+                    </span>
+                    <span className="font-semibold text-album-leaf">{turnedMember.profession}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Location */}
+              {(turnedMember.currentCity || turnedMember.birthPlace) && (
+                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
+                  <Svg icon={Icon.pin} className="w-4 h-4 text-album-terracotta mt-0.5 shrink-0" stroke={2.2} />
+                  <div className="flex flex-col leading-snug">
+                    <span className="text-[11px] font-bold text-album-leaf/70 uppercase tracking-wide">
+                      Location · இடம்
+                    </span>
+                    <span className="font-semibold text-album-leaf">
+                      {[turnedMember.currentCity && `Lives in ${turnedMember.currentCity}`, turnedMember.birthPlace && `From ${turnedMember.birthPlace}`].filter(Boolean).join(' · ')}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* In loving memory */}
+              {turnedMember.isDeceased && (
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/50 text-album-leaf/85">
+                  <JasmineGarland className="w-8 h-auto shrink-0" />
+                  <span className="text-xs font-semibold">In loving memory · மறைவு</span>
+                  {turnedMember.birthDate && (
+                    <span className="text-xs text-album-leaf/70">
+                      ({turnedMember.birthDate}{turnedMember.deathDate ? ` – ${turnedMember.deathDate}` : ''})
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Biography / Notes */}
+              {(turnedMember.biography || turnedMember.coupleAbout || turnedMember.notes) && (
+                <div className="p-3 rounded-xl bg-white border border-album-line/60 text-xs leading-relaxed text-album-leaf/90">
+                  <span className="text-[11px] font-bold block text-album-leaf/70 mb-0.5">In their words · குறிப்பு</span>
+                  {turnedMember.biography || turnedMember.coupleAbout || turnedMember.notes}
+                </div>
+              )}
+
+              {/* Fallback if no specific bio/profession is entered yet */}
+              {!turnedMember.education && !turnedMember.business && !turnedMember.profession && !turnedMember.currentCity && !turnedMember.biography && (
+                <div className="p-3 rounded-xl bg-album-sand/40 text-center text-xs text-album-leaf/70">
+                  No additional biographical details added yet.
+                </div>
+              )}
+            </div>
+
+            {/* How is related to me button */}
+            <a
+              href={href.related(turnedMember.id)}
+              className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-album-terracotta/10 hover:bg-album-terracotta hover:text-white text-album-terracotta border border-album-terracotta/30 transition-all font-bold text-xs sm:text-sm no-underline shadow-xs group mt-1"
+            >
+              <span className="flex items-center gap-2">
+                <Svg icon={Icon.link} className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" stroke={2.2} />
+                <span>How is {firstName(turnedMember)} related to me?</span>
+                <span lang="ta" className="text-xs font-normal opacity-85">· உறவு</span>
+              </span>
+              <Svg icon={Icon.next} className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-0.5" stroke={2.5} />
+            </a>
+
+            {/* Contact Buttons */}
+            <ContactButtons member={turnedMember} />
+
+            {/* Turn back footer */}
+            <div className="flex items-center justify-between pt-2 border-t border-album-line/50">
+              {turnedMember.id !== m.id ? (
+                <a href={href.person(turnedMember.id)} className="text-xs font-bold text-album-terracotta hover:underline no-underline">
+                  Go to {firstName(turnedMember)}’s profile page ›
+                </a>
+              ) : <span />}
+              <button
+                type="button"
+                onClick={() => setTurnedMember(null)}
+                className="text-xs font-bold text-album-leaf/70 hover:text-album-terracotta underline flex items-center gap-1 cursor-pointer bg-transparent border-0"
+              >
+                <Svg icon={Icon.swap} className="w-3.5 h-3.5" /> Turn back
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

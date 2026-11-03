@@ -75,10 +75,86 @@ export class Family {
   isBornInto(m: FamilyMember) {
     return m.generation === 1 || this.parents(m).length > 0;
   }
+
+  /**
+   * Direct children of the 1st generation (founders/elders).
+   * Dynamically collects all children of generation 1 members, excluding spouses.
+   */
+  firstGenChildren(): FamilyMember[] {
+    const gen1 = this.members.filter((m) => m.generation === 1);
+    const gen1Ids = new Set(gen1.map((m) => m.id));
+    const seen = new Set<string>();
+    const list: FamilyMember[] = [];
+
+    // 1. Children linked to Gen 1 elders via this.children(elder)
+    for (const elder of gen1) {
+      for (const child of this.children(elder)) {
+        if (!seen.has(child.id)) {
+          seen.add(child.id);
+          list.push(child);
+        }
+      }
+    }
+
+    // 2. Members whose fatherId or motherId points to a Gen 1 elder
+    for (const m of this.members) {
+      if (!seen.has(m.id)) {
+        const isChildOfGen1 =
+          (m.fatherId && gen1Ids.has(m.fatherId)) ||
+          (m.motherId && gen1Ids.has(m.motherId));
+        if (isChildOfGen1) {
+          seen.add(m.id);
+          list.push(m);
+        }
+      }
+    }
+
+    // 3. Fallback: generation === 2 born into the family (not a married-in spouse)
+    if (list.length === 0) {
+      for (const m of this.members.filter((m) => m.generation === 2)) {
+        if (!seen.has(m.id)) {
+          const spouseHasParents = this.spouses(m).some((s) => this.parents(s).length > 0);
+          if (this.parents(m).length > 0 || !spouseHasParents || this.isBornInto(m)) {
+            seen.add(m.id);
+            list.push(m);
+          }
+        }
+      }
+    }
+
+    return byAge(list);
+  }
 }
 
+/** Helper to parse a date into comparable YYYY-MM-DD format. */
+export function parseBirthComparable(dateStr?: string | null): string | null {
+  if (!dateStr) return null;
+  const s = dateStr.trim();
+  if (s.length < 4) return null;
+  if (/^\d{4}/.test(s)) return s;
+  const m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (m) {
+    const [, d, mo, y] = m;
+    return `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  return s;
+}
+
+/** Sort in age order: eldest first (earliest birth date), youngest last. Members with unknown birth dates follow. */
 export const byAge = (list: FamilyMember[]) =>
-  [...list].sort((a, b) => (a.birthDate ?? '9999').localeCompare(b.birthDate ?? '9999') || a.fullName.localeCompare(b.fullName));
+  [...list].sort((a, b) => {
+    const da = parseBirthComparable(a.birthDate);
+    const db = parseBirthComparable(b.birthDate);
+    if (da && db) {
+      const cmp = da.localeCompare(db);
+      if (cmp !== 0) return cmp;
+    } else if (da && !db) {
+      return -1;
+    } else if (!da && db) {
+      return 1;
+    }
+    return a.fullName.localeCompare(b.fullName);
+  });
 
 export const coupleLabel = (people: FamilyMember[]) => people.map(firstName).join(' & ');
 

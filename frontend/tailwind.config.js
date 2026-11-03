@@ -8,7 +8,7 @@ export default {
     extend: {
       colors: {
         album: {
-          // Theme tokens: set per look in index.css (<html data-theme="album|kaveri">).
+          // Theme tokens: set in themes.css (<html data-theme="album">).
           leaf: 'rgb(var(--c-leaf) / <alpha-value>)',
           paper: 'rgb(var(--c-paper) / <alpha-value>)',
           line: 'rgb(var(--c-line) / <alpha-value>)',
@@ -81,7 +81,7 @@ export default {
         tamil: ['"Noto Serif Tamil"', '"Noto Sans Tamil"', 'serif'],
       },
       boxShadow: {
-        // Theme shadows: sticker-style offsets in Family Album, soft glows in Kaveri.
+        // Theme shadows: sticker-style offsets.
         pop: 'var(--shadow-pop)',
         'pop-lg': 'var(--shadow-pop-lg)',
         'pop-sm': 'var(--shadow-pop-sm)',

@@ -7,8 +7,6 @@ import { ContactButtons } from '../../components/Common/ContactButtons';
 import { useBirthdayPetals } from '../Magic';
 import { SurpriseMe } from '../SurpriseMe';
 import { GREETINGS, useDayPart } from '../timeOfDay';
-import { useTheme } from '../../lib/theme';
-import { FamilyDeck, tamilMonth } from '../Kaveri';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -16,22 +14,19 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
   const settings = useSiteSettings();
   const greeting = GREETINGS[useDayPart()];
-  const kaveri = useTheme() === 'kaveri';
   const founders = family.founders();
   const today = birthdaysOn(family.members);
   const soon = upcomingBirthdays(family.members, 31).filter((b) => b.inDays > 0).slice(0, 5);
   const placed = useMemo(() => placedIds(family.members), [family]);
   useBirthdayPetals(today.length > 0, `home-${new Date().toDateString()}`);
 
-  // Show all family members at once: elders first, then by generation, photos, birth date and name.
-  const faces = useMemo(() => {
-    return [...family.members].sort(
-      (a, b) =>
-        (a.generation || 99) - (b.generation || 99) ||
-        Number(!!b.photoUrl) - Number(!!a.photoUrl) ||
-        (a.birthDate ?? '9999').localeCompare(b.birthDate ?? '9999') ||
-        a.fullName.localeCompare(b.fullName)
-    );
+  // 1st generation children (children of the founders/elders)
+  const firstGenChildren = useMemo(() => {
+    const list = family.firstGenChildren();
+    if (list.length > 0) return list;
+    // Fallback if relations are still being linked
+    const nonFounders = family.members.filter((m) => m.generation !== 1);
+    return nonFounders.length > 0 ? nonFounders : family.members;
   }, [family]);
 
   const photo = settings.homePhotoUrl || founders.find((f) => f.couplePhotoUrl)?.couplePhotoUrl || '';
@@ -71,6 +66,25 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
         </div>
       </section>
 
+      {firstGenChildren.length > 0 && (
+        <section className="flex flex-col items-center gap-4 w-full">
+          <div className="text-center flex flex-col items-center">
+            <Title as="h2" en="Children of the Elders" ta="பெரியவர்களின் பிள்ளைகள்" />
+          </div>
+          <div
+            className="grid gap-3.5 sm:gap-5 md:gap-6 lg:gap-8 items-stretch justify-center w-full mx-auto"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 145px), 165px))',
+              maxWidth: '1000px',
+            }}
+          >
+            {firstGenChildren.map((m) => (
+              <PersonTile key={m.id} member={m} href={href.person(m.id)} line={whoLine(family, m)} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {today.length > 0 && (
         <section aria-label="Birthdays today" className="flex flex-col gap-3">
           {today.map((m) => (
@@ -92,9 +106,8 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
 
       <section className="flex flex-col gap-3.5">
         <Title as="h2" en="What would you like to do?" ta="என்ன செய்ய விரும்புகிறீர்கள்?" />
-        <div className="grid gap-3.5 grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3.5 grid-cols-1 sm:grid-cols-3">
           <Tile to={href.find()} en="Find a relative" ta="உறவினரைத் தேடு" icon={Icon.search} bg="rgb(var(--c-sage))" />
-          <Tile to={href.family()} en="Family tree" ta="குடும்ப மரம்" icon={Icon.tree} bg="rgb(var(--c-sun))" />
           <Tile to={href.related()} en="How are we related?" ta="நமக்குள் என்ன உறவு?" icon={Icon.link} bg="rgb(var(--c-blush))" />
           <Tile to={href.home()} onClick={() => document.getElementById('birthdays')?.scrollIntoView({ behavior: 'smooth' })} en="Birthdays" ta="பிறந்தநாள்" icon={Icon.cake} bg="rgb(var(--c-peach))" />
         </div>
@@ -116,7 +129,6 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
                 </span>
                 <span className="flex-1 min-w-0 flex flex-col leading-tight">
                   <span className="text-lg font-extrabold truncate">{member.fullName}</span>
-                  {kaveri && <span className="text-sm">in {tamilMonth(date).en} · <span lang="ta">{tamilMonth(date).ta}</span></span>}
                 </span>
                 <span className="text-[15px] flex-shrink-0">{inDays === 1 ? 'tomorrow' : `in ${inDays} days`}</span>
               </a>
@@ -125,28 +137,6 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
         )}
         <Hand className="text-lg">only the day and month are shown, ages stay secret!</Hand>
       </section>
-
-      {kaveri && faces.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-baseline justify-between gap-2.5">
-            <Title as="h2" en="Meet your family" ta="உங்கள் குடும்பத்தைச் சந்தியுங்கள்" />
-            <a href={href.find()} className="text-lg font-extrabold text-album-terracotta min-h-[44px] flex items-center">See everyone ›</a>
-          </div>
-          <FamilyDeck family={family} people={faces} />
-        </section>
-      )}
-
-      {!kaveri && faces.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-baseline justify-between gap-2.5">
-            <Title as="h2" en="Our family members" ta="நம் குடும்ப உறுப்பினர்கள்" />
-            <a href={href.find()} className="text-lg font-extrabold text-album-terracotta min-h-[44px] flex items-center">Find & filter ›</a>
-          </div>
-          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
-            {faces.map((m) => <PersonTile key={m.id} member={m} href={href.person(m.id)} line={whoLine(family, m)} />)}
-          </div>
-        </section>
-      )}
     </div>
   );
 };

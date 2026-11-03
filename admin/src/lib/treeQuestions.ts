@@ -85,8 +85,36 @@ const isChild = (m: FamilyMember) => {
   return y !== null && thisYear - y < 18;
 };
 
-const byAge = (a: FamilyMember, b: FamilyMember) =>
-  a.generation - b.generation || (a.birthDate ?? '9999').localeCompare(b.birthDate ?? '9999') || a.fullName.localeCompare(b.fullName);
+/** Helper to parse a date into comparable YYYY-MM-DD format. */
+export function parseBirthComparable(dateStr?: string | null): string | null {
+  if (!dateStr) return null;
+  const s = dateStr.trim();
+  if (s.length < 4) return null;
+  if (/^\d{4}/.test(s)) return s;
+  const m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (m) {
+    const [, d, mo, y] = m;
+    return `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  return s;
+}
+
+export const byAge = (a: FamilyMember, b: FamilyMember) => {
+  const da = parseBirthComparable(a.birthDate);
+  const db = parseBirthComparable(b.birthDate);
+  if (da && db) {
+    const cmp = da.localeCompare(db);
+    if (cmp !== 0) return cmp;
+  } else if (da && !db) {
+    return -1;
+  } else if (!da && db) {
+    return 1;
+  }
+  const genA = a.generation > 0 ? a.generation : 99;
+  const genB = b.generation > 0 ? b.generation : 99;
+  if (genA !== genB) return genA - genB;
+  return a.fullName.localeCompare(b.fullName);
+};
 
 /** Every question still open, in the order a person would naturally go down the tree. */
 export function openQuestions(members: FamilyMember[]): Question[] {

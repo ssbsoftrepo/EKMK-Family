@@ -61,7 +61,7 @@ export const JasmineGarland: React.FC<{ className?: string }> = ({ className = '
   </svg>
 );
 
-/** A printed photo: white border, a strip of tape, slightly tilted (in Kaveri: a floating rounded card, see themes.css). */
+/** A printed photo: white border, a strip of tape, slightly tilted. */
 export const Print: React.FC<{ children: React.ReactNode; tilt?: number; tape?: 'turmeric' | 'terracotta' | 'none'; className?: string }> = ({
   children, tilt = -1.2, tape = 'turmeric', className = '',
 }) => (
@@ -104,6 +104,10 @@ export const Icon = {
   minus: <path d="M5 12h14" />,
   swap: <path d="M4 8h14l-4-4M20 16H6l4 4" />,
   heart: <path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z" />,
+  close: <path d="M18 6L6 18M6 6l12 12" />,
+  briefcase: <><rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></>,
+  academic: <><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></>,
+  pin: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></>,
 };
 
 export const Svg: React.FC<{ icon: React.ReactNode; className?: string; stroke?: number }> = ({ icon, className = 'w-6 h-6', stroke = 2.2 }) => (
@@ -114,9 +118,14 @@ export const Svg: React.FC<{ icon: React.ReactNode; className?: string; stroke?:
 
 /** A photo tile used in grids: photo, name, one line under it. */
 export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: string }> = ({ member, line, href }) => (
-  <a href={href} className="no-underline text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm lift">
-    <Face member={member} className="w-full aspect-square" rounded="rounded-[13px]" />
-    <span className="text-[17px] font-extrabold leading-tight px-1">{member.fullName}</span>
-    {line && <span className="text-sm leading-tight px-1">{line}</span>}
+  <a
+    href={href}
+    className="h-full no-underline text-album-leaf bg-white rounded-[16px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm lift transition text-center"
+  >
+    <Face member={member} className="w-full aspect-square" rounded="rounded-[12px]" />
+    <div className="flex-1 min-w-0 flex flex-col justify-between items-center text-center gap-0.5 pt-0.5 px-0.5 w-full">
+      <span className="text-[13.5px] sm:text-[14px] font-extrabold leading-tight break-normal text-center w-full">{member.fullName}</span>
+      {line && <span className="text-[11.5px] font-medium leading-tight text-album-leaf/75 mt-auto pt-0.5 text-center w-full">{line}</span>}
+    </div>
   </a>
 );

@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 /* The admin site keeps its pale leaf page in Family Album. */
-:root:not([data-theme="kaveri"]) { --c-paper: 243 247 236; }
+:root { --c-paper: 243 247 236; }
 
 @layer base {
   html, body {
@@ -32,9 +32,7 @@
   }
 }
 
-/* Kaveri: the page gradient shows through, and the header is a teal river band. */
-:root[data-theme="kaveri"] .admin-shell { background: transparent; }
-:root[data-theme="kaveri"] .admin-header { background: linear-gradient(120deg, #0F3B45, #0B6E77 70%, #138A86); }
+
 
 /* Custom scrollbars with antique gold thumb */
 ::-webkit-scrollbar {

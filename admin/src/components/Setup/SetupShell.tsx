@@ -6,7 +6,6 @@ import { ShareStep } from './ShareStep';
 import { MembersStep } from './MembersStep';
 import { Check } from './ui';
 import { familyApi, signOut } from '../../api/familyApi';
-import { ThemeSwitch } from './ThemeSwitch';
 import { useSiteTheme } from '../../lib/theme';
 
 type StepId = 'import' | 'build' | 'share' | 'members';
@@ -84,7 +83,6 @@ export const SetupShell: React.FC = () => {
           </nav>
           <span className="flex items-center gap-3 text-[15px]">
             <span className="flex items-center gap-1.5"><Check className="w-5 h-5" color="#F2B705" />Saved automatically</span>
-            <ThemeSwitch night />
             <button type="button" onClick={signOut} className="min-h-[44px] px-3.5 rounded-full border-2 border-white/70 text-white font-bold hover:bg-white/10">Sign out</button>
           </span>
         </div>

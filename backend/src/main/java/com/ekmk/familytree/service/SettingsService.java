@@ -41,7 +41,7 @@ public class SettingsService {
     }
 
     /** The looks the family website has (frontend/src/lib/theme.ts). */
-    public static final java.util.Set<String> THEMES = java.util.Set.of("album", "kaveri");
+    public static final java.util.Set<String> THEMES = java.util.Set.of("album");
 
     /** Settings that may be left empty (the messages fall back to their defaults instead). */
     private static final java.util.Set<String> OPTIONAL = java.util.Set.of("siteUrl", "homePhotoUrl", "secretNote", "secretPhotoUrl");
@@ -56,7 +56,11 @@ public class SettingsService {
     public Map<String, String> getAll() {
         Map<String, String> out = new LinkedHashMap<>();
         for (String key : orderedKeys()) {
-            out.put(key, repository.findById(key).map(AppSetting::getValue).orElse(DEFAULTS.get(key)));
+            String val = repository.findById(key).map(AppSetting::getValue).orElse(DEFAULTS.get(key));
+            if ("siteTheme".equals(key) && !THEMES.contains(val)) {
+                val = "album";
+            }
+            out.put(key, val);
         }
         return out;
     }
@@ -69,7 +73,7 @@ public class SettingsService {
                 }
                 String value = e.getValue() == null ? "" : e.getValue().trim();
                 if (e.getKey().equals("siteTheme") && !value.isEmpty() && !THEMES.contains(value)) {
-                    throw new IllegalArgumentException("Unknown look: choose album or kaveri");
+                    throw new IllegalArgumentException("Unknown look: only album is supported");
                 }
                 if (value.length() > MAX_LENGTH) {
                     throw new IllegalArgumentException("Message is too long (more than " + MAX_LENGTH + " letters)");

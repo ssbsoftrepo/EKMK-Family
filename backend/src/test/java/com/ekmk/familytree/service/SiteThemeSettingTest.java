@@ -29,10 +29,22 @@ class SiteThemeSettingTest {
     }
 
     @Test
-    void kaveriCanBeChosen() {
+    void albumCanBeChosen() {
         when(repository.findById(anyString())).thenReturn(Optional.empty());
-        settings.update(Map.of("siteTheme", "kaveri"));
+        settings.update(Map.of("siteTheme", "album"));
         verify(repository).save(any(AppSetting.class));
+    }
+
+    @Test
+    void kaveriIsRefused() {
+        assertThrows(IllegalArgumentException.class, () -> settings.update(Map.of("siteTheme", "kaveri")));
+        verify(repository, never()).save(any(AppSetting.class));
+    }
+
+    @Test
+    void staleKaveriFallsBackToAlbum() {
+        when(repository.findById("siteTheme")).thenReturn(Optional.of(new AppSetting("siteTheme", "kaveri")));
+        assertEquals("album", settings.getAll().get("siteTheme"));
     }
 
     @Test

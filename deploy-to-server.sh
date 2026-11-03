@@ -20,7 +20,7 @@ cd "$SCRIPT_DIR"
 echo ""
 echo "📦 [1/4] Building Spring Boot Backend..."
 cd "$SCRIPT_DIR/backend"
-./gradlew bootJar -x test
+./gradlew --no-daemon bootJar -x test
 cd "$SCRIPT_DIR"
 
 # 2. Build Frontend
@@ -40,17 +40,28 @@ cd "$SCRIPT_DIR"
 # 4. Sync files to remote server
 echo ""
 echo "📡 [4/4] Syncing artifacts to $SERVER_USER@$SERVER_IP:$REMOTE_DIR..."
+ssh "$SERVER_USER@$SERVER_IP" "mkdir -p $REMOTE_DIR/docs/migrations $REMOTE_DIR/uploads/photos $REMOTE_DIR/backend $REMOTE_DIR/frontend/dist $REMOTE_DIR/admin/dist"
 rsync -avz --progress "$SCRIPT_DIR/backend/build/libs/backend-0.0.1-SNAPSHOT.jar" "$SERVER_USER@$SERVER_IP:$REMOTE_DIR/backend/familytree-backend.jar"
 rsync -avz --progress "$SCRIPT_DIR/backend/src/main/resources/application-prod.properties" "$SERVER_USER@$SERVER_IP:$REMOTE_DIR/backend/application-prod.properties"
 rsync -avz --delete "$SCRIPT_DIR/frontend/dist/" "$SERVER_USER@$SERVER_IP:$REMOTE_DIR/frontend/dist/"
 rsync -avz --delete "$SCRIPT_DIR/admin/dist/" "$SERVER_USER@$SERVER_IP:$REMOTE_DIR/admin/dist/"
 rsync -avz "$SCRIPT_DIR/uploads/" "$SERVER_USER@$SERVER_IP:$REMOTE_DIR/uploads/"
+mkdir -p "$SCRIPT_DIR/docs/migrations"
+rsync -avz "$SCRIPT_DIR/docs/migrations/" "$SERVER_USER@$SERVER_IP:$REMOTE_DIR/docs/migrations/"
 
-# 5. Restart backend & reload Nginx
+# 5. Enable auto-start on boot, restart backend & reload Nginx
 echo ""
-echo "🔄 Restarting remote backend service & reloading Nginx..."
+echo "🔄 Enabling auto-start on server boot, restarting backend & reloading Nginx..."
 ssh "$SERVER_USER@$SERVER_IP" '
+  echo "Enabling automatic startup on server boot for PostgreSQL, Nginx, and Backend..."
+  echo ssb | sudo -S systemctl enable postgresql
+  echo ssb | sudo -S systemctl enable nginx
+  echo ssb | sudo -S systemctl enable familytree-backend.service
+
+  echo "Restarting backend service..."
   echo ssb | sudo -S systemctl restart familytree-backend.service
+
+  echo "Reloading Nginx..."
   echo ssb | sudo -S systemctl reload nginx
 '
 

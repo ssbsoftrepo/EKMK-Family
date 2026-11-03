@@ -80,6 +80,15 @@
   /* Stars in the header at night. */
   .star { animation: twinkle 2.4s ease-in-out infinite; opacity: .5; }
 
+  /* Hide scrollbar while preserving scroll functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   /* The logo gives a little wobble while it counts taps. */
   .logo-wobble { animation: wobble .35s ease-in-out; }
 }

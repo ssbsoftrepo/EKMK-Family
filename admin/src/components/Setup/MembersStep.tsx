@@ -3,7 +3,7 @@ import { useAdmin } from '../../context/AdminContext';
 import { useToast } from '../../context/ToastContext';
 import { familyApi } from '../../api/familyApi';
 import { FamilyMember } from '../../types/family';
-import { birthYear, placedIds } from '../../lib/treeQuestions';
+import { birthYear, byAge, placedIds } from '../../lib/treeQuestions';
 import { MemberEditor } from './MemberEditor';
 import { Face, StepTitle, btnPrimary, btnSecondary } from './ui';
 
@@ -47,7 +47,7 @@ export const MembersStep: React.FC = () => {
       .filter((m) => filter !== 'details' || !m.birthDate)
       .filter((m) => filter !== 'memory' || m.isDeceased)
       .filter((m) => !s || [m.fullName, m.tamilName, m.currentCity, m.phone].some((v) => v?.toLowerCase().includes(s)))
-      .sort((a, b) => a.fullName.localeCompare(b.fullName));
+      .sort(byAge);
   }, [members, placed, q, filter]);
 
   const open = members.find((m) => m.id === openId);
