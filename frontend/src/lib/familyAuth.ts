@@ -52,6 +52,15 @@ export async function familySession(): Promise<{ required: boolean; signedIn: bo
   }
 }
 
+/** Why signing in failed: 'wrong' password, 'paused' after too many tries, or 'offline'. */
+export class FamilySignInError extends Error {
+  readonly reason: 'wrong' | 'paused' | 'offline';
+  constructor(message: string, reason: 'wrong' | 'paused' | 'offline') {
+    super(message);
+    this.reason = reason;
+  }
+}
+
 export async function familySignIn(password: string): Promise<void> {
   let res: Response;
   try {
@@ -61,10 +70,11 @@ export async function familySignIn(password: string): Promise<void> {
       body: JSON.stringify({ password }),
     });
   } catch {
-    throw new Error('Could not reach the family website. Please check your internet and try again.');
+    throw new FamilySignInError('Could not reach the family website. Please check your internet and try again.', 'offline');
   }
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error || 'That password isn’t right. Please try again.');
+  if (res.status === 429) throw new FamilySignInError(body.error || 'Too many wrong tries. Please wait a few minutes and try again.', 'paused');
+  if (!res.ok) throw new FamilySignInError(body.error || 'That password isn’t right. Please try again.', res.status === 401 ? 'wrong' : 'offline');
   saveToken(body.token || null);
 }
 
