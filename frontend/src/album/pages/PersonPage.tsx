@@ -1,11 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { FamilyMember } from '../../types/family';
-import { Family, byAge, firstName, whoLine } from '../family';
+import { Family, byAge, firstName, formatDateDMY, whoLine } from '../family';
 import { href } from '../router';
 import { Face, Hand, Icon, JasmineGarland, PersonTile, Print, Svg, btnSecondary } from '../ui';
 import { ContactButtons } from '../../components/Common/ContactButtons';
 import { useBirthdayPetals } from '../Magic';
 import { birthdaysOn } from '../family';
+
+/** Dynamic font sizing and styling to ensure long names and long words fit without separating letters */
+const getDynamicNameStyle = (name: string): React.CSSProperties => {
+  const clean = (name || '').trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+  const maxWord = Math.max(...words.map((w) => w.length), 0);
+  const total = clean.length;
+
+  let scale = 1.0;
+  if (maxWord >= 18 || total >= 30) {
+    scale = 0.72; // ~11.5px - 13px
+  } else if (maxWord >= 15 || total >= 25) {
+    scale = 0.8; // ~13px - 14.4px (e.g. Shanmugasundaram = 16 chars)
+  } else if (maxWord >= 12 || total >= 19) {
+    scale = 0.88; // ~14px - 16px
+  } else if (maxWord >= 9 || total >= 14) {
+    scale = 0.95; // ~15px - 17px
+  }
+
+  const minRem = Math.round(1.0 * scale * 100) / 100; // ~16px * scale
+  const maxRem = Math.round(1.125 * scale * 100) / 100; // ~18px * scale
+
+  return {
+    fontSize: `clamp(${minRem}rem, 2.2vw, ${maxRem}rem)`,
+    lineHeight: 1.25,
+    wordBreak: 'normal',
+    overflowWrap: 'normal',
+    whiteSpace: 'normal',
+  };
+};
 
 /** One person: photo and name on main page; click photo to turn card and reveal details & kinship button. */
 export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, id }) => {
@@ -62,11 +92,14 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
               </Print>
             </div>
             <div className="flex flex-col items-center text-center leading-tight w-full">
-              <span className="text-base sm:text-lg font-extrabold text-album-leaf group-hover:text-album-terracotta transition truncate max-w-full">
+              <span
+                style={getDynamicNameStyle(m.fullName)}
+                className="font-extrabold text-album-leaf group-hover:text-album-terracotta transition max-w-full text-center break-normal"
+              >
                 {m.fullName}
               </span>
               {m.tamilName && m.tamilName.trim() !== m.fullName.trim() && (
-                <span lang="ta" className="text-xs text-album-leaf/75 pt-0.5">{m.tamilName}</span>
+                <span lang="ta" className="text-xs text-album-leaf/75 pt-0.5 break-normal">{m.tamilName}</span>
               )}
             </div>
           </button>
@@ -87,10 +120,13 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
                 </Print>
               </div>
               <div className="flex flex-col items-center text-center leading-tight w-full">
-                <span className="text-base sm:text-lg font-extrabold text-album-leaf group-hover:text-album-terracotta transition truncate max-w-full">
+                <span
+                  style={getDynamicNameStyle(s.fullName)}
+                  className="font-extrabold text-album-leaf group-hover:text-album-terracotta transition max-w-full text-center break-normal"
+                >
                   {s.fullName}
                 </span>
-                <span className="text-[12px] font-semibold text-album-leaf/70 pt-0.5">
+                <span className="text-[12px] font-semibold text-album-leaf/70 pt-0.5 break-normal">
                   {s.gender === 'female' ? 'Wife · மனைவி' : s.gender === 'male' ? 'Husband · கணவர்' : 'Spouse · துணைவர்'}
                 </span>
               </div>
@@ -144,11 +180,14 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
               <div className="flex items-center gap-3 min-w-0">
                 <Face member={turnedMember} className="w-12 h-12 flex-shrink-0" rounded="rounded-full" ring="border-2 border-album-terracotta/40" />
                 <div className="flex flex-col leading-tight min-w-0">
-                  <span className="text-lg sm:text-xl font-extrabold text-album-leaf truncate">
+                  <span
+                    style={getDynamicNameStyle(turnedMember.fullName)}
+                    className="font-extrabold text-album-leaf break-normal"
+                  >
                     {turnedMember.fullName}
                   </span>
                   {turnedMember.tamilName && turnedMember.tamilName.trim() !== turnedMember.fullName.trim() && (
-                    <span lang="ta" className="text-xs text-album-leaf/75">{turnedMember.tamilName}</span>
+                    <span lang="ta" className="text-xs text-album-leaf/75 break-normal">{turnedMember.tamilName}</span>
                   )}
                   <span className="text-xs text-album-leaf/70 pt-0.5">{whoLine(family, turnedMember)}</span>
                 </div>
@@ -225,9 +264,11 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/50 text-album-leaf/85">
                   <JasmineGarland className="w-8 h-auto shrink-0" />
                   <span className="text-xs font-semibold">In loving memory · மறைவு</span>
-                  {turnedMember.birthDate && (
+                  {(turnedMember.birthDate || turnedMember.deathDate) && (
                     <span className="text-xs text-album-leaf/70">
-                      ({turnedMember.birthDate}{turnedMember.deathDate ? ` – ${turnedMember.deathDate}` : ''})
+                      ({turnedMember.birthDate ? formatDateDMY(turnedMember.birthDate) : ''}
+                      {turnedMember.birthDate && turnedMember.deathDate ? ' – ' : ''}
+                      {turnedMember.deathDate ? formatDateDMY(turnedMember.deathDate) : ''})
                     </span>
                   )}
                 </div>

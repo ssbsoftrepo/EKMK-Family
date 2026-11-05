@@ -116,6 +116,27 @@ export const Svg: React.FC<{ icon: React.ReactNode; className?: string; stroke?:
   </svg>
 );
 
+/** Dynamic font sizing for tiles to keep long words unbroken and fitting comfortably */
+const getDynamicTileStyle = (name: string): React.CSSProperties => {
+  const clean = (name || '').trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+  const maxWord = Math.max(...words.map((w) => w.length), 0);
+  const total = clean.length;
+
+  let fontSize = '13.5px';
+  if (maxWord >= 16 || total >= 25) {
+    fontSize = '11.5px';
+  } else if (maxWord >= 13 || total >= 20) {
+    fontSize = '12.5px';
+  }
+
+  return {
+    fontSize,
+    wordBreak: 'normal',
+    overflowWrap: 'normal',
+  };
+};
+
 /** A photo tile used in grids: photo, name, one line under it. */
 export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: string }> = ({ member, line, href }) => (
   <a
@@ -124,8 +145,13 @@ export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: s
   >
     <Face member={member} className="w-full aspect-square" rounded="rounded-[12px]" />
     <div className="flex-1 min-w-0 flex flex-col justify-between items-center text-center gap-0.5 pt-0.5 px-0.5 w-full">
-      <span className="text-[13.5px] sm:text-[14px] font-extrabold leading-tight break-normal text-center w-full">{member.fullName}</span>
-      {line && <span className="text-[11.5px] font-medium leading-tight text-album-leaf/75 mt-auto pt-0.5 text-center w-full">{line}</span>}
+      <span
+        style={getDynamicTileStyle(member.fullName)}
+        className="font-extrabold leading-tight break-normal text-center w-full"
+      >
+        {member.fullName}
+      </span>
+      {line && <span className="text-[11.5px] font-medium leading-tight text-album-leaf/75 mt-auto pt-0.5 text-center w-full break-normal">{line}</span>}
     </div>
   </a>
 );

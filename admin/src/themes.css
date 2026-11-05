@@ -8,18 +8,30 @@
 
 :root,
 :root[data-theme="album"] {
-  --c-leaf: 30 70 54;          /* text, dark buttons     #1E4636 */
-  --c-paper: 255 241 201;      /* page                   #FFF1C9 */
-  --c-line: 220 230 210;       /* dividers               #DCE6D2 */
-  --c-sage: 191 216 176;       /* soft tile              #BFD8B0 */
-  --c-moss: 92 138 74;         /* leaves, ticks          #5C8A4A */
-  --c-turmeric: 242 183 5;     /* highlight              #F2B705 */
-  --c-sun: 246 215 122;        /* soft highlight         #F6D77A */
-  --c-terracotta: 184 69 42;   /* main buttons, links    #B8452A */
-  --c-peach: 232 165 140;      /* soft tile              #E8A58C */
-  --c-blush: 242 198 180;      /* soft tile              #F2C6B4 */
-  --c-edge: 30 70 54;          /* thick card borders     #1E4636 */
-  --c-night: 22 53 42;         /* header at night        #16352A */
+  --c-leaf: 30 70 54;
+  /* text, dark buttons     #1E4636 */
+  --c-paper: 255 241 201;
+  /* page                   #FFF1C9 */
+  --c-line: 220 230 210;
+  /* dividers               #DCE6D2 */
+  --c-sage: 191 216 176;
+  /* soft tile              #BFD8B0 */
+  --c-moss: 92 138 74;
+  /* leaves, ticks          #5C8A4A */
+  --c-turmeric: 242 183 5;
+  /* highlight              #F2B705 */
+  --c-sun: 246 215 122;
+  /* soft highlight         #F6D77A */
+  --c-terracotta: 184 69 42;
+  /* main buttons, links    #B8452A */
+  --c-peach: 232 165 140;
+  /* soft tile              #E8A58C */
+  --c-blush: 242 198 180;
+  /* soft tile              #F2C6B4 */
+  --c-edge: 30 70 54;
+  /* thick card borders     #1E4636 */
+  --c-night: 22 53 42;
+  /* header at night        #16352A */
 
   --font-body: 'Plus Jakarta Sans', 'Noto Sans Tamil', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-hand: 'Plus Jakarta Sans', 'Noto Sans Tamil', system-ui, sans-serif;
@@ -36,7 +48,56 @@
 }
 
 /* Accent line / handwritten labels styled with bold Plus Jakarta Sans */
-.font-hand { font-weight: 800; letter-spacing: -.01em; }
+.font-hand {
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
 
 /* A printed photo (Print in album/ui.tsx): Family Album tilts it and tapes it down */
-.print { transform: rotate(var(--tilt, 0deg)); }
+.print {
+  transform: rotate(var(--tilt, 0deg));
+}
+
+/* 3D card turn animation for person details popup */
+@keyframes cardTurnIn {
+  0% {
+    opacity: 0;
+    transform: perspective(900px) rotateY(-85deg) scale(0.92);
+  }
+  65% {
+    transform: perspective(900px) rotateY(8deg) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(900px) rotateY(0deg) scale(1);
+  }
+}
+
+.animate-card-turn {
+  animation: cardTurnIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-style: preserve-3d;
+}
+
+/* Gentle heartbeat animation for couple connector */
+@keyframes coupleHeartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.14);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.09);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+.animate-heart-pulse {
+  animation: coupleHeartBeat 2.5s ease-in-out infinite;
+  transform-origin: center;
+}

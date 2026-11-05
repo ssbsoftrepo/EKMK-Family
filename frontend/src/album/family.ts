@@ -11,6 +11,23 @@ export const birthYear = (m: FamilyMember): number | null => {
   return Number.isFinite(y) && y > 1800 ? y : null;
 };
 
+/** Format a date string (e.g. YYYY-MM-DD) into DD-MM-YYYY format */
+export const formatDateDMY = (dateStr?: string | null): string => {
+  if (!dateStr) return '';
+  const clean = dateStr.trim();
+  const match = clean.match(/^(\d{4})[-/.](\d{2})[-/.](\d{2})/);
+  if (match) {
+    const [, y, m, d] = match;
+    return `${d}-${m}-${y}`;
+  }
+  const dmyMatch = clean.match(/^(\d{2})[-/.](\d{2})[-/.](\d{4})/);
+  if (dmyMatch) {
+    const [, d, m, y] = dmyMatch;
+    return `${d}-${m}-${y}`;
+  }
+  return clean;
+};
+
 export class Family {
   readonly byId: Map<string, FamilyMember>;
 
