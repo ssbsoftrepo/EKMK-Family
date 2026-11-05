@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FAMILY_SIGNED_OUT, familySession, familySignIn, FamilySignInError } from '../lib/familyAuth';
 import { KolamLoader } from './Magic';
 import { btnPrimary } from './ui';
+import { firstTimeOnThisPhone, WelcomeIn } from './WelcomeIn';
 
 /**
  * Asks for the family password before anything else loads, when the server has one set.
@@ -9,6 +10,9 @@ import { btnPrimary } from './ui';
  */
 export const FamilyGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<'checking' | 'locked' | 'open'>('checking');
+  // After typing the right password: the welcome plays first, then the album opens.
+  const [welcome, setWelcome] = useState<null | 'door' | 'vaanga'>(null);
+  const endWelcome = useCallback(() => setWelcome(null), []);
 
   useEffect(() => {
     let alive = true;
@@ -22,7 +26,11 @@ export const FamilyGate: React.FC<{ children: React.ReactNode }> = ({ children }
   if (state === 'checking') {
     return <div className="min-h-screen flex items-center justify-center text-album-leaf font-album"><KolamLoader text="Opening the family album" /></div>;
   }
-  if (state === 'locked') return <FamilySignIn onDone={() => setState('open')} />;
+  if (state === 'locked') {
+    return <FamilySignIn onDone={() => { setWelcome(firstTimeOnThisPhone() ? 'door' : 'vaanga'); setState('open'); }} />;
+  }
+  // The album starts once the welcome is over, so its own surprises (birthday petals) come after it.
+  if (welcome) return <WelcomeIn door={welcome === 'door'} onEnd={endWelcome} />;
   return <>{children}</>;
 };
 
