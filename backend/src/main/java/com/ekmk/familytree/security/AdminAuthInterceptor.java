@@ -8,7 +8,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.io.IOException;
 
 /**
- * The family website has no login, so it may only read the public answers.
+ * The family website may only read the public answers (behind the family password when
+ * FAMILY_PASSWORD is set, see {@link FamilyAuthInterceptor}).
  * Everything else under /api needs the admin session token:
  * every change (POST, PUT, PATCH, DELETE) and every read under /api/admin
  * (full records with addresses and emails), except the health check and signing in.
@@ -28,6 +29,7 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
     public static boolean needsAdmin(String method, String path) {
         if ("OPTIONS".equalsIgnoreCase(method)) return false;
         if ("/api/admin/login".equals(path) || "/api/admin/health".equals(path)) return false;
+        if ("/api/family/login".equals(path)) return false;
         boolean read = "GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method);
         if (!read) return true;
         return path.startsWith("/api/admin/") || "/api/admin".equals(path);

@@ -49,10 +49,12 @@ PostgreSQL database is configured with database name `"kmk-family"` on port 5432
 
 ```bash
 cd backend
-ADMIN_PASSWORD='choose-a-long-family-password' ./gradlew bootRun
+ADMIN_PASSWORD='choose-a-long-admin-password' FAMILY_PASSWORD='the-family-password' ./gradlew bootRun
 ```
 
-**Admin password.** The admin site, and every change to the family, needs one shared password, set as `ADMIN_PASSWORD` on the server (never in a file in this repository). Without it the backend starts but keeps the admin locked, and logs a warning. Signing in keeps that device signed in for 30 days (`app.admin.session-days`); changing the password signs every device out. After 5 wrong passwords from one address, signing in pauses for 10 minutes. The family website needs no password: it only reads the public answers.
+**Admin password.** The admin site, and every change to the family, needs one shared password, set as `ADMIN_PASSWORD` on the server (never in a file in this repository). Without it the backend starts but keeps the admin locked, and logs a warning. Signing in keeps that device signed in for 30 days (`app.admin.session-days`); changing the password signs every device out. After 5 wrong passwords from one address, signing in pauses for 10 minutes.
+
+**Family password.** The family website asks for one shared family password when `FAMILY_PASSWORD` is set on the server (never in a file in this repository). Everyone uses the same password; after signing in, a phone stays signed in for 180 days (`app.family.session-days`), and changing the password signs every phone out. Without `FAMILY_PASSWORD` the family website stays open to anyone with the link, as before, and the backend logs a warning. The family website only ever reads the public answers (no addresses or emails); the admin's token also works for these reads. After 10 wrong tries from one address, signing in pauses for 5 minutes. Photo files (`/api/media/photos/…`) stay open because an image tag cannot send a password; their names are random and only appear in the protected member data.
 - **Backend Port**: `http://localhost:8081`
 - **PostgreSQL Database**: `kmk-family` (PostgreSQL 16)
 - **Health Check**: `http://localhost:8081/api/admin/health`

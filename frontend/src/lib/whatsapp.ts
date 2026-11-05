@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { familyFetch } from './familyAuth';
 
 /**
  * WhatsApp without any setup: https://wa.me links open WhatsApp on the visitor's
@@ -35,7 +36,7 @@ let cached: Promise<SiteSettings> | null = null;
 
 const loadSettings = () => {
   if (!cached) {
-    cached = fetch(`${API_BASE_URL}/api/settings`)
+    cached = familyFetch(`${API_BASE_URL}/api/settings`)
       .then((r) => (r.ok ? r.json() : FALLBACK))
       .then((s) => ({ ...FALLBACK, ...s }))
       .catch(() => FALLBACK);

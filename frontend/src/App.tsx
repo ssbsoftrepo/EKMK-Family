@@ -1,11 +1,14 @@
 import { FamilyProvider } from './context/FamilyContext';
 import { AlbumApp } from './album/AlbumApp';
+import { FamilyGate } from './album/FamilyGate';
 
 export function App() {
   return (
-    <FamilyProvider>
-      <AlbumApp />
-    </FamilyProvider>
+    <FamilyGate>
+      <FamilyProvider>
+        <AlbumApp />
+      </FamilyProvider>
+    </FamilyGate>
   );
 }
 

@@ -11,6 +11,7 @@ import { KolamLoader, SecretDrawer } from './Magic';
 import { useSiteSettings } from '../lib/whatsapp';
 import { useDayPart } from './timeOfDay';
 import { useSiteTheme } from '../lib/theme';
+import { familySignOut, familyToken } from '../lib/familyAuth';
 
 const NAV: { id: Route['page'][]; to: string; en: string; ta: string; icon: React.ReactNode }[] = [
   { id: ['home'], to: href.home(), en: 'Home', ta: 'முகப்பு', icon: Icon.home },
@@ -89,6 +90,11 @@ export const AlbumApp: React.FC = () => {
 
       <footer className="border-t-2 border-album-line py-5 px-4 pb-28 md:pb-6 text-center font-hand text-lg">
         Made with <span role="img" aria-label="love">❤️</span> by <a href="https://www.ssbsoft.com" target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:text-album-terracotta">SSB Software Solutions Pvt. Ltd.</a>
+        {familyToken() && (
+          <span className="block pt-2 font-album text-[15px]">
+            Shared phone? <button type="button" onClick={familySignOut} className="underline underline-offset-4 font-bold">Sign out of the family album</button>
+          </span>
+        )}
       </footer>
 
       {drawer && <SecretDrawer note={settings.secretNote} photoUrl={settings.secretPhotoUrl} onClose={() => setDrawer(false)} />}
