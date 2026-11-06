@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { HomePhoto } from './HomePhoto';
+import { FamilyPassword } from './FamilyPassword';
 import { SecretDrawerSettings } from './SecretDrawerSettings';
 import { useToast } from '../../context/ToastContext';
 import { useAdmin } from '../../context/AdminContext';
@@ -93,6 +94,8 @@ export const ShareStep: React.FC = () => {
             </div>
             <span className="text-[15px]">“Send to the WhatsApp group” opens WhatsApp with the share message below. You pick the group and press send.</span>
           </section>
+
+          <FamilyPassword siteUrl={settings.siteUrl} />
 
           <HomePhoto url={settings.homePhotoUrl} onChange={(url) => change('homePhotoUrl', url)} />
 
