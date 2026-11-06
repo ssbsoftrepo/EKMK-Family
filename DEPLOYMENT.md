@@ -70,12 +70,11 @@ sudo systemctl status familytree-backend.service
 # Restart the service
 sudo systemctl restart familytree-backend.service
 
-# Set (or change) the family website password: add these two lines in the editor that opens,
-#   [Service]
-#   Environment="FAMILY_PASSWORD=the-family-password"
-# then restart. Changing it signs every phone out; tell the family the new one on WhatsApp.
-sudo systemctl edit familytree-backend.service
-sudo systemctl restart familytree-backend.service
+# The family website password is set and changed in the admin site:
+#   Share the link -> Family website password -> Change the password -> Save.
+# No server commands are needed. Optionally, a starting password can be given to the
+# service (used only until the admin sets one in the admin site):
+#   sudo systemctl edit familytree-backend.service   ->   [Service] Environment="FAMILY_PASSWORD=..."
 
 # View live service logs
 journalctl -u familytree-backend.service -f

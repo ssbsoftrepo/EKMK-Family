@@ -36,6 +36,14 @@ export interface SiteSettings {
   siteTheme: string;
 }
 
+/** Whether the family website asks for a password, and where that password was set. */
+export interface FamilyPasswordStatus {
+  on: boolean;
+  source: 'admin' | 'server' | 'none';
+  changedAt: string | null;
+  minLength: number;
+}
+
 export interface BackendHealth {
   status: string;
   service: string;
@@ -228,6 +236,26 @@ export const familyApi = {
       body: JSON.stringify(changes),
     });
     return handleResponse<SiteSettings>(res);
+  },
+
+  // The family website's shared password (set, or turned off, by the admin; never sent back)
+  async getFamilyPassword(): Promise<FamilyPasswordStatus> {
+    const res = await authFetch(`${API_BASE_URL}/api/admin/family-password`);
+    return handleResponse<FamilyPasswordStatus>(res);
+  },
+
+  async setFamilyPassword(password: string): Promise<FamilyPasswordStatus> {
+    const res = await authFetch(`${API_BASE_URL}/api/admin/family-password`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    return handleResponse<FamilyPasswordStatus>(res);
+  },
+
+  async turnOffFamilyPassword(): Promise<FamilyPasswordStatus> {
+    const res = await authFetch(`${API_BASE_URL}/api/admin/family-password`, { method: 'DELETE' });
+    return handleResponse<FamilyPasswordStatus>(res);
   },
 
   // Admin & Health
