@@ -70,6 +70,13 @@ sudo systemctl status familytree-backend.service
 # Restart the service
 sudo systemctl restart familytree-backend.service
 
+# Set (or change) the family website password: add these two lines in the editor that opens,
+#   [Service]
+#   Environment="FAMILY_PASSWORD=the-family-password"
+# then restart. Changing it signs every phone out; tell the family the new one on WhatsApp.
+sudo systemctl edit familytree-backend.service
+sudo systemctl restart familytree-backend.service
+
 # View live service logs
 journalctl -u familytree-backend.service -f
 ```
@@ -80,6 +87,7 @@ journalctl -u familytree-backend.service -f
 - **Admin Dist Root**: `/home/ssb/Family-Tree-EKMK/admin/dist`
 - **API Proxy**: All requests to `/api/` are forwarded internally to `http://127.0.0.1:8086/`
 - **Upload Limit**: `client_max_body_size 50M;` for high-resolution family photos
+- **Client address**: keep `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;` in the `/api/` block. The wrong-password pause counts tries per phone from this header; without it every visitor shares one counter.
 
 To test and reload Nginx:
 ```bash

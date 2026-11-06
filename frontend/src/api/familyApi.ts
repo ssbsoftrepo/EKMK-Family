@@ -1,4 +1,5 @@
 import { FamilyMember, FamilyBranch } from '../types/family';
+import { familyFetch } from '../lib/familyAuth';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -54,23 +55,23 @@ export const familyApi = {
     if (params?.gender) searchParams.append('gender', params.gender);
     if (params?.isDeceased !== undefined) searchParams.append('isDeceased', String(params.isDeceased));
     const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    const res = await fetch(`${API_BASE_URL}/api/members${query}`);
+    const res = await familyFetch(`${API_BASE_URL}/api/members${query}`);
     return handleResponse<FamilyMember[]>(res);
   },
 
   async searchMembers(query: string): Promise<FamilyMember[]> {
     if (!query.trim()) return [];
-    const res = await fetch(`${API_BASE_URL}/api/members/search?q=${encodeURIComponent(query.trim())}`);
+    const res = await familyFetch(`${API_BASE_URL}/api/members/search?q=${encodeURIComponent(query.trim())}`);
     return handleResponse<FamilyMember[]>(res);
   },
 
   async getMemberById(id: string): Promise<FamilyMember> {
-    const res = await fetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`);
+    const res = await familyFetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`);
     return handleResponse<FamilyMember>(res);
   },
 
   async createMember(member: Partial<FamilyMember>): Promise<FamilyMember> {
-    const res = await fetch(`${API_BASE_URL}/api/members`, {
+    const res = await familyFetch(`${API_BASE_URL}/api/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(member),
@@ -79,7 +80,7 @@ export const familyApi = {
   },
 
   async updateMember(id: string, updates: Partial<FamilyMember>): Promise<FamilyMember> {
-    const res = await fetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`, {
+    const res = await familyFetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
@@ -88,7 +89,7 @@ export const familyApi = {
   },
 
   async deleteMember(id: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`, {
+    const res = await familyFetch(`${API_BASE_URL}/api/members/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     if (!res.ok && res.status !== 204) {
@@ -98,18 +99,18 @@ export const familyApi = {
 
   // Branches
   async getAllBranches(): Promise<FamilyBranch[]> {
-    const res = await fetch(`${API_BASE_URL}/api/branches`);
+    const res = await familyFetch(`${API_BASE_URL}/api/branches`);
     return handleResponse<FamilyBranch[]>(res);
   },
 
   async getBranchById(id: string): Promise<FamilyBranch> {
-    const res = await fetch(`${API_BASE_URL}/api/branches/${encodeURIComponent(id)}`);
+    const res = await familyFetch(`${API_BASE_URL}/api/branches/${encodeURIComponent(id)}`);
     return handleResponse<FamilyBranch>(res);
   },
 
   // Stats
   async getStats(): Promise<FamilyStats> {
-    const res = await fetch(`${API_BASE_URL}/api/stats`);
+    const res = await familyFetch(`${API_BASE_URL}/api/stats`);
     return handleResponse<FamilyStats>(res);
   },
 
@@ -119,7 +120,7 @@ export const familyApi = {
   async uploadPhoto(file: File): Promise<{ url: string; filename: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch(`${API_BASE_URL}/api/media/upload`, {
+    const res = await familyFetch(`${API_BASE_URL}/api/media/upload`, {
       method: 'POST',
       body: formData,
     });
@@ -127,7 +128,7 @@ export const familyApi = {
   },
 
   async checkHealth(): Promise<BackendHealth> {
-    const res = await fetch(`${API_BASE_URL}/api/admin/health`);
+    const res = await familyFetch(`${API_BASE_URL}/api/admin/health`);
     return handleResponse<BackendHealth>(res);
   },
 };
