@@ -162,8 +162,8 @@ const FamilySignIn: React.FC<{ onDone: () => void }> = ({ onDone }) => {
           <span className="text-[15px] text-center">This phone will remember you, so you only do this once.</span>
         </form>
       </main>
-      <footer className="py-5 px-4 text-center font-hand text-lg">
-        Made with <span role="img" aria-label="love">❤️</span> by <a href="https://www.ssbsoft.com" target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:text-album-terracotta">SSB Software Solutions Pvt. Ltd.</a>
+      <footer className="py-4 px-4 text-center font-hand text-sm">
+        Made with <span role="img" aria-label="love">❤️</span> by <a href="https://www.ssbsoft.com" target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:text-album-terracotta">SSB Soft</a>
       </footer>
     </div>
   );

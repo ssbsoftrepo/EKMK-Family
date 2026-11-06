@@ -49,9 +49,9 @@ export const SignIn: React.FC<{ notice?: string; onSignedIn: () => void }> = ({ 
         <button type="submit" className={btnPrimary} disabled={busy || !password}>{busy ? 'Opening…' : 'Open the admin'}</button>
         <p className="m-0 text-[15px]">This device stays signed in for 30 days. The family website doesn't need a password.</p>
       </form>
-      <p className="font-hand text-lg pt-5 text-center">
+      <p className="font-hand text-sm pt-4 text-center">
         Made with <span role="img" aria-label="love">❤️</span> by{' '}
-        <a href="https://www.ssbsoft.com" target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4">SSB Software Solutions Pvt. Ltd.</a>
+        <a href="https://www.ssbsoft.com" target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4">SSB Soft</a>
       </p>
     </div>
   );

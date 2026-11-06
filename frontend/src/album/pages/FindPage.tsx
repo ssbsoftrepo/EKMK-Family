@@ -4,7 +4,6 @@ import { Family, byAge, coupleLabel, firstName, whoLine } from '../family';
 import { href } from '../router';
 import { Hand, Icon, PersonTile, Svg, Title } from '../ui';
 import { emojiRain, funWord } from '../magic';
-import { SurpriseMe } from '../SurpriseMe';
 
 const STEP = 48;
 
@@ -91,7 +90,6 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
           Show more ({results.length - limit} left)
         </button>
       )}
-      <div className="pt-4"><SurpriseMe family={family} /></div>
     </div>
   );
 };

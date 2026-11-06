@@ -5,7 +5,6 @@ import { Face, Hand, Icon, PersonTile, Print, Svg, Title } from '../ui';
 import { useSiteSettings } from '../../lib/whatsapp';
 import { ContactButtons } from '../../components/Common/ContactButtons';
 import { useBirthdayPetals } from '../Magic';
-import { SurpriseMe } from '../SurpriseMe';
 import { GREETINGS, useDayPart } from '../timeOfDay';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -112,8 +111,6 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
           <Tile to={href.home()} onClick={() => document.getElementById('birthdays')?.scrollIntoView({ behavior: 'smooth' })} en="Birthdays" ta="பிறந்தநாள்" icon={Icon.cake} bg="rgb(var(--c-peach))" />
         </div>
       </section>
-
-      <SurpriseMe family={family} />
 
       <section id="birthdays" aria-label="Coming birthdays" className="flex flex-col gap-3 scroll-mt-24">
         <Title as="h2" en="Coming birthdays" ta="வரும் பிறந்தநாட்கள்" />

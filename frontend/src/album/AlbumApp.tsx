@@ -57,17 +57,32 @@ export const AlbumApp: React.FC = () => {
               <span lang="ta" className="text-[15px]">எங்கள் குடும்பம்</span>
             </span>
           </a>
-          <nav aria-label="Main" className="hidden md:flex gap-1.5">
-            {NAV.map((n) => {
-              const on = n.id.includes(route.page);
-              return (
-                <a key={n.to} href={n.to} aria-current={on ? 'page' : undefined}
-                  className={`no-underline min-h-[48px] px-4 rounded-full flex items-center gap-2 text-[17px] font-bold ${on ? (night ? 'bg-album-turmeric text-album-leaf' : 'bg-album-leaf text-white') : (night ? 'text-white hover:bg-white/10' : 'text-album-leaf hover:bg-album-paper')}`}>
-                  <Svg icon={n.icon} className="w-5 h-5" />{n.en}
-                </a>
-              );
-            })}
-          </nav>
+          <div className="flex items-center gap-2">
+            <nav aria-label="Main" className="hidden md:flex gap-1.5">
+              {NAV.map((n) => {
+                const on = n.id.includes(route.page);
+                return (
+                  <a key={n.to} href={n.to} aria-current={on ? 'page' : undefined}
+                    className={`no-underline min-h-[48px] px-4 rounded-full flex items-center gap-2 text-[17px] font-bold ${on ? (night ? 'bg-album-turmeric text-album-leaf' : 'bg-album-leaf text-white') : (night ? 'text-white hover:bg-white/10' : 'text-album-leaf hover:bg-album-paper')}`}>
+                    <Svg icon={n.icon} className="w-5 h-5" />{n.en}
+                  </a>
+                );
+              })}
+            </nav>
+            {familyToken() && (
+              <button
+                type="button"
+                onClick={familySignOut}
+                className={`min-h-[40px] px-4 py-1.5 rounded-full text-[15px] font-bold transition-colors border cursor-pointer ${
+                  night
+                    ? 'border-white/30 text-white hover:bg-white/10'
+                    : 'border-album-line text-album-leaf hover:bg-album-paper'
+                }`}
+              >
+                Sign out
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -88,13 +103,8 @@ export const AlbumApp: React.FC = () => {
         )}
       </main>
 
-      <footer className="border-t-2 border-album-line py-5 px-4 pb-28 md:pb-6 text-center font-hand text-lg">
-        Made with <span role="img" aria-label="love">❤️</span> by <a href="https://www.ssbsoft.com" target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:text-album-terracotta">SSB Software Solutions Pvt. Ltd.</a>
-        {familyToken() && (
-          <span className="block pt-2 font-album text-[15px]">
-            Shared phone? <button type="button" onClick={familySignOut} className="underline underline-offset-4 font-bold">Sign out of the family album</button>
-          </span>
-        )}
+      <footer className="border-t-2 border-album-line py-4 px-4 pb-28 md:pb-6 text-center font-hand text-sm">
+        Made with <span role="img" aria-label="love">❤️</span> by <a href="https://www.ssbsoft.com" target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:text-album-terracotta">SSB Soft</a>
       </footer>
 
       {drawer && <SecretDrawer note={settings.secretNote} photoUrl={settings.secretPhotoUrl} onClose={() => setDrawer(false)} />}
