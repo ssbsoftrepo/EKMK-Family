@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 /** A Tamil greeting that follows the clock on the visitor's phone. */
 export type DayPart = 'morning' | 'afternoon' | 'evening' | 'night';
 
-export const GREETINGS: Record<DayPart, { en: string; ta: string; note: string }> = {
-  morning: { en: 'Kaalai vanakkam!', ta: 'காலை வணக்கம்', note: 'have your filter coffee and meet the family' },
-  afternoon: { en: 'Madhiya vanakkam!', ta: 'மதிய வணக்கம்', note: 'a good time for a quick look around' },
-  evening: { en: 'Maalai vanakkam!', ta: 'மாலை வணக்கம்', note: 'evening tea time, see who’s here' },
-  night: { en: 'Iniya iravu!', ta: 'இனிய இரவு', note: 'the stars are out, so is the whole family' },
+export const GREETINGS: Record<DayPart, { en: string; ta: string }> = {
+  morning: { en: 'Kaalai vanakkam!', ta: 'காலை வணக்கம்' },
+  afternoon: { en: 'Madhiya vanakkam!', ta: 'மதிய வணக்கம்' },
+  evening: { en: 'Maalai vanakkam!', ta: 'மாலை வணக்கம்' },
+  night: { en: 'Iniya iravu!', ta: 'இனிய இரவு' },
 };
 
 export function dayPart(date = new Date()): DayPart {

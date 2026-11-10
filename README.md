@@ -54,7 +54,7 @@ ADMIN_PASSWORD='choose-a-long-admin-password' FAMILY_PASSWORD='the-family-passwo
 
 **Admin password.** The admin site, and every change to the family, needs one shared password, set as `ADMIN_PASSWORD` on the server (never in a file in this repository). Without it the backend starts but keeps the admin locked, and logs a warning. Signing in keeps that device signed in for 30 days (`app.admin.session-days`); changing the password signs every device out. After 5 wrong passwords from one address, signing in pauses for 10 minutes.
 
-**Family password.** The family website can ask for one shared family password. The admin sets, changes or turns it off in the admin site: **Share the link → Family website password** (type one or tap *Suggest one*, then *Save*; the saved screen sends it to the family WhatsApp group in one tap). It is kept hashed in the database and never shown again; if it's forgotten, set a new one. `FAMILY_PASSWORD` on the server (never in a file in this repository) works as a starting password until the admin sets one. Everyone uses the same password; after signing in, a phone stays signed in for 180 days (`app.family.session-days`), and changing the password signs every phone out. With no password set either way, the family website stays open to anyone with the link, as before, and the backend logs a warning. The family website only ever reads the public answers (no addresses or emails); the admin's token also works for these reads. After 10 wrong tries from one address, signing in pauses for 5 minutes. Photo files (`/api/media/photos/…`) stay open because an image tag cannot send a password; their names are random and only appear in the protected member data.
+**Family password.** The family website can ask for one shared family password. The admin sets, changes or turns it off in the admin site: **Share the link → Family website password** (type one or tap *Suggest one*, then *Save*). It is kept hashed in the database and never shown again; if it's forgotten, set a new one. `FAMILY_PASSWORD` on the server (never in a file in this repository) works as a starting password until the admin sets one. Everyone uses the same password; after signing in, a phone stays signed in for 180 days (`app.family.session-days`), and changing the password signs every phone out. With no password set either way, the family website stays open to anyone with the link, as before, and the backend logs a warning. The family website only ever reads the public answers (no addresses or emails); the admin's token also works for these reads. After 10 wrong tries from one address, signing in pauses for 5 minutes. Photo files (`/api/media/photos/…`) stay open because an image tag cannot send a password; their names are random and only appear in the protected member data.
 - **Backend Port**: `http://localhost:8081`
 - **PostgreSQL Database**: `kmk-family` (PostgreSQL 16)
 - **Health Check**: `http://localhost:8081/api/admin/health`
@@ -84,7 +84,7 @@ npm run dev
 
 | HTTP Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/members` | All family members for the public website (no addresses, emails or form notes; phone numbers stay for the Call / WhatsApp buttons) |
+| `GET` | `/api/members` | All family members for the public website (no addresses, emails or form notes; phone numbers stay for the Call button) |
 | `GET` | `/api/admin/members` | All family members with every detail, for the admin site (also `/api/admin/members/search`, `/api/admin/members/{id}`) |
 | `GET` | `/api/members/{id}` | Retrieve specific member with relationship hierarchy |
 | `POST` | `/api/members` | Insert new family member (updates parents' `childIds` and spouse link) |
@@ -95,7 +95,7 @@ npm run dev
 | `GET` | `/api/admin/health` | Backend and runtime health check |
 | `POST` | `/api/admin/login` | `{"password"}` → `{"token"}`; send it as `Authorization: Bearer <token>` with every change and every `/api/admin/...` read |
 | `POST` | `/api/admin/import` | Upload the Google Form responses (`.xlsx` / `.csv`, field `file`). Tidies phones, names, places and jobs; safe to repeat (only new people are added) |
-| `GET` | `/api/settings` | Website link and the WhatsApp message templates (`{name}`, `{site}`) |
+| `GET` | `/api/settings` | Website link, home photo, and theme settings |
 | `PUT` | `/api/settings` | Change any of those settings (unknown keys are ignored) |
 
 ---
@@ -110,9 +110,9 @@ A photo album, phone first, bilingual labels (English + Tamil), big buttons, no 
 
 | Page | Address | What it shows |
 |---|---|---|
-| Home | `#/` | Family photo (admin → Share → Home page photo), welcome, today's birthdays with a WhatsApp wish, big buttons, coming birthdays (day and month only), some family faces |
+| Home | `#/` | Family photo (admin → Share → Home page photo), welcome, today's birthdays with call wish, big buttons, coming birthdays (day and month only), some family faces |
 | Find a relative | `#/find` | Search by name, town or job; one chip per branch ("Ravi's family"); photo grid |
-| One person | `#/person/<id>` | Big photo, who they are, "in their words", close family as photos, Call / WhatsApp, "How is … related to me?" |
+| One person | `#/person/<id>` | Big photo, who they are, "in their words", close family as photos, Call button, "How is … related to me?" |
 | One family | `#/family/<id>` | A couple's photos and their children; tap to go one step down, "Up to …" to go back up |
 | Whole tree | `#/tree` | Elders on top, one colour per branch, **Bigger / Smaller** buttons and **Find a name** |
 | How are we related? | `#/related/<id>` | Tap your own photo once (remembered on that phone only), then anyone: the Tamil name (சித்தப்பா, Chithappa), a plain explanation ("your appa's younger brother") and the chain of photos between you |
@@ -137,13 +137,11 @@ The admin site opens on three simple steps, plus **All members**:
 
 1. **Add people**: upload the Google Form file. The site tidies it and only asks what it cannot guess (man or woman, possible duplicates). Upload again whenever new answers arrive.
 2. **Build the tree**: one question at a time ("Who are the children of …?", "Who is … married to?"), answered by tapping photos. Likely answers come first with a clue (same address, same phone, the form's father/mother/spouse names). Only parent → child and husband ↔ wife links are ever set. A **Still to do** list shows everyone not on the tree yet and every unanswered question, so nobody is left out. Every answer is saved at once; **Undo last** reverses the latest one.
-3. **Share the link**: the website address, the home page photo and the editable WhatsApp messages.
+3. **Share the link**: the website address, the home page photo and family settings.
 
 **All members** shows everyone as photos (search, and filters such as "No photo yet" and "Not on the tree yet"). Tapping a person opens one page with every detail, a big **Change photo** button, "Has passed away", their family links (father, mother, husband or wife, children; each changed by tapping a photo) and **Delete**, which asks first. Every change saves on its own.
 
-**WhatsApp needs no setup.** The buttons are plain `https://wa.me/<number>?text=…` links: they open WhatsApp on the visitor's phone with the message ready, and the visitor presses send. No WhatsApp API, account or approval is involved. The public site shows **Call** and **WhatsApp** buttons on a person's profile (only when they gave a phone number) and a **Birthday today** section with a one-tap wish.
-
-> The family website has no login. The public `/api/members` therefore leaves out addresses, emails and the admin's form notes (`PublicMembers`); phone numbers stay public for the Call and WhatsApp buttons. The full records are only on `/api/admin/members`.
+> The family website has no login. The public `/api/members` therefore leaves out addresses, emails and the admin's form notes (`PublicMembers`); phone numbers stay public for the Call button. The full records are only on `/api/admin/members`.
 
 **Tip for the Google Form:** questions named "Man / Woman" (or "Gender") and "Father's name", "Mother's name", "Spouse's name" are picked up automatically and make step 2 almost one-tap.
 

@@ -29,8 +29,12 @@ export const Face: React.FC<{ member: FamilyMember; className?: string; rounded?
       </svg>
     )}
     {member.isDeceased && (
-      <span role="img" aria-label="in loving memory" className="absolute inset-x-0 top-0 pointer-events-none">
-        <JasmineGarland className="w-full h-auto drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]" />
+      <span
+        role="img"
+        aria-label="in loving memory"
+        className="absolute inset-x-0 bottom-0 pointer-events-none bg-gradient-to-t from-black/35 via-black/5 to-transparent pt-2.5 pb-0.5"
+      >
+        <JasmineGarland className="w-full h-auto drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]" />
       </span>
     )}
   </span>

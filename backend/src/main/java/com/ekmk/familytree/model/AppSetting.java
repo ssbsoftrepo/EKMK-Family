@@ -5,7 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-/** One editable site setting, such as a WhatsApp message template. */
+/** One editable site setting, such as siteUrl or homePhotoUrl. */
 @Entity
 @Table(name = "app_settings")
 public class AppSetting {

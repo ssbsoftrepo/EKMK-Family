@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 /**
- * Tiny hash router, so links work on any static host and can be shared on WhatsApp:
+ * Tiny hash router, so links work on any static host and can be shared:
  *   #/            home
  *   #/find        find a relative
  *   #/person/ID   one person

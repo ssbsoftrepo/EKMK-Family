@@ -307,12 +307,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
             <ContactButtons member={turnedMember} />
 
             {/* Turn back footer */}
-            <div className="flex items-center justify-between pt-2 border-t border-album-line/50">
-              {turnedMember.id !== m.id ? (
-                <a href={href.person(turnedMember.id)} className="text-xs font-bold text-album-terracotta hover:underline no-underline">
-                  Go to {firstName(turnedMember)}’s profile page ›
-                </a>
-              ) : <span />}
+            <div className="flex items-center justify-end pt-2 border-t border-album-line/50">
               <button
                 type="button"
                 onClick={() => setTurnedMember(null)}

@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { btnPrimary, btnSecondary, card } from './ui';
 
 /** The big photo on the family website's home page (a family group photo works best). */
-export const HomePhoto: React.FC<{ url: string; onChange: (url: string) => void }> = ({ url, onChange }) => {
+export const HomePhoto: React.FC<{ url: string; onChange: (url: string) => Promise<void> | void }> = ({ url, onChange }) => {
   const toast = useToast();
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -14,13 +14,25 @@ export const HomePhoto: React.FC<{ url: string; onChange: (url: string) => void 
     setUploading(true);
     try {
       const res = await familyApi.uploadPhoto(file);
-      onChange(res.url);
+      await onChange(res.url);
       toast.success('Photo added', 'It is now on the home page');
     } catch (e) {
       toast.error('Could not upload the photo', e instanceof Error ? e.message : undefined);
     } finally {
       setUploading(false);
       if (input.current) input.current.value = '';
+    }
+  };
+
+  const remove = async () => {
+    setUploading(true);
+    try {
+      await onChange('');
+      toast.success('Photo removed');
+    } catch (e) {
+      toast.error('Could not remove photo', e instanceof Error ? e.message : undefined);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -39,7 +51,7 @@ export const HomePhoto: React.FC<{ url: string; onChange: (url: string) => void 
           <button type="button" className={btnPrimary} disabled={uploading} onClick={() => input.current?.click()}>
             {uploading ? 'Uploading…' : url ? 'Change photo' : 'Upload a photo'}
           </button>
-          {url && <button type="button" className={btnSecondary} onClick={() => onChange('')}>Remove</button>}
+          {url && <button type="button" className={btnSecondary} disabled={uploading} onClick={remove}>Remove</button>}
         </div>
       </div>
     </section>

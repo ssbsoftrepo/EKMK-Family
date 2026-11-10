@@ -15,7 +15,7 @@ import java.util.Set;
  *
  * The site has no login, so anything in these answers is visible to anyone with the link.
  * Addresses, emails and the admin's working notes stay on the admin site
- * (/api/admin/members). Phone numbers stay public: the Call and WhatsApp buttons need them.
+ * (/api/admin/members). Phone numbers stay public: the Call button needs them.
  */
 @Component
 public class PublicMembers {

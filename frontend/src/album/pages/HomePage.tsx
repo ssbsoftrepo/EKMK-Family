@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Family, birthdaysOn, firstName, placedIds, upcomingBirthdays, whoLine } from '../family';
 import { href } from '../router';
 import { Face, Hand, Icon, PersonTile, Print, Svg, Title } from '../ui';
-import { useSiteSettings } from '../../lib/whatsapp';
+import { useSiteSettings } from '../../lib/siteSettings';
 import { ContactButtons } from '../../components/Common/ContactButtons';
 import { useBirthdayPetals } from '../Magic';
 import { GREETINGS, useDayPart } from '../timeOfDay';
@@ -45,8 +45,8 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
               )}
             </div>
             <figcaption className="pt-2.5 px-1 flex flex-col leading-tight">
-              <span className="font-hand font-bold text-[26px]">Welcome to the KMK family!</span>
-              <span lang="ta" className="text-base">கே.எம்.கே குடும்பத்திற்கு அன்புடன் வரவேற்கிறோம்</span>
+              <span className="font-hand font-bold text-[20px] sm:text-[22px]">Welcome to the K.M.Krishna samy pillai & Andal ammal family!</span>
+              <span lang="ta" className="text-sm sm:text-[15px] pt-0.5">கே.எம்.கிருஷ்ணசாமி பிள்ளை & ஆண்டாள் அம்மாள் குடும்பத்திற்கு அன்புடன் வரவேற்கிறோம்</span>
             </figcaption>
           </Print>
         </div>
@@ -54,9 +54,8 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
           <div className="flex flex-col leading-tight">
             <Hand className="text-[1.7rem]">{greeting.en}</Hand>
             <span lang="ta" className="text-lg font-bold">{greeting.ta}</span>
-            <Hand className="text-lg text-album-leaf">{greeting.note}</Hand>
           </div>
-          <p className="m-0 text-xl leading-relaxed">Find any relative, see how you are related, and never miss a birthday.</p>
+          <p className="m-0 text-xl leading-relaxed">Find any relative, see how you are related and never miss a birthday.</p>
           {family.members.length > 0 && (
             <p className="m-0 text-lg">
               <strong>{family.members.length}</strong> of us{generations > 1 && <> · <strong>{generations}</strong> generations</>}{places > 1 && <> · from <strong>{places}</strong> places</>}
@@ -113,7 +112,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
       </section>
 
       <section id="birthdays" aria-label="Coming birthdays" className="flex flex-col gap-3 scroll-mt-24">
-        <Title as="h2" en="Coming birthdays" ta="வரும் பிறந்தநாட்கள்" />
+        <Title as="h2" en="Up Coming birthdays" ta="வரும் பிறந்தநாட்கள்" />
         {soon.length === 0 ? (
           <span className="text-lg">No birthdays in the next month.</span>
         ) : (
@@ -132,7 +131,6 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
             ))}
           </div>
         )}
-        <Hand className="text-lg">only the day and month are shown, ages stay secret!</Hand>
       </section>
     </div>
   );

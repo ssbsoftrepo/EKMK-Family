@@ -34,7 +34,7 @@ export const WelcomeIn: React.FC<{ door: boolean; onEnd: () => void }> = ({ door
     <div role="status" aria-live="polite" onClick={onEnd}
       className="welcome-in fixed inset-0 z-[100] flex flex-col items-center justify-center bg-album-paper text-album-leaf font-album px-4 cursor-pointer select-none">
       {door ? <FrontDoor /> : <Vaanga />}
-      <span className="sr-only">Welcome to the KMK family</span>
+      <span className="sr-only">Welcome to the K.M.Krishna samy pillai & Andal ammal family</span>
     </div>
   );
 };
@@ -43,7 +43,7 @@ const Vaanga: React.FC<{ inDoor?: boolean }> = ({ inDoor = false }) => (
   <span className={`flex flex-col items-center text-center leading-tight ${inDoor ? 'vaanga-behind' : 'magic-pop'}`}>
     <span className={`font-hand font-bold text-album-terracotta ${inDoor ? 'text-[2.1rem]' : 'text-[3rem] sm:text-[3.6rem]'}`}>Vaanga, vaanga!</span>
     <span lang="ta" className={`font-extrabold ${inDoor ? 'text-xl' : 'text-[1.7rem]'}`}>வாங்க வாங்க!</span>
-    <span className={`pt-1.5 ${inDoor ? 'text-[15px]' : 'text-lg'}`}>Welcome home to the KMK family</span>
+    <span className={`pt-1.5 ${inDoor ? 'text-[15px]' : 'text-lg'}`}>Welcome home to the K.M.Krishna samy pillai & Andal ammal family</span>
   </span>
 );
 

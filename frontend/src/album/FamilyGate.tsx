@@ -41,7 +41,7 @@ export const FamilyGate: React.FC<{ children: React.ReactNode }> = ({ children }
 const BANTER: { face: string; en: string; ta: string }[] = [
   { face: '🙈', en: 'Aiyo! That’s not the password. Try once more?', ta: 'ஐயோ! இது இல்லை. இன்னொரு முறை முயலுங்கள்?' },
   { face: '👵', en: 'Paati says: “Slowly, kanna. Type it slowly.”', ta: 'பாட்டி சொல்றாங்க: “மெதுவா டைப் பண்ணு கண்ணா.”' },
-  { face: '🤔', en: 'Hmm… did Chithappa change it again? Check the family WhatsApp group.', ta: 'சித்தப்பா மறுபடி மாத்திட்டாரா? குடும்ப WhatsApp குழுவில் பாருங்கள்.' },
+  { face: '🤔', en: 'Hmm… did Chithappa change it again? Ask the family elders.', ta: 'சித்தப்பா மறுபடி மாத்திட்டாரா? குடும்பப் பெரியவர்களிடம் கேளுங்கள்.' },
   { face: '😄', en: 'So close! But this door opens only for the right password.', ta: 'கிட்ட வந்தாச்சு! சரியான கடவுச்சொல்லுக்கு மட்டும் தான் கதவு திறக்கும்.' },
   { face: '☕', en: 'Take a sip of filter coffee, then try again.', ta: 'ஒரு வாய் ஃபில்டர் காபி குடிச்சிட்டு மறுபடி முயலுங்கள்.' },
   { face: '😉', en: 'You are one of us, right? Only the family knows this one!', ta: 'நம்ம குடும்பம் தானே? இது குடும்பத்துக்கு மட்டும் தெரியும்!' },
@@ -109,8 +109,8 @@ const FamilySignIn: React.FC<{ onDone: () => void }> = ({ onDone }) => {
           <div className="flex items-center gap-3">
             <span aria-hidden="true" key={wrong} className={`site-logo w-14 h-14 rounded-full bg-album-leaf text-album-turmeric flex items-center justify-center text-lg font-extrabold flex-shrink-0 ${wrong ? 'logo-wobble' : ''}`}>KMK</span>
             <span className="flex flex-col leading-tight">
-              <span className="text-2xl font-extrabold">Our Family</span>
-              <span lang="ta" className="text-base">எங்கள் குடும்பம்</span>
+              <span className="text-2xl font-extrabold">KMK Family Tree</span>
+              <span lang="ta" className="text-base">இது எங்கள் குடும்பம்</span>
             </span>
           </div>
           <p className="m-0 text-lg leading-snug">
@@ -153,7 +153,7 @@ const FamilySignIn: React.FC<{ onDone: () => void }> = ({ onDone }) => {
               </span>
             </div>
           ) : (
-            <span id="family-password-hint" className="text-[15px]">Don’t know it? Ask the family admin, or look in the family WhatsApp group.</span>
+            <span id="family-password-hint" className="text-[15px]">Don’t know it? Ask the family admin or elders.</span>
           )}
 
           <button type="submit" disabled={busy} className={`${btnPrimary} w-full disabled:opacity-70`}>

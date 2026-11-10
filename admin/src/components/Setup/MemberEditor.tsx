@@ -16,7 +16,7 @@ const FIELDS: { key: TextKey; label: string; hint?: string; type?: string; wide?
   { key: 'birthDate', label: 'Birthday', type: 'date', hint: 'Only the day and month are shown on the website' },
   { key: 'currentCity', label: 'Lives in' },
   { key: 'profession', label: 'Job' },
-  { key: 'phone', label: 'Phone', type: 'tel', hint: 'Used for the Call and WhatsApp buttons' },
+  { key: 'phone', label: 'Phone', type: 'tel', hint: 'Used for the Call button' },
   { key: 'email', label: 'Email', type: 'email', hint: 'Admin only, never on the website' },
   { key: 'address', label: 'Address', hint: 'Admin only, never on the website', wide: true },
   { key: 'biography', label: 'About them', hint: 'Shown on their page', wide: true, long: true },

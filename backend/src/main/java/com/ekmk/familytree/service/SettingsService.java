@@ -12,11 +12,7 @@ import java.util.Map;
  * Editable site settings. Only the keys listed in {@link #DEFAULTS} exist;
  * anything else sent by a client is ignored.
  *
- * WhatsApp messages are plain text templates. {name} becomes the person's
- * first name and {site} the website link. They are sent through ordinary
- * https://wa.me links on the visitor's own phone: no WhatsApp API or account.
- *
- * siteTheme is the look everyone sees on the family website ("album" or "kaveri");
+ * siteTheme is the look everyone sees on the family website ("album");
  * visitors can still pick their own look on their phone.
  */
 @Service
@@ -33,9 +29,6 @@ public class SettingsService {
         d.put("homePhotoUrl", "");
         d.put("secretNote", "");
         d.put("secretPhotoUrl", "");
-        d.put("whatsappBirthday", "Happy birthday {name}! Wishing you a wonderful year ahead. With love, from the KMK family");
-        d.put("whatsappHello", "Hi {name}, I found you on our KMK family website! {site}");
-        d.put("whatsappShare", "Hello everyone! Our KMK family website is ready. Find yourself on the family tree: {site}");
         d.put("siteTheme", "album");
         DEFAULTS = Map.copyOf(d);
     }
@@ -90,6 +83,6 @@ public class SettingsService {
     }
 
     private static String[] orderedKeys() {
-        return new String[] {"siteUrl", "homePhotoUrl", "secretNote", "secretPhotoUrl", "whatsappBirthday", "whatsappHello", "whatsappShare", "siteTheme"};
+        return new String[] {"siteUrl", "homePhotoUrl", "secretNote", "secretPhotoUrl", "siteTheme"};
     }
 }

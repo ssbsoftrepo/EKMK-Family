@@ -8,7 +8,7 @@ import { FindPage } from './pages/FindPage';
 import { PersonPage } from './pages/PersonPage';
 import { RelatedPage } from './pages/RelatedPage';
 import { KolamLoader, SecretDrawer } from './Magic';
-import { useSiteSettings } from '../lib/whatsapp';
+import { useSiteSettings } from '../lib/siteSettings';
 import { useDayPart } from './timeOfDay';
 import { useSiteTheme } from '../lib/theme';
 import { familySignOut, familyToken } from '../lib/familyAuth';
@@ -53,8 +53,8 @@ export const AlbumApp: React.FC = () => {
           <a href={href.home()} onClick={tapLogo} className={`no-underline flex items-center gap-2.5 ${night ? 'text-white' : 'text-album-leaf'}`}>
             <span key={wobble} className={`site-logo w-12 h-12 rounded-full flex ${night ? 'bg-album-turmeric text-album-leaf' : 'bg-album-leaf text-album-turmeric'} items-center justify-center text-base font-extrabold ${wobble ? 'logo-wobble' : ''}`}>KMK</span>
             <span className="flex flex-col leading-tight">
-              <span className="text-xl font-extrabold">Our Family</span>
-              <span lang="ta" className="text-[15px]">எங்கள் குடும்பம்</span>
+              <span className="text-xl font-extrabold">KMK Family Tree</span>
+              <span lang="ta" className="text-[15px]">இது எங்கள் குடும்பம்</span>
             </span>
           </a>
           <div className="flex items-center gap-2">

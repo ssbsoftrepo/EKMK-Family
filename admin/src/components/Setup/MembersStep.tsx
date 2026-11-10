@@ -75,7 +75,7 @@ export const MembersStep: React.FC = () => {
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <StepTitle step="everyone in one place" title="All members">Tap a person to change their details, photo or family links.</StepTitle>
-        {!adding && <button type="button" className={btnPrimary} onClick={() => setAdding(true)}>+ Add a person</button>}
+        {!adding && <button type="button" className={btnPrimary} onClick={() => setAdding(true)}>+ Add a Relative</button>}
       </div>
 
       {adding && (

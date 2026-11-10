@@ -90,9 +90,6 @@ export const FamilyPassword: React.FC<{ siteUrl: string }> = ({ siteUrl }) => {
     }
   };
 
-  const site = siteUrl.trim();
-  const message = `🔒 The new password for our KMK family website is: ${clean}\nநம் குடும்ப இணையதளத்தின் புதிய கடவுச்சொல்: ${clean}${site ? `\n${site}` : ''}`;
-
   return (
     <section className={`${card} shadow-pop flex flex-col gap-3`} aria-labelledby="family-password-title">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -114,10 +111,7 @@ export const FamilyPassword: React.FC<{ siteUrl: string }> = ({ siteUrl }) => {
           <span className="self-start rounded-2xl bg-album-paper border-2 border-dashed border-album-leaf px-5 py-3 text-[1.7rem] font-extrabold tracking-wide select-all">{clean}</span>
           <span className="text-[17px]">Now tell the family. Phones that were signed in will ask for this new password the next time they open the website.</span>
           <div className="flex flex-wrap gap-2.5">
-            <a className={`${btnPrimary} no-underline`} href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noreferrer">
-              Send to the family WhatsApp group
-            </a>
-            <button type="button" className={btnSecondary} onClick={copy}>Copy password</button>
+            <button type="button" className={btnPrimary} onClick={copy}>Copy password</button>
             <button type="button" className={btnSecondary} onClick={() => { setPassword(''); setMode('view'); }}>Done</button>
           </div>
           <span className="text-[15px]">Write it down somewhere safe: for safety, this page won’t show it again. If it’s ever forgotten, just set a new one here.</span>

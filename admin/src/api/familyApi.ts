@@ -23,15 +23,12 @@ export interface ImportReport {
   possibleDuplicates: { firstId: string; firstName: string; secondId: string; secondName: string; reason: string }[];
 }
 
-/** Editable site settings. WhatsApp messages use {name} and {site}. */
+/** Editable site settings. */
 export interface SiteSettings {
   siteUrl: string;
   homePhotoUrl: string;
   secretNote: string;
   secretPhotoUrl: string;
-  whatsappBirthday: string;
-  whatsappHello: string;
-  whatsappShare: string;
   /** The look of the family website for everyone: 'album' or 'kaveri'. */
   siteTheme: string;
 }
@@ -223,7 +220,7 @@ export const familyApi = {
     return handleResponse<ImportReport>(res);
   },
 
-  // Settings (WhatsApp messages, website link)
+  // Settings (website link, photo, secret note)
   async getSettings(): Promise<SiteSettings> {
     const res = await authFetch(`${API_BASE_URL}/api/settings`);
     return handleResponse<SiteSettings>(res);
