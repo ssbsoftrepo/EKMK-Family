@@ -1,16 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FamilyMember } from '../../types/family';
-import { Family, byAge, coupleLabel, firstName, whoLine } from '../family';
+import { Family, byAge, whoLine } from '../family';
 import { href } from '../router';
 import { Hand, Icon, PersonTile, Svg, Title } from '../ui';
 import { emojiRain, funWord } from '../magic';
 
 const STEP = 48;
 
-/** Everyone, as photos. Search by name, place or job, or narrow down to one branch of the family. */
+/** Everyone, as photos. Search by name, place or job. */
 export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
   const [query, setQuery] = useState('');
-  const [branch, setBranch] = useState<string | null>(null);
   const [limit, setLimit] = useState(STEP);
 
   // Easter egg: some family words make something rain down ("paati" brings jasmine).
@@ -24,34 +23,33 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
     return () => clearTimeout(t);
   }, [fun]);
 
-  // One chip per child of the elders: "Ravi's family" = Ravi, his wife, their children and grandchildren.
-  const branches = useMemo(() => {
-    const founders = family.founders();
-    if (founders.length === 0) return [];
-    const kids = family.childrenOfCouple(founders[0], founders[1]);
-    return kids.map((k) => {
-      const ids = new Set<string>();
-      const queue = [k];
-      while (queue.length) {
-        const m = queue.pop()!;
-        if (ids.has(m.id)) continue;
-        ids.add(m.id);
-        family.spouses(m).forEach((s) => ids.add(s.id));
-        queue.push(...family.children(m));
-      }
-      return { id: k.id, label: `${firstName(k)}'s family`, ids };
-    });
-  }, [family]);
-
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const chosen = branches.find((b) => b.id === branch);
     const words = q.split(/\s+/).filter(Boolean);
-    const filtered = [...family.members]
-      .filter((m) => !chosen || chosen.ids.has(m.id))
-      .filter((m) => words.length === 0 || words.every((w) => [m.fullName, m.tamilName, m.currentCity, m.profession].some((v) => v && v.toLowerCase().includes(w))));
+    const isSearching = words.length > 0;
+
+    const founders = family.founders();
+    const gen1Ids = new Set(founders.map((f) => f.id));
+    const isGen2 = (m: FamilyMember) =>
+      Number(m.generation) === 2 ||
+      (!!m.fatherId && gen1Ids.has(m.fatherId)) ||
+      (!!m.motherId && gen1Ids.has(m.motherId));
+
+    const filtered = [...family.members].filter((m) => {
+      // While searching, match across all generations
+      if (isSearching) {
+        return words.every((w) =>
+          [m.fullName, m.tamilName, m.currentCity, m.profession].some(
+            (v) => v && v.toLowerCase().includes(w)
+          )
+        );
+      }
+      // When just showing (no search query): show only 2nd generation members
+      return isGen2(m);
+    });
+
     return byAge(filtered);
-  }, [family, query, branch, branches]);
+  }, [family, query]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -65,13 +63,6 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
           className="w-full min-h-[60px] rounded-[18px] border-2 border-album-leaf bg-white pl-[52px] pr-4 text-[19px] text-album-leaf" />
       </div>
 
-      {branches.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4" role="group" aria-label="Choose a branch of the family">
-          <Chip on={!branch} onClick={() => setBranch(null)}>Everyone</Chip>
-          {branches.map((b) => <Chip key={b.id} on={branch === b.id} onClick={() => { setBranch(b.id); setLimit(STEP); }}>{b.label}</Chip>)}
-        </div>
-      )}
-
       {fun && <Hand className="text-xl magic-pop">{fun.say}</Hand>}
       <span className="text-[17px]" aria-live="polite">{results.length === 1 ? '1 person' : `${results.length} people`}</span>
 
@@ -81,7 +72,7 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
           <span className="text-lg">Try fewer letters, or check the spelling.</span>
         </div>
       ) : (
-        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 30%), 1fr))' }}>
+        <div className="grid gap-3 sm:gap-3.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-5 max-w-[880px] mx-auto w-full">
           {results.slice(0, limit).map((m: FamilyMember) => <PersonTile key={m.id} member={m} href={href.person(m.id)} line={whoLine(family, m)} />)}
         </div>
       )}
@@ -93,10 +84,3 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
     </div>
   );
 };
-
-const Chip: React.FC<{ on: boolean; onClick: () => void; children: React.ReactNode }> = ({ on, onClick, children }) => (
-  <button type="button" aria-pressed={on} onClick={onClick}
-    className={`flex-shrink-0 min-h-[46px] px-4 rounded-full text-base font-bold border-2 border-album-leaf ${on ? 'bg-album-leaf text-white' : 'bg-white text-album-leaf'}`}>
-    {children}
-  </button>
-);
