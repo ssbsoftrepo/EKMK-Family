@@ -33,6 +33,7 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
   const { members, refreshData, deleteMember } = useAdmin();
   const toast = useToast();
   const [draft, setDraft] = useState<Record<TextKey, string>>(() => toDraft(m));
+  const [isDeceased, setIsDeceased] = useState<boolean>(() => !!m.isDeceased);
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [picking, setPicking] = useState<Picking>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -42,9 +43,14 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
   // Opening someone else (e.g. tapping a family link) starts from their saved details.
   useEffect(() => {
     setDraft(toDraft(m));
+    setIsDeceased(!!m.isDeceased);
     setConfirmDelete(false);
     setStatus('idle');
   }, [m.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    setIsDeceased(!!m.isDeceased);
+  }, [m.isDeceased]);
 
   const save = async (changes: Partial<FamilyMember>, others: [string, Partial<FamilyMember>][] = []) => {
     setStatus('saving');
@@ -58,7 +64,13 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
       toast.error('That did not save', e instanceof Error ? e.message : undefined);
       await refreshData();
       setDraft(toDraft(m));
+      setIsDeceased(!!m.isDeceased);
     }
+  };
+
+  const toggleDeceased = async (checked: boolean) => {
+    setIsDeceased(checked);
+    await save({ isDeceased: checked });
   };
 
   const saveField = (key: TextKey) => {
@@ -216,7 +228,7 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
             </div>
           </div>
           <label className="flex items-center gap-3 min-h-[48px] text-[17px] font-bold cursor-pointer self-start">
-            <input type="checkbox" checked={!!m.isDeceased} onChange={(e) => save({ isDeceased: e.target.checked })} className="w-6 h-6 accent-album-leaf" />
+            <input type="checkbox" checked={isDeceased} onChange={(e) => toggleDeceased(e.target.checked)} className="w-6 h-6 accent-album-leaf" />
             Has passed away (shown “in loving memory”)
           </label>
         </div>
@@ -281,7 +293,7 @@ export const MemberEditor: React.FC<{ member: FamilyMember; onBack: () => void; 
               )}
             </label>
           ))}
-          {m.isDeceased && (
+          {isDeceased && (
             <label className="flex flex-col gap-1 min-w-0">
               <span className="text-[16px] font-bold">Date they passed away</span>
               <span className="text-sm -mt-1">Optional</span>

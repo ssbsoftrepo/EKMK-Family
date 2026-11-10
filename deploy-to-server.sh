@@ -20,7 +20,7 @@ cd "$SCRIPT_DIR"
 echo ""
 echo "📦 [1/4] Building Spring Boot Backend..."
 cd "$SCRIPT_DIR/backend"
-./gradlew --no-daemon bootJar -x test
+./gradlew --no-daemon clean bootJar -x test
 cd "$SCRIPT_DIR"
 
 # 2. Build Frontend

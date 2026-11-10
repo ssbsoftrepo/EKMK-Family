@@ -19,7 +19,7 @@ public class FamilyMember {
     private String gender; // "male", "female", "other"
     private String birthDate;
     private String deathDate;
-    private Boolean isDeceased = false;
+    private Boolean isDeceased;
     
     @Column(columnDefinition = "TEXT")
     private String photoUrl;
@@ -88,42 +88,6 @@ public class FamilyMember {
     private List<String> tags;
 
     public FamilyMember() {
-    }
-
-    public FamilyMember(String id, String firstName, String lastName, String fullName, String tamilName,
-                        String gender, String birthDate, String deathDate, boolean isDeceased, String photoUrl,
-                        String education, String profession, String business, String birthPlace, String currentCity,
-                        String biography, int generation, String branchId, String branchName, String branchNameTamil,
-                        String fatherId, String motherId, String spouseId, List<String> childIds, List<String> tags) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.fullName = fullName;
-        this.tamilName = tamilName;
-        this.gender = gender;
-        this.birthDate = birthDate;
-        this.deathDate = deathDate;
-        this.isDeceased = isDeceased;
-        this.photoUrl = photoUrl;
-        this.education = education;
-        this.profession = profession;
-        this.business = business;
-        this.birthPlace = birthPlace;
-        this.currentCity = currentCity;
-        this.biography = biography;
-        this.generation = generation;
-        this.branchId = branchId;
-        this.branchName = branchName;
-        this.branchNameTamil = branchNameTamil;
-        this.fatherId = fatherId;
-        this.motherId = motherId;
-        this.spouseId = spouseId;
-        if (childIds != null) {
-            this.childIds = new ArrayList<>(childIds);
-        }
-        if (tags != null) {
-            this.tags = new ArrayList<>(tags);
-        }
     }
 
     // Getters and Setters

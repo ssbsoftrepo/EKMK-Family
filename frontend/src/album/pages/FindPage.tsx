@@ -23,17 +23,14 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
     return () => clearTimeout(t);
   }, [fun]);
 
+  const firstGenChildrenIds = useMemo(() => {
+    return new Set(family.firstGenChildren().map((m) => m.id));
+  }, [family]);
+
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     const words = q.split(/\s+/).filter(Boolean);
     const isSearching = words.length > 0;
-
-    const founders = family.founders();
-    const gen1Ids = new Set(founders.map((f) => f.id));
-    const isGen2 = (m: FamilyMember) =>
-      Number(m.generation) === 2 ||
-      (!!m.fatherId && gen1Ids.has(m.fatherId)) ||
-      (!!m.motherId && gen1Ids.has(m.motherId));
 
     const filtered = [...family.members].filter((m) => {
       // While searching, match across all generations
@@ -44,12 +41,12 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
           )
         );
       }
-      // When just showing (no search query): show only 2nd generation members
-      return isGen2(m);
+      // When just showing (no search query): show only direct sons and daughters of Gen 1 (excluding spouses)
+      return firstGenChildrenIds.has(m.id);
     });
 
     return byAge(filtered);
-  }, [family, query]);
+  }, [family, query, firstGenChildrenIds]);
 
   return (
     <div className="flex flex-col gap-4">

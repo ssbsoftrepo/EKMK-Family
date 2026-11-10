@@ -74,6 +74,10 @@ public class FamilyMemberService {
             member.setId(newId);
         }
 
+        if (member.getIsDeceased() == null) {
+            member.setIsDeceased(false);
+        }
+
         if (member.isDeceased() && member.getBirthDate() != null && member.getDeathDate() != null) {
             if (member.getDeathDate().compareTo(member.getBirthDate()) < 0) {
                 throw new IllegalArgumentException("Date of demise cannot be earlier than date of birth");

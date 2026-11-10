@@ -34,4 +34,11 @@ class PublicMembersTest {
         }
         assertTrue(view.containsKey("childIds"));
     }
+
+    @Test
+    void deserializationKeepsIsDeceasedNullWhenOmitted() throws Exception {
+        tools.jackson.databind.ObjectMapper mapper = new tools.jackson.databind.ObjectMapper();
+        FamilyMember m = mapper.readValue("{\"notes\": \"hello\"}", FamilyMember.class);
+        org.junit.jupiter.api.Assertions.assertNull(m.getIsDeceased(), "isDeceased must be null when omitted from JSON");
+    }
 }
