@@ -42,13 +42,13 @@ export const PickPerson: React.FC<{
         </div>
         <div className="overflow-y-auto p-4 sm:p-5">
           {list.length === 0 && <p className="m-0 text-lg">No one found. Add them on the “Add people” step first.</p>}
-          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))' }}>
+          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(145px, 1fr))' }}>
             {list.map((m) => (
               <button key={m.id} type="button" onClick={() => onPick(m)}
-                className="text-left bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 border-2 border-album-line hover:border-album-leaf">
-                <Face member={m} className="w-full aspect-square" rounded="rounded-[13px]" />
-                <span className="text-base font-extrabold leading-tight px-1">{m.fullName}</span>
-                {birthYear(m) && <span className="text-sm px-1">born {birthYear(m)}</span>}
+                className="text-left bg-white rounded-[16px] p-2 pb-2.5 flex flex-col gap-1 border-2 border-album-line hover:border-album-leaf h-full">
+                <Face member={m} className="w-full aspect-square" rounded="rounded-[12px]" />
+                <span className="text-[13.5px] font-extrabold leading-snug px-0.5 break-words">{m.fullName}</span>
+                {birthYear(m) && <span className="text-[11.5px] px-0.5 text-album-leaf/75">born {birthYear(m)}</span>}
               </button>
             ))}
           </div>

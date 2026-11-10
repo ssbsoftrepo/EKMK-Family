@@ -156,13 +156,22 @@ const Picker: React.FC<{
           <span className="text-lg">Try fewer letters, or check the spelling.</span>
         </div>
       ) : (
-        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 30%), 1fr))' }}>
+        <div className="grid gap-3 sm:gap-3.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-5 max-w-[880px] mx-auto w-full">
           {list.slice(0, limit).map((m) => (
             <button key={m.id} type="button" onClick={() => onPick(m)}
-              className="text-left text-album-leaf bg-white rounded-[18px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm lift">
-              <Face member={m} className="w-full aspect-square" rounded="rounded-[13px]" />
-              <span className="text-[17px] font-extrabold leading-tight px-1">{m.fullName}</span>
-              <span className="text-sm leading-tight px-1">{whoLine(family, m)}</span>
+              className="h-full text-left text-album-leaf bg-white rounded-[16px] p-2 pb-2.5 flex flex-col justify-between gap-1 shadow-soft hover:shadow-pop-sm lift transition">
+              <Face member={m} className="w-full aspect-square" rounded="rounded-[12px]" />
+              <div className="flex-1 min-w-0 flex flex-col justify-between gap-0.5 pt-0.5 w-full">
+                <span
+                  className="font-extrabold leading-snug break-words text-album-leaf"
+                  style={{ fontSize: (m.fullName || '').length > 18 ? '12px' : '13.5px' }}
+                >
+                  {m.fullName}
+                </span>
+                <span className="text-[11.5px] leading-snug text-album-leaf/75 break-words mt-auto">
+                  {whoLine(family, m)}
+                </span>
+              </div>
             </button>
           ))}
         </div>

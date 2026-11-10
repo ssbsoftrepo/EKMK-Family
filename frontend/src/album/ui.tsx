@@ -132,8 +132,8 @@ const getDynamicTileStyle = (name: string): React.CSSProperties => {
 
   return {
     fontSize,
-    wordBreak: 'normal',
-    overflowWrap: 'normal',
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
   };
 };
 

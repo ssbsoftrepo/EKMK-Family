@@ -64,7 +64,6 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
       </div>
 
       {fun && <Hand className="text-xl magic-pop">{fun.say}</Hand>}
-      <span className="text-[17px]" aria-live="polite">{results.length === 1 ? '1 person' : `${results.length} people`}</span>
 
       {results.length === 0 ? (
         <div className="py-10 text-center flex flex-col gap-1">

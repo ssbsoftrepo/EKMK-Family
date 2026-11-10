@@ -109,17 +109,34 @@ export const MembersStep: React.FC = () => {
       {list.length === 0 ? (
         <p className="m-0 text-lg py-6">{members.length === 0 ? 'No one yet. Start with “Add people”.' : 'No one matches. Try another name or filter.'}</p>
       ) : (
-        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
+        <div className="grid gap-3 sm:gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))' }}>
           {list.map((m) => (
             <button key={m.id} type="button" onClick={() => { setOpenId(m.id); window.scrollTo({ top: 0 }); }}
-              className="text-left bg-white rounded-[20px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm transition">
-              <Face member={m} className="w-full aspect-square" rounded="rounded-[14px]" />
-              <span className="text-[17px] font-extrabold leading-tight px-1">{m.fullName}</span>
-              <span className="text-sm leading-tight px-1">
-                {[birthYear(m) && `born ${birthYear(m)}`, m.isDeceased && 'in loving memory'].filter(Boolean).join(' · ') || m.currentCity || ' '}
-              </span>
-              {m.generation === 1 && <span className="font-hand text-[15px] text-album-leaf bg-album-turmeric/35 rounded-full px-2 py-0.5 self-start leading-tight">1st gen · elder</span>}
-              {!placed.has(m.id) && <span className="font-hand text-[15px] text-album-terracotta px-1 leading-tight">not on the tree yet</span>}
+              className="text-left bg-white rounded-[18px] p-2 pb-3 flex flex-col gap-1.5 shadow-soft hover:shadow-pop-sm transition h-full overflow-hidden">
+              <Face member={m} className="w-full aspect-square" rounded="rounded-[12px]" />
+              <div className="flex-1 flex flex-col justify-between gap-1 min-w-0 px-0.5 w-full">
+                <div className="flex flex-col gap-0.5 min-w-0 w-full">
+                  <span className="font-extrabold leading-snug text-[13.5px] text-album-leaf break-words w-full"
+                    style={{ fontSize: (m.fullName || '').length > 18 ? '12px' : '13.5px' }}>
+                    {m.fullName}
+                  </span>
+                  <span className="text-[11.5px] leading-snug text-album-leaf/75 break-words w-full">
+                    {[birthYear(m) && `born ${birthYear(m)}`, m.isDeceased && 'in loving memory'].filter(Boolean).join(' · ') || m.currentCity || ''}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-0.5 mt-auto pt-1 w-full">
+                  {m.generation === 1 && (
+                    <span className="font-hand text-[11.5px] text-album-leaf bg-album-turmeric/35 rounded-full px-2 py-0.5 self-start leading-tight">
+                      1st gen · elder
+                    </span>
+                  )}
+                  {!placed.has(m.id) && (
+                    <span className="font-hand text-[11.5px] text-album-terracotta leading-tight">
+                      not on the tree yet
+                    </span>
+                  )}
+                </div>
+              </div>
             </button>
           ))}
         </div>
