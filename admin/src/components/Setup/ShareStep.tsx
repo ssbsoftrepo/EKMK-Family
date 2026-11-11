@@ -181,7 +181,7 @@ const EldersCouplePhoto: React.FC = () => {
         </div>
         <p className="m-0 text-[17px]">
           {foundersNames ? <>Portrait of <strong>{foundersNames}</strong> together.</> : 'Portrait of the elders together.'}{' '}
-          Shown on the family website home page (until a family group photo is added) and at the top of the tree.
+          Shown on the family website home page hero section and at the top of the tree.
         </p>
         <input ref={input} type="file" accept="image/*" className="hidden" onChange={(e) => upload(e.target.files?.[0])} />
         <div className="flex flex-wrap gap-2.5">

@@ -20,7 +20,10 @@ cd "$SCRIPT_DIR"
 echo ""
 echo "📦 [1/4] Building Spring Boot Backend..."
 cd "$SCRIPT_DIR/backend"
-./gradlew --no-daemon clean bootJar -x test
+mkdir -p /tmp/gradle_deploy_home/caches /tmp/gradle_deploy_home/wrapper
+ln -sfn "$HOME/.gradle/caches/modules-2" /tmp/gradle_deploy_home/caches/modules-2 2>/dev/null || true
+ln -sfn "$HOME/.gradle/wrapper/dists" /tmp/gradle_deploy_home/wrapper/dists 2>/dev/null || true
+./gradlew -g /tmp/gradle_deploy_home --project-cache-dir /tmp/gradle_project_cache bootJar -x test
 cd "$SCRIPT_DIR"
 
 # 2. Build Frontend

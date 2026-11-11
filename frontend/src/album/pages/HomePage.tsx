@@ -28,7 +28,8 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
     return nonFounders.length > 0 ? nonFounders : family.members;
   }, [family]);
 
-  const photo = settings.homePhotoUrl || founders.find((f) => f.couplePhotoUrl)?.couplePhotoUrl || '';
+  // The home body hero image always displays the first generation couple photo as requested
+  const photo = founders.find((f) => f.couplePhotoUrl)?.couplePhotoUrl || '';
   const generations = Math.max(0, ...family.members.filter((m) => placed.has(m.id)).map((m) => m.generation || 0));
   const places = new Set(family.members.map((m) => (m.currentCity ?? '').split(',')[0].trim().toLowerCase()).filter(Boolean)).size;
 
@@ -50,15 +51,25 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
             </figcaption>
           </Print>
         </div>
-        <div className="flex-[1_1_300px] min-w-0 flex flex-col gap-3">
-          <div className="flex flex-col leading-tight">
+        <div className="flex-[1_1_300px] min-w-0 flex flex-col gap-3 text-center md:text-left items-center md:items-start">
+          <div className="flex flex-col leading-tight items-center md:items-start">
             <Hand className="text-[1.7rem]">{greeting.en}</Hand>
             <span lang="ta" className="text-lg font-bold">{greeting.ta}</span>
           </div>
-          <p className="m-0 text-xl leading-relaxed">Find any relative, see how you are related and never miss a birthday.</p>
+          <p className="m-0 text-xl leading-relaxed">
+            Find any relative<br />
+            See how you are related &amp;<br />
+            never miss a birthday
+          </p>
           {family.members.length > 0 && (
             <p className="m-0 text-lg">
-              <strong>{family.members.length}</strong> of us{generations > 1 && <> · <strong>{generations}</strong> generations</>}{places > 1 && <> · from <strong>{places}</strong> places</>}
+              <strong>{family.members.length}</strong> of us{generations > 1 && <> · <strong>{generations}</strong> generations</>}
+              {places > 0 && (
+                <>
+                  <br />
+                  from <strong>{places}</strong> {places === 1 ? 'place' : 'places'} across global
+                </>
+              )}
             </p>
           )}
         </div>

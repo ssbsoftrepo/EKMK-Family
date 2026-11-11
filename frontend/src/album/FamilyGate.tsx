@@ -100,6 +100,7 @@ const FamilySignIn: React.FC<{ onDone: () => void }> = ({ onDone }) => {
   const banter = wrong > 0 ? BANTER[(wrong - 1) % BANTER.length] : null;
   const triesLeft = MAX_TRIES - wrong;
   const describedBy = error ? 'family-password-error' : banter ? 'family-password-banter' : 'family-password-hint';
+  const cachedPhoto = typeof window !== 'undefined' ? localStorage.getItem('kmk_cached_family_photo') : null;
 
   return (
     <div className="min-h-screen flex flex-col text-album-leaf font-album">
@@ -107,7 +108,13 @@ const FamilySignIn: React.FC<{ onDone: () => void }> = ({ onDone }) => {
         <form ref={card} onSubmit={submit} noValidate
           className="w-full max-w-[440px] bg-white rounded-[28px] p-6 sm:p-7 flex flex-col gap-4 shadow-pop-lg border-[3px] border-album-edge">
           <div className="flex items-center gap-3">
-            <span aria-hidden="true" key={wrong} className={`site-logo w-14 h-14 rounded-full bg-album-leaf text-album-turmeric flex items-center justify-center text-lg font-extrabold flex-shrink-0 ${wrong ? 'logo-wobble' : ''}`}>KMK</span>
+            {cachedPhoto ? (
+              <span key={wrong} className={`w-14 h-14 rounded-full overflow-hidden p-0.5 ring-2 ring-album-turmeric shadow flex-shrink-0 bg-album-paper ${wrong ? 'logo-wobble' : ''}`}>
+                <img src={cachedPhoto} alt="KMK Family" className="w-full h-full object-cover rounded-full" />
+              </span>
+            ) : (
+              <span aria-hidden="true" key={wrong} className={`site-logo w-14 h-14 rounded-full bg-album-leaf text-album-turmeric flex items-center justify-center text-lg font-extrabold flex-shrink-0 ${wrong ? 'logo-wobble' : ''}`}>KMK</span>
+            )}
             <span className="flex flex-col leading-tight">
               <span className="text-2xl font-extrabold">KMK Family Tree</span>
               <span lang="ta" className="text-base">இது எங்கள் குடும்பம்</span>

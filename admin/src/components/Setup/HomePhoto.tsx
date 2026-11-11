@@ -44,8 +44,8 @@ export const HomePhoto: React.FC<{ url: string; onChange: (url: string) => Promi
         </div>
       </div>
       <div className="flex-[1_1_280px] min-w-0 flex flex-col gap-2.5">
-        <h2 className="font-album text-[1.5rem] font-extrabold m-0" style={{ letterSpacing: 0 }}>Home page photo</h2>
-        <p className="m-0 text-[17px]">The first thing everyone sees. A big family group photo works best. Until one is added, the elders’ couple photo is used.</p>
+        <h2 className="font-album text-[1.5rem] font-extrabold m-0" style={{ letterSpacing: 0 }}>Header Logo &amp; Favicon photo</h2>
+        <p className="m-0 text-[17px]">Shown as the round logo in the website header and browser tab favicon. Visitors can click the header logo to view this photo in full resolution.</p>
         <input ref={input} type="file" accept="image/*" className="hidden" onChange={(e) => upload(e.target.files?.[0])} />
         <div className="flex flex-wrap gap-2.5">
           <button type="button" className={btnPrimary} disabled={uploading} onClick={() => input.current?.click()}>
