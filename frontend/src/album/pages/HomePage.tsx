@@ -59,7 +59,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
           <p className="m-0 text-xl leading-relaxed">
             Find any relative<br />
             See how you are related &amp;<br />
-            never miss a birthday
+            Never miss a birthday
           </p>
           {family.members.length > 0 && (
             <p className="m-0 text-lg">
