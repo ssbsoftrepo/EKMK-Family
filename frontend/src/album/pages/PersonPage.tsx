@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FamilyMember } from '../../types/family';
 import { Family, byAge, firstName, formatDateDMY, whoLine } from '../family';
-import { href } from '../router';
+import { href, navigateBack } from '../router';
 import { Face, Hand, Icon, JasmineGarland, PersonTile, Print, Svg, btnSecondary } from '../ui';
 import { ContactButtons } from '../../components/Common/ContactButtons';
 import { useBirthdayPetals } from '../Magic';
@@ -70,8 +70,8 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
     <div className="flex flex-col gap-6 max-w-[760px] mx-auto">
       <button
         type="button"
-        onClick={() => (window.history.length > 1 ? window.history.back() : (window.location.hash = href.find()))}
-        className={`${btnSecondary} self-start rounded-full min-h-[42px] px-4 py-1.5`}
+        onClick={() => navigateBack(href.find())}
+        className={`${btnSecondary} self-start rounded-full min-h-[42px] px-4 py-1.5 cursor-pointer touch-manipulation`}
       >
         <Svg icon={Icon.back} className="w-4 h-4" stroke={2.4} /> Back
       </button>
@@ -146,20 +146,15 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
               பிள்ளைகள்
             </span>
           </div>
-          <div
-            className="grid gap-3.5 sm:gap-5 md:gap-6 lg:gap-8 items-stretch justify-center w-full mx-auto"
-            style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 140px), 165px))',
-              maxWidth: '1000px',
-            }}
-          >
+          <div className="flex flex-wrap justify-center items-stretch gap-3.5 sm:gap-5 md:gap-6 w-full mx-auto">
             {children.map((c) => (
-              <PersonTile
-                key={c.id}
-                member={c}
-                href={href.person(c.id)}
-                line={c.gender === 'female' ? 'Daughter · மகள்' : c.gender === 'male' ? 'Son · மகன்' : 'Child · பிள்ளை'}
-              />
+              <div key={c.id} className="w-[145px] sm:w-[165px] flex">
+                <PersonTile
+                  member={c}
+                  href={href.person(c.id)}
+                  line={c.gender === 'female' ? 'Daughter · மகள்' : c.gender === 'male' ? 'Son · மகன்' : 'Child · பிள்ளை'}
+                />
+              </div>
             ))}
           </div>
         </section>

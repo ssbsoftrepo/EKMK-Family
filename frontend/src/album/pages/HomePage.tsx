@@ -80,15 +80,11 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
           <div className="text-center flex flex-col items-center">
             <Title as="h2" en="Children of the Elders" ta="பெரியவர்களின் பிள்ளைகள்" />
           </div>
-          <div
-            className="grid gap-3.5 sm:gap-5 md:gap-6 lg:gap-8 items-stretch justify-center w-full mx-auto"
-            style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 145px), 165px))',
-              maxWidth: '1000px',
-            }}
-          >
+          <div className="flex flex-wrap justify-center items-stretch gap-2.5 sm:gap-4 md:gap-6 w-full max-w-[1000px] mx-auto">
             {firstGenChildren.map((m) => (
-              <PersonTile key={m.id} member={m} href={href.person(m.id)} line={whoLine(family, m)} />
+              <div key={m.id} className="w-[calc(50%-5px)] sm:w-[155px] md:w-[165px] flex">
+                <PersonTile member={m} href={href.person(m.id)} line={whoLine(family, m)} />
+              </div>
             ))}
           </div>
         </section>

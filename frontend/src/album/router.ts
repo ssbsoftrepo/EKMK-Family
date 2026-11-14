@@ -41,10 +41,57 @@ export const href = {
   related: (id?: string) => (id ? `#/related/${encodeURIComponent(id)}` : '#/related'),
 };
 
+const NAV_STACK_KEY = 'kmk_nav_history_stack';
+
+function getNavStack(): string[] {
+  try {
+    const raw = sessionStorage.getItem(NAV_STACK_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function pushNavStack(hash: string) {
+  try {
+    const cleanHash = hash || '#/';
+    const stack = getNavStack();
+    if (stack[stack.length - 1] !== cleanHash) {
+      stack.push(cleanHash);
+      if (stack.length > 30) stack.shift();
+      sessionStorage.setItem(NAV_STACK_KEY, JSON.stringify(stack));
+    }
+  } catch {}
+}
+
+/**
+ * Robust in-app back navigation for mobiles and desktops.
+ * Takes the user back to their previous internal page in this session,
+ * or gracefully falls back to the find/home page.
+ */
+export function navigateBack(fallback = '#/find') {
+  if (typeof window === 'undefined') return;
+  try {
+    const stack = getNavStack();
+    if (stack.length > 1) {
+      stack.pop(); // remove current page
+      const prev = stack.pop(); // previous page to return to
+      sessionStorage.setItem(NAV_STACK_KEY, JSON.stringify(stack));
+      if (prev && prev !== window.location.hash) {
+        window.location.hash = prev;
+        return;
+      }
+    }
+  } catch {}
+  window.location.hash = fallback;
+}
+
 export function useRoute(): Route {
   const [route, setRoute] = useState(() => parseRoute(window.location.hash));
   useEffect(() => {
+    pushNavStack(window.location.hash);
     const onChange = () => {
+      pushNavStack(window.location.hash);
       setRoute(parseRoute(window.location.hash));
       window.scrollTo({ top: 0 });
     };

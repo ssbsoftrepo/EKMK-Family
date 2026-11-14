@@ -67,8 +67,8 @@ export const AlbumApp: React.FC = () => {
     <div className="min-h-screen flex flex-col text-album-leaf font-album">
       <header className={`site-header sticky top-0 z-20 border-b-2 transition-colors ${night ? 'bg-album-night border-album-night is-night' : 'bg-white border-album-line'}`}>
         {night && <span className="absolute inset-0 overflow-hidden pointer-events-none"><NightSky /></span>}
-        <div className="relative max-w-[1200px] mx-auto px-4 py-2 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="relative max-w-[1200px] mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {headerPhoto ? (
               <button
                 type="button"
@@ -79,7 +79,7 @@ export const AlbumApp: React.FC = () => {
                 }}
                 title="Click to view full photo · புகைப்படத்தைப் பெரிதாகப் பார்க்க கிளிக் செய்க"
                 aria-label="View family photo in full size"
-                className="group relative w-14 h-14 rounded-full overflow-hidden p-0.5 ring-2 ring-album-turmeric hover:ring-[3px] shadow-[0_3px_12px_rgba(0,0,0,0.18)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer flex-shrink-0 bg-album-paper focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-album-terracotta"
+                className="group relative w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-full overflow-hidden p-0.5 ring-2 ring-album-turmeric hover:ring-[3px] shadow-[0_2px_8px_rgba(0,0,0,0.18)] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer flex-shrink-0 bg-album-paper focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-album-terracotta"
               >
                 <img
                   src={headerPhoto}
@@ -87,7 +87,7 @@ export const AlbumApp: React.FC = () => {
                   className="w-full h-full object-cover rounded-full group-hover:brightness-105 transition-all"
                 />
                 <span className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full text-white">
-                  <svg className="w-5 h-5 drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <circle cx="11" cy="11" r="6" strokeWidth={2.2} />
                     <path d="M20 20l-4.5-4.5" strokeWidth={2.2} strokeLinecap="round" />
                   </svg>
@@ -97,7 +97,7 @@ export const AlbumApp: React.FC = () => {
               <span
                 key={wobble}
                 onClick={tapLogo}
-                className={`site-logo w-14 h-14 rounded-full flex ${night ? 'bg-album-turmeric text-album-leaf' : 'bg-album-leaf text-album-turmeric'} items-center justify-center text-lg font-extrabold flex-shrink-0 cursor-pointer ${wobble ? 'logo-wobble' : ''}`}
+                className={`site-logo w-11 h-11 sm:w-13 sm:h-13 md:w-14 md:h-14 rounded-full flex ${night ? 'bg-album-turmeric text-album-leaf' : 'bg-album-leaf text-album-turmeric'} items-center justify-center text-base sm:text-lg font-extrabold flex-shrink-0 cursor-pointer ${wobble ? 'logo-wobble' : ''}`}
               >
                 KMK
               </span>
@@ -105,13 +105,13 @@ export const AlbumApp: React.FC = () => {
             <a
               href={href.home()}
               onClick={tapLogo}
-              className={`no-underline flex flex-col leading-tight ${night ? 'text-white' : 'text-album-leaf'} hover:opacity-90`}
+              className={`no-underline flex flex-col leading-tight min-w-0 ${night ? 'text-white' : 'text-album-leaf'} hover:opacity-90`}
             >
-              <span className="text-xl font-extrabold">KMK Family Tree</span>
-              <span lang="ta" className="text-[15px]">இது எங்கள் குடும்பம்</span>
+              <span className="text-lg sm:text-xl font-extrabold whitespace-nowrap tracking-tight">KMK Family Tree</span>
+              <span lang="ta" className="text-[12px] sm:text-[14px] whitespace-nowrap text-album-leaf/80">இது எங்கள் குடும்பம்</span>
             </a>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <nav aria-label="Main" className="hidden md:flex gap-1.5">
               {NAV.map((n) => {
                 const on = n.id.includes(route.page);
@@ -127,7 +127,7 @@ export const AlbumApp: React.FC = () => {
               <button
                 type="button"
                 onClick={familySignOut}
-                className={`min-h-[40px] px-4 py-1.5 rounded-full text-[15px] font-bold transition-colors border cursor-pointer ${
+                className={`min-h-[34px] sm:min-h-[40px] px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-[15px] font-bold transition-colors border cursor-pointer shrink-0 whitespace-nowrap ${
                   night
                     ? 'border-white/30 text-white hover:bg-white/10'
                     : 'border-album-line text-album-leaf hover:bg-album-paper'
