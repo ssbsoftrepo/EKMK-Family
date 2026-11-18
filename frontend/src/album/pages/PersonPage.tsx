@@ -148,7 +148,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
           </div>
           <div className="flex flex-wrap justify-center items-stretch gap-3.5 sm:gap-5 md:gap-6 w-full mx-auto">
             {children.map((c) => (
-              <div key={c.id} className="w-[145px] sm:w-[165px] flex">
+              <div key={c.id} className="w-[145px] sm:w-[165px] flex flex-col">
                 <PersonTile
                   member={c}
                   href={href.person(c.id)}

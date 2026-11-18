@@ -145,7 +145,7 @@ const getDynamicTileStyle = (name: string): React.CSSProperties => {
 export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: string }> = ({ member, line, href }) => (
   <a
     href={href}
-    className="h-full no-underline text-album-leaf bg-white rounded-[16px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm lift transition text-center"
+    className="w-full h-full no-underline text-album-leaf bg-white rounded-[16px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm lift transition text-center"
   >
     <Face member={member} className="w-full aspect-square" rounded="rounded-[12px]" />
     <div className="flex-1 min-w-0 flex flex-col justify-between items-center text-center gap-0.5 pt-0.5 px-0.5 w-full">

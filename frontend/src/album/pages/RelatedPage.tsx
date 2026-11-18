@@ -159,7 +159,7 @@ const Picker: React.FC<{
         <div className="grid gap-3 sm:gap-3.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-5 max-w-[880px] mx-auto w-full">
           {list.slice(0, limit).map((m) => (
             <button key={m.id} type="button" onClick={() => onPick(m)}
-              className="h-full text-left text-album-leaf bg-white rounded-[16px] p-2 pb-2.5 flex flex-col justify-between gap-1 shadow-soft hover:shadow-pop-sm lift transition">
+              className="w-full h-full text-left text-album-leaf bg-white rounded-[16px] p-2 pb-2.5 flex flex-col justify-between gap-1 shadow-soft hover:shadow-pop-sm lift transition">
               <Face member={m} className="w-full aspect-square" rounded="rounded-[12px]" />
               <div className="flex-1 min-w-0 flex flex-col justify-between gap-0.5 pt-0.5 w-full">
                 <span

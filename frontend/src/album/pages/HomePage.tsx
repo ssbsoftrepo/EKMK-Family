@@ -82,7 +82,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
           </div>
           <div className="flex flex-wrap justify-center items-stretch gap-2.5 sm:gap-4 md:gap-6 w-full max-w-[1000px] mx-auto">
             {firstGenChildren.map((m) => (
-              <div key={m.id} className="w-[calc(50%-5px)] sm:w-[155px] md:w-[165px] flex">
+              <div key={m.id} className="w-[calc(50%-5px)] sm:w-[155px] md:w-[165px] flex flex-col">
                 <PersonTile member={m} href={href.person(m.id)} line={whoLine(family, m)} />
               </div>
             ))}
