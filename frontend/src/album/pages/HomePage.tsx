@@ -16,7 +16,10 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
   const greeting = GREETINGS[useDayPart()];
   const founders = family.founders();
   const today = birthdaysOn(family.members);
-  const soon = upcomingBirthdays(family.members, 31).filter((b) => b.inDays > 0).slice(0, 5);
+  const upcoming = upcomingBirthdays(family.members, 31);
+  const soon = upcoming.filter((b) => b.inDays > 0).slice(0, 5);
+  // Phones only: today's birthdays head the Upcoming list instead of the separate "Today is…" card.
+  const todayInList = upcoming.filter((b) => b.inDays === 0);
   const placed = useMemo(() => placedIds(family.members), [family]);
   useBirthdayPetals(today.length > 0, `home-${new Date().toDateString()}`);
 
@@ -55,8 +58,19 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
               </div>
             )}
             <figcaption className="pt-2.5 px-1 flex flex-col leading-tight">
-              <span className="font-hand font-bold text-[20px] sm:text-[22px]">Welcome to the K.M.Krishna samy pillai & Andal ammal family!</span>
-              <span lang="ta" className="text-sm sm:text-[15px] pt-0.5">கே.எம்.கிருஷ்ணசாமி பிள்ளை & ஆண்டாள் அம்மாள் குடும்பத்திற்கு அன்புடன் வரவேற்கிறோம்</span>
+              {/* Computers: as before. */}
+              <span className="hidden md:flex flex-col">
+                <span className="font-hand font-bold text-[20px] sm:text-[22px]">Welcome to the K.M.Krishna samy pillai & Andal ammal family!</span>
+                <span lang="ta" className="text-sm sm:text-[15px] pt-0.5">கே.எம்.கிருஷ்ணசாமி பிள்ளை & ஆண்டாள் அம்மாள் குடும்பத்திற்கு அன்புடன் வரவேற்கிறோம்</span>
+              </span>
+              {/* Phones: shorter, in Tamil; "கே.எம்.கிருஷ்ணசாமி பிள்ளை" always stays on one line. */}
+              <span className="md:hidden flex flex-col">
+                <span lang="ta" className="text-[min(16px,4.6vw)] font-bold leading-snug">
+                  <span className="inline-block whitespace-nowrap">கே.எம்.கிருஷ்ணசாமி பிள்ளை</span>{' '}
+                  <span className="inline-block whitespace-nowrap">&amp; ஆண்டாள் அம்மாள்</span>
+                </span>
+                <span lang="ta" className="text-[13.5px] pt-0.5">குடும்பத்திற்கு அன்புடன் வரவேற்கிறோம்</span>
+              </span>
             </figcaption>
           </Print>
         </div>
@@ -65,7 +79,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
             <Hand className="text-[1.7rem]">{greeting.en}</Hand>
             <span lang="ta" className="text-lg font-bold">{greeting.ta}</span>
           </div>
-          <p className="m-0 text-xl leading-relaxed">
+          <p className="hidden md:block m-0 text-xl leading-relaxed">
             Find any relative<br />
             See how you are related &amp;<br />
             Never miss a birthday
@@ -118,7 +132,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
       )}
 
       {today.length > 0 && (
-        <section aria-label="Birthdays today" className="flex flex-col gap-3">
+        <section aria-label="Birthdays today" className="hidden md:flex flex-col gap-3">
           {today.map((m) => (
             <div key={m.id} className="bg-white rounded-[22px] border-[3px] border-album-turmeric p-3 flex flex-wrap items-center gap-3">
               <a href={href.person(m.id)} className="no-underline text-album-leaf flex items-center gap-3 flex-[1_1_220px] min-w-0">
@@ -136,7 +150,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
         </section>
       )}
 
-      <section className="flex flex-col gap-3.5">
+      <section className="hidden md:flex flex-col gap-3.5">
         <Title as="h2" en="What would you like to do?" ta="என்ன செய்ய விரும்புகிறீர்கள்?" />
         <div className="grid gap-3.5 grid-cols-1 sm:grid-cols-3">
           <Tile to={href.find()} en="Find a relative" ta="உறவினரைத் தேடு" icon={Icon.search} bg="rgb(var(--c-sage))" />
@@ -146,13 +160,14 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
       </section>
 
       <section id="birthdays" aria-label="Coming birthdays" className="flex flex-col gap-3 scroll-mt-24">
-        <Title as="h2" en="Up Coming birthdays" ta="வரும் பிறந்தநாட்கள்" />
-        {soon.length === 0 ? (
+        <Title as="h2" en="Upcoming birthdays" ta="வரும் பிறந்தநாட்கள்" />
+        {soon.length === 0 && todayInList.length === 0 ? (
           <span className="text-lg">No birthdays in the next month.</span>
         ) : (
           <div className="flex flex-col gap-2 max-w-[640px]">
-            {soon.map(({ member, date, inDays }) => (
-              <a key={member.id} href={href.person(member.id)} className="no-underline text-album-leaf bg-white rounded-[18px] p-2 pr-4 flex items-center gap-3 shadow-soft">
+            {soon.length === 0 && <span className="hidden md:block text-lg">No birthdays in the next month.</span>}
+            {[...todayInList, ...soon].map(({ member, date, inDays }) => (
+              <a key={member.id} href={href.person(member.id)} className={`${inDays === 0 ? 'md:hidden ' : ''}no-underline text-album-leaf bg-white rounded-[18px] p-2 pr-4 flex items-center gap-3 shadow-soft`}>
                 <span className="w-[52px] h-[52px] rounded-[14px] bg-album-leaf text-white flex flex-col items-center justify-center leading-none flex-shrink-0">
                   <span className="text-xl font-extrabold">{date.getDate()}</span>
                   <span className="text-xs">{MONTHS[date.getMonth()].toUpperCase()}</span>
@@ -160,7 +175,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
                 <span className="flex-1 min-w-0 flex flex-col leading-tight">
                   <span className="text-lg font-extrabold truncate">{member.fullName}</span>
                 </span>
-                <span className="text-[15px] flex-shrink-0">{inDays === 1 ? 'tomorrow' : `in ${inDays} days`}</span>
+                <span className={`text-[15px] flex-shrink-0 ${inDays === 0 ? 'font-extrabold text-album-terracotta' : ''}`}>{inDays === 0 ? '🎂 today' : inDays === 1 ? 'tomorrow' : `in ${inDays} days`}</span>
               </a>
             ))}
           </div>

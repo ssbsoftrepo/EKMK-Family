@@ -14,6 +14,15 @@ const tones = ['rgb(var(--c-sage))', 'rgb(var(--c-blush))', 'rgb(var(--c-sun))',
 export const toneFor = (id: string) => tones[Array.from(id).reduce((n, c) => n + c.charCodeAt(0), 0) % tones.length];
 
 /** A person's photo, or a friendly coloured silhouette while there is none. */
+/** "Ravi Muthu" -> "RM", "Nila" -> "N". */
+export const initials = (name?: string) => {
+  const words = (name || '').trim().split(/\s+/).filter((w) => /[\p{L}]/u.test(w));
+  if (words.length === 0) return '?';
+  const first = Array.from(words[0])[0] ?? '';
+  const last = words.length > 1 ? Array.from(words[words.length - 1])[0] ?? '' : '';
+  return (first + last).toUpperCase();
+};
+
 export const Face: React.FC<{ member: FamilyMember; className?: string; rounded?: string; ring?: string }> = ({
   member, className = 'w-14 h-14', rounded = 'rounded-2xl', ring = '',
 }) => (
@@ -21,12 +30,20 @@ export const Face: React.FC<{ member: FamilyMember; className?: string; rounded?
     {member.photoUrl ? (
       <img src={member.photoUrl} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
     ) : (
-      <svg aria-hidden="true" viewBox="0 0 100 100" className="w-[85%] h-[85%]">
-        <g fill="#FFFFFF" fillOpacity="0.65">
-          <circle cx="50" cy="38" r="18" />
-          <path d="M14 100c4-24 18-36 36-36s32 12 36 36z" />
-        </g>
-      </svg>
+      <>
+        {/* Phones: the person's initials on the soft colour, like phone contacts. */}
+        <svg aria-hidden="true" viewBox="0 0 100 100" className="md:hidden absolute inset-0 w-full h-full">
+          <text x="50" y="52" textAnchor="middle" dominantBaseline="central" fontSize="38" fontWeight="800"
+            fill="rgb(var(--c-leaf))" fillOpacity="0.55" fontFamily="inherit">{initials(member.fullName)}</text>
+        </svg>
+        {/* Computers: the friendly figure, as before. */}
+        <svg aria-hidden="true" viewBox="0 0 100 100" className="hidden md:block w-[85%] h-[85%]">
+          <g fill="#FFFFFF" fillOpacity="0.65">
+            <circle cx="50" cy="38" r="18" />
+            <path d="M14 100c4-24 18-36 36-36s32 12 36 36z" />
+          </g>
+        </svg>
+      </>
     )}
     {member.isDeceased && (
       <span
@@ -120,26 +137,27 @@ export const Svg: React.FC<{ icon: React.ReactNode; className?: string; stroke?:
   </svg>
 );
 
-/** Dynamic font sizing for tiles to keep long words unbroken and fitting comfortably */
-const getDynamicTileStyle = (name: string): React.CSSProperties => {
+/**
+ * Tile name size, smaller for long names so words stay unbroken. Phones get bigger text;
+ * computers keep 13.5 / 12.5 / 11.5px as before.
+ */
+const TILE_NAME_SIZE = {
+  normal: 'text-[15px] md:text-[13.5px]',
+  medium: 'text-[14px] md:text-[12.5px]',
+  small: 'text-[13px] md:text-[11.5px]',
+} as const;
+
+const tileNameSize = (name: string) => {
   const clean = (name || '').trim();
   const words = clean.split(/\s+/).filter(Boolean);
   const maxWord = Math.max(...words.map((w) => w.length), 0);
   const total = clean.length;
-
-  let fontSize = '13.5px';
-  if (maxWord >= 16 || total >= 25) {
-    fontSize = '11.5px';
-  } else if (maxWord >= 13 || total >= 20) {
-    fontSize = '12.5px';
-  }
-
-  return {
-    fontSize,
-    wordBreak: 'break-word',
-    overflowWrap: 'break-word',
-  };
+  if (maxWord >= 16 || total >= 25) return TILE_NAME_SIZE.small;
+  if (maxWord >= 13 || total >= 20) return TILE_NAME_SIZE.medium;
+  return TILE_NAME_SIZE.normal;
 };
+
+const TILE_NAME_WRAP: React.CSSProperties = { wordBreak: 'break-word', overflowWrap: 'break-word' };
 
 /** A photo tile used in grids: photo, name, one line under it. */
 export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: string; born?: string }> = ({ member, line, href, born }) => (
@@ -150,18 +168,18 @@ export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: s
     <Face member={member} className="w-full aspect-square" rounded="rounded-[12px]" />
     <div className="flex-1 min-w-0 flex flex-col justify-between items-center text-center gap-0.5 pt-0.5 px-0.5 w-full">
       <span
-        style={getDynamicTileStyle(member.fullName)}
-        className="font-extrabold leading-tight break-normal text-center w-full"
+        style={TILE_NAME_WRAP}
+        className={`${tileNameSize(member.fullName)} font-extrabold leading-tight break-normal text-center w-full`}
       >
         {member.fullName}
       </span>
       {born && (
-        <span className="flex items-center justify-center gap-1 text-[12.5px] font-bold leading-tight text-album-terracotta tabular-nums" aria-label={`Born ${born}`}>
-          <Svg icon={Icon.cake} className="w-3.5 h-3.5 shrink-0" stroke={2.2} />
+        <span className="flex items-center justify-center gap-1 text-[12.5px] max-md:text-[13px] max-md:whitespace-nowrap font-bold leading-tight text-album-terracotta tabular-nums" aria-label={`Born ${born}`}>
+          <Svg icon={Icon.cake} className="w-3.5 h-3.5 shrink-0 max-[399px]:hidden" stroke={2.2} />
           {born}
         </span>
       )}
-      {line && <span className="text-[11.5px] font-medium leading-tight text-album-leaf/75 mt-auto pt-0.5 text-center w-full break-normal">{line}</span>}
+      {line && <span className="text-[11.5px] font-medium leading-tight text-album-leaf/75 max-md:text-[13px] max-md:leading-snug max-md:text-album-leaf/80 max-md:line-clamp-3 mt-auto pt-0.5 text-center w-full break-normal">{line}</span>}
     </div>
   </a>
 );
