@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FamilyMember } from '../../types/family';
-import { Family, byAge, firstName, formatDateDMY, whoLine } from '../family';
+import { Family, byAge, firstName, formatDateDMY, formatDateLong, whoLine } from '../family';
 import { href, navigateBack } from '../router';
 import { Face, Hand, Icon, JasmineGarland, PersonTile, Print, Svg, btnSecondary } from '../ui';
 import { ContactButtons } from '../../components/Common/ContactButtons';
@@ -239,6 +239,19 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
                 </div>
               )}
 
+              {/* Date of birth */}
+              {turnedMember.birthDate && (
+                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
+                  <Svg icon={Icon.cake} className="w-4 h-4 text-album-terracotta mt-0.5 shrink-0" stroke={2.2} />
+                  <div className="flex flex-col leading-snug">
+                    <span className="text-[11px] font-bold text-album-leaf/70 uppercase tracking-wide">
+                      Date of birth · பிறந்த தேதி
+                    </span>
+                    <span className="font-semibold text-album-leaf">{formatDateLong(turnedMember.birthDate)}</span>
+                  </div>
+                </div>
+              )}
+
               {/* Location */}
               {(turnedMember.currentCity || turnedMember.birthPlace) && (
                 <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
@@ -278,7 +291,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
               )}
 
               {/* Fallback if no specific bio/profession is entered yet */}
-              {!turnedMember.education && !turnedMember.business && !turnedMember.profession && !turnedMember.currentCity && !turnedMember.biography && (
+              {!turnedMember.education && !turnedMember.business && !turnedMember.profession && !turnedMember.currentCity && !turnedMember.birthDate && !turnedMember.biography && (
                 <div className="p-3 rounded-xl bg-album-sand/40 text-center text-xs text-album-leaf/70">
                   No additional biographical details added yet.
                 </div>
