@@ -142,7 +142,7 @@ const getDynamicTileStyle = (name: string): React.CSSProperties => {
 };
 
 /** A photo tile used in grids: photo, name, one line under it. */
-export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: string }> = ({ member, line, href }) => (
+export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: string; born?: string }> = ({ member, line, href, born }) => (
   <a
     href={href}
     className="w-full h-full no-underline text-album-leaf bg-white rounded-[16px] p-1.5 pb-2.5 flex flex-col gap-1 shadow-soft hover:shadow-pop-sm lift transition text-center"
@@ -155,6 +155,12 @@ export const PersonTile: React.FC<{ member: FamilyMember; line?: string; href: s
       >
         {member.fullName}
       </span>
+      {born && (
+        <span className="flex items-center justify-center gap-1 text-[12.5px] font-bold leading-tight text-album-terracotta tabular-nums" aria-label={`Born ${born}`}>
+          <Svg icon={Icon.cake} className="w-3.5 h-3.5 shrink-0" stroke={2.2} />
+          {born}
+        </span>
+      )}
       {line && <span className="text-[11.5px] font-medium leading-tight text-album-leaf/75 mt-auto pt-0.5 text-center w-full break-normal">{line}</span>}
     </div>
   </a>

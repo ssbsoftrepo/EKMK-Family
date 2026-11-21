@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FamilyMember } from '../../types/family';
-import { Family, byAge, whoLine } from '../family';
+import { Family, byAge, formatDateShort, whoLine } from '../family';
 import { href } from '../router';
 import { Hand, Icon, PersonTile, Svg, Title } from '../ui';
 import { emojiRain, funWord } from '../magic';
@@ -69,7 +69,7 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
         </div>
       ) : (
         <div className="grid gap-3 sm:gap-3.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-5 max-w-[880px] mx-auto w-full">
-          {results.slice(0, limit).map((m: FamilyMember) => <PersonTile key={m.id} member={m} href={href.person(m.id)} line={whoLine(family, m)} />)}
+          {results.slice(0, limit).map((m: FamilyMember) => <PersonTile key={m.id} member={m} href={href.person(m.id)} line={whoLine(family, m)} born={formatDateShort(m.birthDate) || undefined} />)}
         </div>
       )}
       {results.length > limit && (

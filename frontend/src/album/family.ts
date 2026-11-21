@@ -23,6 +23,13 @@ export const formatDateLong = (dateStr?: string | null): string => {
   return month ? `${Number(m[1])} ${month} ${m[3]}` : dmy;
 };
 
+/** A short date for small photo tiles, e.g. "30 Nov 1968"; anything it can't read is shown as DD-MM-YYYY or as given. */
+export const formatDateShort = (dateStr?: string | null): string => {
+  const long = formatDateLong(dateStr);
+  const m = long.match(/^(\d{1,2}) ([A-Za-z]+) (\d{4})$/);
+  return m ? `${m[1]} ${m[2].slice(0, 3)} ${m[3]}` : long;
+};
+
 export const formatDateDMY = (dateStr?: string | null): string => {
   if (!dateStr) return '';
   const clean = dateStr.trim();
