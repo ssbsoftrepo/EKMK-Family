@@ -43,7 +43,7 @@ const Related: React.FC<{ family: Family; id?: string; onFirstVisit: (m: FamilyM
   if (!them) {
     return (
       <Picker family={family} title="Who do you want to know about?" ta="யாரைப் பற்றி தெரிந்து கொள்ள வேண்டும்?" hint="Tap their photo." exclude={me.id}
-        onPick={(m) => { window.location.hash = href.related(m.id); }} note={`hello ${firstName(me)}!`}
+        onPick={(m) => { window.location.hash = href.related(m.id); }} note={`Hello ${firstName(me)}!`}
         footer={<button type="button" onClick={notMe} className="underline text-base min-h-[44px] self-start">Not {firstName(me)}? Change</button>} />
     );
   }
