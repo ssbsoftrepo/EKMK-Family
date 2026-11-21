@@ -12,6 +12,17 @@ export const birthYear = (m: FamilyMember): number | null => {
 };
 
 /** Format a date string (e.g. YYYY-MM-DD) into DD-MM-YYYY format */
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+/** A date written out for reading, e.g. "12 April 1970"; anything it can't read is shown as DD-MM-YYYY or as given. */
+export const formatDateLong = (dateStr?: string | null): string => {
+  const dmy = formatDateDMY(dateStr);
+  const m = dmy.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (!m) return dmy;
+  const month = MONTH_NAMES[Number(m[2]) - 1];
+  return month ? `${Number(m[1])} ${month} ${m[3]}` : dmy;
+};
+
 export const formatDateDMY = (dateStr?: string | null): string => {
   if (!dateStr) return '';
   const clean = dateStr.trim();

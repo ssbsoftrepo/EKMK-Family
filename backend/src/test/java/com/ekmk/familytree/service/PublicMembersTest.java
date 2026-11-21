@@ -24,7 +24,7 @@ class PublicMembersTest {
         m.setNotes("Loves cricket");
         m.setNoSpouse(false);
 
-        Map<String, Object> view = new PublicMembers(JsonMapper.builder().build()).of(m);
+        Map<String, Object> view = new PublicMembers(JsonMapper.builder().build(), () -> true).of(m);
 
         assertEquals("Ravi Muthu", view.get("fullName"));
         assertEquals("9876500002", view.get("phone"));
@@ -33,6 +33,18 @@ class PublicMembersTest {
             assertFalse(view.containsKey(field), field + " must not be public");
         }
         assertTrue(view.containsKey("childIds"));
+        assertEquals("12, Main Street, Erode", view.get("address"), "behind the family password the family sees the address");
+    }
+
+    @Test
+    void withoutTheFamilyPasswordTheAddressStaysHidden() {
+        FamilyMember m = new FamilyMember();
+        m.setId("ekmk-test");
+        m.setFullName("Ravi Muthu");
+        m.setAddress("12, Main Street, Erode");
+        PublicMembers open = new PublicMembers(JsonMapper.builder().build(), () -> false);
+        assertFalse(open.of(m).containsKey("address"));
+        assertFalse(open.of(java.util.List.of(m)).get(0).containsKey("address"));
     }
 
     @Test

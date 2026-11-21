@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FamilyMember } from '../../types/family';
-import { Family, byAge, firstName, formatDateDMY, whoLine } from '../family';
+import { Family, byAge, firstName, formatDateDMY, formatDateLong, whoLine } from '../family';
 import { href, navigateBack } from '../router';
 import { Face, Hand, Icon, JasmineGarland, PersonTile, Print, Svg, btnSecondary } from '../ui';
 import { ContactButtons } from '../../components/Common/ContactButtons';
+import { formatPhone, phoneToCopy } from '../../lib/siteSettings';
 import { useBirthdayPetals } from '../Magic';
 import { birthdaysOn } from '../family';
 
@@ -239,8 +240,24 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
                 </div>
               )}
 
-              {/* Location */}
-              {(turnedMember.currentCity || turnedMember.birthPlace) && (
+              {/* Date of birth */}
+              {turnedMember.birthDate && (
+                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
+                  <Svg icon={Icon.cake} className="w-4 h-4 text-album-terracotta mt-0.5 shrink-0" stroke={2.2} />
+                  <div className="flex flex-col leading-snug">
+                    <span className="text-[11px] font-bold text-album-leaf/70 uppercase tracking-wide">
+                      Date of birth · பிறந்த தேதி
+                    </span>
+                    <span className="font-semibold text-album-leaf">{formatDateLong(turnedMember.birthDate)}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Phone, with a Copy button (not for those who have passed away, like the Call button) */}
+              {!turnedMember.isDeceased && phoneToCopy(turnedMember.phone) && <PhoneRow phone={turnedMember.phone!} />}
+
+              {/* Location: where they live now */}
+              {turnedMember.currentCity && (
                 <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
                   <Svg icon={Icon.pin} className="w-4 h-4 text-album-terracotta mt-0.5 shrink-0" stroke={2.2} />
                   <div className="flex flex-col leading-snug">
@@ -248,8 +265,29 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
                       Location · இடம்
                     </span>
                     <span className="font-semibold text-album-leaf">
-                      {[turnedMember.currentCity && `Lives in ${turnedMember.currentCity}`, turnedMember.birthPlace && `From ${turnedMember.birthPlace}`].filter(Boolean).join(' · ')}
+                      Lives in {turnedMember.currentCity}
                     </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Address (sent only while the family password is on) */}
+              {turnedMember.address && turnedMember.address.trim() && (
+                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
+                  <Svg icon={Icon.home} className="w-4 h-4 text-album-terracotta mt-0.5 shrink-0" stroke={2.2} />
+                  <div className="flex flex-col leading-snug min-w-0">
+                    <span className="text-[11px] font-bold text-album-leaf/70 uppercase tracking-wide">
+                      Address · முகவரி
+                    </span>
+                    <span className="font-semibold text-album-leaf whitespace-pre-line break-words">{turnedMember.address.trim()}</span>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(turnedMember.address.trim())}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="self-start mt-1 text-xs font-bold text-album-terracotta underline underline-offset-2"
+                    >
+                      Open in Google Maps
+                    </a>
                   </div>
                 </div>
               )}
@@ -278,7 +316,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
               )}
 
               {/* Fallback if no specific bio/profession is entered yet */}
-              {!turnedMember.education && !turnedMember.business && !turnedMember.profession && !turnedMember.currentCity && !turnedMember.biography && (
+              {!turnedMember.education && !turnedMember.business && !turnedMember.profession && !turnedMember.currentCity && !turnedMember.birthDate && !turnedMember.address && !turnedMember.biography && (
                 <div className="p-3 rounded-xl bg-album-sand/40 text-center text-xs text-album-leaf/70">
                   No additional biographical details added yet.
                 </div>
@@ -314,6 +352,77 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+/** The phone number written out, with a big Copy button that says "Copied" when done. */
+const PhoneRow: React.FC<{ phone: string }> = ({ phone }) => {
+  const [state, setState] = useState<'idle' | 'copied' | 'select'>('idle');
+  const numberRef = useRef<HTMLSpanElement>(null);
+  const shown = formatPhone(phone);
+  const value = phoneToCopy(phone);
+
+  useEffect(() => {
+    if (state === 'idle') return;
+    const t = window.setTimeout(() => setState('idle'), 2500);
+    return () => window.clearTimeout(t);
+  }, [state]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setState('copied');
+      return;
+    } catch {
+      // Older phones: copy through a hidden text box.
+    }
+    try {
+      const box = document.createElement('textarea');
+      box.value = value;
+      box.setAttribute('readonly', '');
+      box.style.position = 'fixed';
+      box.style.opacity = '0';
+      document.body.appendChild(box);
+      box.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(box);
+      if (ok) { setState('copied'); return; }
+    } catch {
+      // fall through
+    }
+    // Could not copy for them: select the number so a long-press copies it.
+    const el = numberRef.current;
+    if (el) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    }
+    setState('select');
+  };
+
+  return (
+    <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
+      <Svg icon={Icon.phone} className="w-4 h-4 text-album-terracotta shrink-0" stroke={2.2} />
+      <div className="flex flex-col leading-snug min-w-0 flex-1">
+        <span className="text-[11px] font-bold text-album-leaf/70 uppercase tracking-wide">
+          Phone · தொலைபேசி
+        </span>
+        <span ref={numberRef} className="text-base font-extrabold text-album-leaf tabular-nums select-all">{shown}</span>
+        <span aria-live="polite" className="text-xs font-semibold text-album-leaf/70">
+          {state === 'select' ? 'Press and hold the number to copy it' : ''}
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={copy}
+        className={`shrink-0 min-h-[44px] px-3.5 rounded-xl border-2 font-extrabold text-sm flex items-center gap-1.5 cursor-pointer transition ${state === 'copied' ? 'bg-album-leaf border-album-leaf text-white' : 'bg-white border-album-leaf text-album-leaf hover:bg-album-paper'}`}
+        aria-label={state === 'copied' ? 'Phone number copied' : `Copy phone number ${shown}`}
+      >
+        {state === 'copied' ? '✓ Copied' : 'Copy'}
+      </button>
     </div>
   );
 };
