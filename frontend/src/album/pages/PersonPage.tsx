@@ -267,6 +267,27 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
                 </div>
               )}
 
+              {/* Address (sent only while the family password is on) */}
+              {turnedMember.address && turnedMember.address.trim() && (
+                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-album-sand/50">
+                  <Svg icon={Icon.home} className="w-4 h-4 text-album-terracotta mt-0.5 shrink-0" stroke={2.2} />
+                  <div className="flex flex-col leading-snug min-w-0">
+                    <span className="text-[11px] font-bold text-album-leaf/70 uppercase tracking-wide">
+                      Address · முகவரி
+                    </span>
+                    <span className="font-semibold text-album-leaf whitespace-pre-line break-words">{turnedMember.address.trim()}</span>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(turnedMember.address.trim())}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="self-start mt-1 text-xs font-bold text-album-terracotta underline underline-offset-2"
+                    >
+                      Open in Google Maps
+                    </a>
+                  </div>
+                </div>
+              )}
+
               {/* In loving memory */}
               {turnedMember.isDeceased && (
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/50 text-album-leaf/85">
@@ -291,7 +312,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
               )}
 
               {/* Fallback if no specific bio/profession is entered yet */}
-              {!turnedMember.education && !turnedMember.business && !turnedMember.profession && !turnedMember.currentCity && !turnedMember.birthDate && !turnedMember.biography && (
+              {!turnedMember.education && !turnedMember.business && !turnedMember.profession && !turnedMember.currentCity && !turnedMember.birthDate && !turnedMember.address && !turnedMember.biography && (
                 <div className="p-3 rounded-xl bg-album-sand/40 text-center text-xs text-album-leaf/70">
                   No additional biographical details added yet.
                 </div>
