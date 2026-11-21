@@ -67,7 +67,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
               {places > 0 && (
                 <>
                   <br />
-                  from <strong>{places}</strong> {places === 1 ? 'place' : 'places'} across global
+                  from <strong>{places}</strong> {places === 1 ? 'place' : 'places'} across the Globe
                 </>
               )}
             </p>
