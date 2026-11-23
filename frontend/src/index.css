@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* On phones (below 768px, as the bottom menu), soften the kolam dots behind the text. */
+@media (max-width: 767.98px) {
+  :root[data-theme], :root { --page-dot-alpha: .14; }
+}
+
 @layer base {
   html, body {
     background-color: rgb(var(--c-paper));

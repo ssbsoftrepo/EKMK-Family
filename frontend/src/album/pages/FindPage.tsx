@@ -4,6 +4,7 @@ import { Family, byAge, formatDateShort, whoLine } from '../family';
 import { href } from '../router';
 import { Hand, Icon, PersonTile, Svg, Title } from '../ui';
 import { emojiRain, funWord } from '../magic';
+import { useIsPhone } from '../../lib/useIsPhone';
 
 const STEP = 48;
 
@@ -11,6 +12,7 @@ const STEP = 48;
 export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
   const [query, setQuery] = useState('');
   const [limit, setLimit] = useState(STEP);
+  const phone = useIsPhone();
 
   // Easter egg: some family words make something rain down ("paati" brings jasmine).
   const fun = funWord(query);
@@ -56,7 +58,7 @@ export const FindPage: React.FC<{ family: Family }> = ({ family }) => {
       <div className="relative max-w-[560px]">
         <span className="absolute left-4 top-1/2 -translate-y-1/2"><Svg icon={Icon.search} className="w-6 h-6" /></span>
         <input id="find-name" type="search" value={query} onChange={(e) => { setQuery(e.target.value); setLimit(STEP); }}
-          placeholder="Type a name, a town or a job" autoComplete="off"
+          placeholder={phone ? 'Name, town or job' : 'Type a name, a town or a job'} autoComplete="off"
           className="w-full min-h-[60px] rounded-[18px] border-2 border-album-leaf bg-white pl-[52px] pr-4 text-[19px] text-album-leaf" />
       </div>
 

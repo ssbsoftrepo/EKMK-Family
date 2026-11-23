@@ -127,7 +127,7 @@ export const AlbumApp: React.FC = () => {
               <button
                 type="button"
                 onClick={familySignOut}
-                className={`min-h-[34px] sm:min-h-[40px] px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-[15px] font-bold transition-colors border cursor-pointer shrink-0 whitespace-nowrap ${
+                className={`hidden md:inline-block min-h-[34px] sm:min-h-[40px] px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-[15px] font-bold transition-colors border cursor-pointer shrink-0 whitespace-nowrap ${
                   night
                     ? 'border-white/30 text-white hover:bg-white/10'
                     : 'border-album-line text-album-leaf hover:bg-album-paper'
@@ -140,7 +140,7 @@ export const AlbumApp: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 pt-5 pb-28 md:pb-12">
+      <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 pt-5 pb-8 md:pb-12">
         {isLoading && members.length === 0 ? (
           <KolamLoader text="Opening the family album" />
         ) : !isBackendConnected && members.length === 0 ? (
@@ -157,8 +157,17 @@ export const AlbumApp: React.FC = () => {
         )}
       </main>
 
-      <footer className="border-t-2 border-album-line py-4 px-4 pb-28 md:pb-6 text-center font-hand text-sm">
+      {/* On phones the bottom padding is just the height of the bottom menu (no empty band), and Sign out lives here. */}
+      <footer className="border-t-2 border-album-line py-4 px-4 pb-[92px] md:pb-6 text-center font-hand text-sm">
         Made with <span role="img" aria-label="love">❤️</span> by <a href="https://www.ssbsoft.com" target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:text-album-terracotta">SSB Soft</a>
+        {familyToken() && (
+          <span className="md:hidden flex justify-center pt-2 font-album">
+            <button type="button" onClick={familySignOut}
+              className="min-h-[40px] px-4 rounded-full border border-album-line text-[14px] font-bold text-album-leaf/80 bg-white/60 cursor-pointer">
+              Sign out of this phone
+            </button>
+          </span>
+        )}
       </footer>
 
       {drawer && <SecretDrawer note={settings.secretNote} photoUrl={settings.secretPhotoUrl} onClose={() => setDrawer(false)} />}

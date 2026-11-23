@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { FamilyMember } from '../../types/family';
 import { Family, birthdaysOn, firstName, placedIds, upcomingBirthdays, whoLine } from '../family';
 import { href } from '../router';
 import { Face, Hand, Icon, PersonTile, Print, Svg, Title } from '../ui';
@@ -15,7 +16,10 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
   const greeting = GREETINGS[useDayPart()];
   const founders = family.founders();
   const today = birthdaysOn(family.members);
-  const soon = upcomingBirthdays(family.members, 31).filter((b) => b.inDays > 0).slice(0, 5);
+  const upcoming = upcomingBirthdays(family.members, 31);
+  const soon = upcoming.filter((b) => b.inDays > 0).slice(0, 5);
+  // Phones only: today's birthdays head the Upcoming list instead of the separate "Today is…" card.
+  const todayInList = upcoming.filter((b) => b.inDays === 0);
   const placed = useMemo(() => placedIds(family.members), [family]);
   useBirthdayPetals(today.length > 0, `home-${new Date().toDateString()}`);
 
@@ -28,8 +32,12 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
     return nonFounders.length > 0 ? nonFounders : family.members;
   }, [family]);
 
-  // The home body hero image always displays the first generation couple photo as requested
-  const photo = founders.find((f) => f.couplePhotoUrl)?.couplePhotoUrl || '';
+  // The first generation (the elders) come from their own profile photos. The admin's
+  // "Family group photo" upload (kept in the elders' couplePhotoUrl) is the family group photo.
+  const groupPhoto = founders.find((f) => f.couplePhotoUrl)?.couplePhotoUrl || '';
+  // The group photo is the big photo at the top, with the elders just below it.
+  // Until a group photo is uploaded, the elders fill the top instead.
+  const eldersOnTop = founders.length > 0 && !groupPhoto;
   const generations = Math.max(0, ...family.members.filter((m) => placed.has(m.id)).map((m) => m.generation || 0));
   const places = new Set(family.members.map((m) => (m.currentCity ?? '').split(',')[0].trim().toLowerCase()).filter(Boolean)).size;
 
@@ -38,16 +46,31 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
       <section className="flex flex-wrap gap-7 items-center">
         <div className="flex-[999_1_520px] min-w-0">
           <Print tilt={-1.2}>
-            <div className="aspect-[16/10] rounded-md overflow-hidden relative flex items-end justify-center bg-album-peach">
-              {photo ? (
-                <img src={photo} alt="Our family" className="absolute inset-0 w-full h-full object-cover" />
-              ) : (
-                <GroupSilhouette />
-              )}
-            </div>
+            {eldersOnTop ? (
+              <EldersTogether people={founders} />
+            ) : (
+              <div className="aspect-[16/10] rounded-md overflow-hidden relative flex items-end justify-center bg-album-peach">
+                {groupPhoto ? (
+                  <img src={groupPhoto} alt="Our family together" className="absolute inset-0 w-full h-full object-cover" />
+                ) : (
+                  <GroupSilhouette />
+                )}
+              </div>
+            )}
             <figcaption className="pt-2.5 px-1 flex flex-col leading-tight">
-              <span className="font-hand font-bold text-[20px] sm:text-[22px]">Welcome to the K.M.Krishna samy pillai & Andal ammal family!</span>
-              <span lang="ta" className="text-sm sm:text-[15px] pt-0.5">கே.எம்.கிருஷ்ணசாமி பிள்ளை & ஆண்டாள் அம்மாள் குடும்பத்திற்கு அன்புடன் வரவேற்கிறோம்</span>
+              {/* Computers: as before. */}
+              <span className="hidden md:flex flex-col">
+                <span className="font-hand font-bold text-[20px] sm:text-[22px]">Welcome to the K.M.Krishna samy pillai & Andal ammal family!</span>
+                <span lang="ta" className="text-sm sm:text-[15px] pt-0.5">கே.எம்.கிருஷ்ணசாமி பிள்ளை & ஆண்டாள் அம்மாள் குடும்பத்திற்கு அன்புடன் வரவேற்கிறோம்</span>
+              </span>
+              {/* Phones: shorter, in Tamil; "கே.எம்.கிருஷ்ணசாமி பிள்ளை" always stays on one line. */}
+              <span className="md:hidden flex flex-col">
+                <span lang="ta" className="text-[min(16px,4.6vw)] font-bold leading-snug">
+                  <span className="inline-block whitespace-nowrap">கே.எம்.கிருஷ்ணசாமி பிள்ளை</span>{' '}
+                  <span className="inline-block whitespace-nowrap">&amp; ஆண்டாள் அம்மாள்</span>
+                </span>
+                <span lang="ta" className="text-[13.5px] pt-0.5">குடும்பத்திற்கு அன்புடன் வரவேற்கிறோம்</span>
+              </span>
             </figcaption>
           </Print>
         </div>
@@ -56,7 +79,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
             <Hand className="text-[1.7rem]">{greeting.en}</Hand>
             <span lang="ta" className="text-lg font-bold">{greeting.ta}</span>
           </div>
-          <p className="m-0 text-xl leading-relaxed">
+          <p className="hidden md:block m-0 text-xl leading-relaxed">
             Find any relative<br />
             See how you are related &amp;<br />
             Never miss a birthday
@@ -75,6 +98,24 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
         </div>
       </section>
 
+      {/* With a group photo at the top, the elders come just below it, from their own profile photos. */}
+      {groupPhoto && founders.length > 0 && (
+        <section className="flex flex-col items-center gap-4 w-full">
+          <Title as="h2" en="Our elders" ta="நம் பெரியவர்கள்" />
+          <div className="flex justify-center gap-5 sm:gap-8 w-full">
+            {founders.map((p, i) => (
+              <a key={p.id} href={href.person(p.id)} className="no-underline text-album-leaf flex flex-col items-center gap-2 w-[44%] max-w-[230px] lift">
+                <Print tilt={i === 0 ? -2 : 2} tape={i === 0 ? 'turmeric' : 'terracotta'} className="w-full">
+                  <Face member={p} className="w-full aspect-[4/5]" rounded="rounded-md" />
+                </Print>
+                <span className="text-center font-extrabold leading-tight text-[17px]">{p.fullName}</span>
+                {p.tamilName && p.tamilName.trim() !== p.fullName.trim() && <span lang="ta" className="text-sm text-center">{p.tamilName}</span>}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       {firstGenChildren.length > 0 && (
         <section className="flex flex-col items-center gap-4 w-full">
           <div className="text-center flex flex-col items-center">
@@ -91,7 +132,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
       )}
 
       {today.length > 0 && (
-        <section aria-label="Birthdays today" className="flex flex-col gap-3">
+        <section aria-label="Birthdays today" className="hidden md:flex flex-col gap-3">
           {today.map((m) => (
             <div key={m.id} className="bg-white rounded-[22px] border-[3px] border-album-turmeric p-3 flex flex-wrap items-center gap-3">
               <a href={href.person(m.id)} className="no-underline text-album-leaf flex items-center gap-3 flex-[1_1_220px] min-w-0">
@@ -109,7 +150,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
         </section>
       )}
 
-      <section className="flex flex-col gap-3.5">
+      <section className="hidden md:flex flex-col gap-3.5">
         <Title as="h2" en="What would you like to do?" ta="என்ன செய்ய விரும்புகிறீர்கள்?" />
         <div className="grid gap-3.5 grid-cols-1 sm:grid-cols-3">
           <Tile to={href.find()} en="Find a relative" ta="உறவினரைத் தேடு" icon={Icon.search} bg="rgb(var(--c-sage))" />
@@ -119,13 +160,14 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
       </section>
 
       <section id="birthdays" aria-label="Coming birthdays" className="flex flex-col gap-3 scroll-mt-24">
-        <Title as="h2" en="Up Coming birthdays" ta="வரும் பிறந்தநாட்கள்" />
-        {soon.length === 0 ? (
+        <Title as="h2" en="Upcoming birthdays" ta="வரும் பிறந்தநாட்கள்" />
+        {soon.length === 0 && todayInList.length === 0 ? (
           <span className="text-lg">No birthdays in the next month.</span>
         ) : (
           <div className="flex flex-col gap-2 max-w-[640px]">
-            {soon.map(({ member, date, inDays }) => (
-              <a key={member.id} href={href.person(member.id)} className="no-underline text-album-leaf bg-white rounded-[18px] p-2 pr-4 flex items-center gap-3 shadow-soft">
+            {soon.length === 0 && <span className="hidden md:block text-lg">No birthdays in the next month.</span>}
+            {[...todayInList, ...soon].map(({ member, date, inDays }) => (
+              <a key={member.id} href={href.person(member.id)} className={`${inDays === 0 ? 'md:hidden ' : ''}no-underline text-album-leaf bg-white rounded-[18px] p-2 pr-4 flex items-center gap-3 shadow-soft`}>
                 <span className="w-[52px] h-[52px] rounded-[14px] bg-album-leaf text-white flex flex-col items-center justify-center leading-none flex-shrink-0">
                   <span className="text-xl font-extrabold">{date.getDate()}</span>
                   <span className="text-xs">{MONTHS[date.getMonth()].toUpperCase()}</span>
@@ -133,7 +175,7 @@ export const HomePage: React.FC<{ family: Family }> = ({ family }) => {
                 <span className="flex-1 min-w-0 flex flex-col leading-tight">
                   <span className="text-lg font-extrabold truncate">{member.fullName}</span>
                 </span>
-                <span className="text-[15px] flex-shrink-0">{inDays === 1 ? 'tomorrow' : `in ${inDays} days`}</span>
+                <span className={`text-[15px] flex-shrink-0 ${inDays === 0 ? 'font-extrabold text-album-terracotta' : ''}`}>{inDays === 0 ? '🎂 today' : inDays === 1 ? 'tomorrow' : `in ${inDays} days`}</span>
               </a>
             ))}
           </div>
@@ -168,4 +210,16 @@ const GroupSilhouette: React.FC = () => (
     </svg>
     <span className="absolute left-3 top-3 bg-white/85 rounded-full px-3 py-0.5 text-sm font-semibold">The family photo goes here</span>
   </>
+);
+
+/** The first generation side by side inside one album print, from their own profile photos. */
+const EldersTogether: React.FC<{ people: FamilyMember[] }> = ({ people }) => (
+  <div className={`grid gap-2 ${people.length > 1 ? 'grid-cols-2' : 'grid-cols-1 max-w-[60%] mx-auto'}`}>
+    {people.map((p) => (
+      <a key={p.id} href={href.person(p.id)} className="no-underline text-album-leaf flex flex-col items-center gap-1">
+        <Face member={p} className="w-full aspect-[4/5]" rounded="rounded-md" />
+        <span className="text-center font-extrabold leading-tight text-[15px] sm:text-[17px] pt-0.5">{p.fullName}</span>
+      </a>
+    ))}
+  </div>
 );

@@ -72,9 +72,9 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
       <button
         type="button"
         onClick={() => navigateBack(href.find())}
-        className={`${btnSecondary} self-start rounded-full min-h-[42px] px-4 py-1.5 cursor-pointer touch-manipulation`}
+        className={`${btnSecondary} self-start rounded-full min-h-[42px] px-4 py-1.5 cursor-pointer touch-manipulation max-md:min-h-[44px] max-md:px-1 max-md:-ml-1 max-md:gap-1 max-md:border-0 max-md:bg-transparent max-md:hover:bg-transparent`}
       >
-        <Svg icon={Icon.back} className="w-4 h-4" stroke={2.4} /> Back
+        <Svg icon={Icon.back} className="w-4 h-4 max-md:w-5 max-md:h-5" stroke={2.4} /> Back
       </button>
 
       {/* Main photo row: Center aligned, only photo and name are displayed */}
@@ -135,6 +135,33 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
           </div>
         ))}
       </div>
+
+      {/* Phones only: the key details right away, no hidden tap (computers: tap the photo, as before). */}
+      <section aria-label={`About ${m.fullName}`} className="md:hidden flex flex-col items-center gap-3 -mt-2 w-full max-w-[420px] mx-auto">
+        <div className="flex flex-col items-center gap-1 text-center">
+          <span className="text-[17px] font-semibold text-album-leaf/85">{whoLine(family, m)}</span>
+          {(m.birthDate || (m.currentCity && !m.isDeceased)) && (
+            <span className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[17px]">
+              {m.birthDate && (
+                <span className="flex items-center gap-1.5"><Svg icon={Icon.cake} className="w-[18px] h-[18px] text-album-terracotta" stroke={2.2} />{formatDateLong(m.birthDate)}</span>
+              )}
+              {m.currentCity && !m.isDeceased && (
+                <span className="flex items-center gap-1.5"><Svg icon={Icon.pin} className="w-[18px] h-[18px] text-album-terracotta" stroke={2.2} />{m.currentCity}</span>
+              )}
+            </span>
+          )}
+          {m.isDeceased && (
+            <span className="flex items-center gap-2 text-[15px] pt-0.5"><JasmineGarland className="w-10 h-auto" /> In loving memory</span>
+          )}
+        </div>
+        <div className="w-full flex flex-col gap-2">
+          <ContactButtons member={m} />
+          <button type="button" onClick={() => setTurnedMember(m)}
+            className={`${btnSecondary} w-full min-h-[52px] cursor-pointer`}>
+            More about {firstName(m)}
+          </button>
+        </div>
+      </section>
 
       {/* Children only, displayed below */}
       {children.length > 0 && (
