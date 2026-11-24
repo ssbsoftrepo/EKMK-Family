@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FamilyMember } from '../../types/family';
-import { Family, firstName, whoLine } from '../family';
+import { Family, byAge, firstName, whoLine } from '../family';
 import { relate } from '../kinship';
 import { href, rememberMe } from '../router';
 import { Face, Hand, Icon, Print, Svg, Title, btnPrimary, btnSecondary } from '../ui';
@@ -123,7 +123,7 @@ const Picker: React.FC<{
   const list = useMemo(() => {
     const s = q.trim().toLowerCase();
     const words = s.split(/\s+/).filter(Boolean);
-    return family.members
+    const filtered = family.members
       .filter((m) => m.id !== exclude)
       .filter((m) =>
         words.length === 0 ||
@@ -132,13 +132,8 @@ const Picker: React.FC<{
             (val) => val && val.toLowerCase().includes(w)
           )
         )
-      )
-      .sort(
-        (a, b) =>
-          (a.generation || 99) - (b.generation || 99) ||
-          (a.birthDate ?? '9999').localeCompare(b.birthDate ?? '9999') ||
-          a.fullName.localeCompare(b.fullName)
       );
+    return byAge(filtered);
   }, [family, q, exclude]);
   return (
     <div className="flex flex-col gap-4">

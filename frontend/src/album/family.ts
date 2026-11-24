@@ -188,7 +188,7 @@ export const byAge = (list: FamilyMember[]) =>
     } else if (!da && db) {
       return 1;
     }
-    return a.fullName.localeCompare(b.fullName);
+    return (a.generation || 99) - (b.generation || 99) || a.fullName.localeCompare(b.fullName);
   });
 
 export const coupleLabel = (people: FamilyMember[]) => people.map(firstName).join(' & ');

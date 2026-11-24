@@ -57,9 +57,9 @@ export const AlbumApp: React.FC = () => {
   // Cache photo for gate page & instant loading
   useEffect(() => {
     if (headerPhoto) {
-      try { localStorage.setItem('kmk_cached_family_photo', headerPhoto); } catch {}
+      try { localStorage.setItem('kmk_cached_family_photo', headerPhoto); } catch { }
     } else {
-      try { localStorage.removeItem('kmk_cached_family_photo'); } catch {}
+      try { localStorage.removeItem('kmk_cached_family_photo'); } catch { }
     }
   }, [headerPhoto]);
 
@@ -107,7 +107,7 @@ export const AlbumApp: React.FC = () => {
               onClick={tapLogo}
               className={`no-underline flex flex-col leading-tight min-w-0 ${night ? 'text-white' : 'text-album-leaf'} hover:opacity-90`}
             >
-              <span className="text-lg sm:text-xl font-extrabold whitespace-nowrap tracking-tight">KMK Family Tree</span>
+              <span className="text-lg sm:text-xl font-extrabold whitespace-nowrap tracking-tight">KMK Family Album</span>
               <span lang="ta" className="text-[12px] sm:text-[14px] whitespace-nowrap text-album-leaf/80">இது எங்கள் குடும்பம்</span>
             </a>
           </div>
@@ -127,11 +127,10 @@ export const AlbumApp: React.FC = () => {
               <button
                 type="button"
                 onClick={familySignOut}
-                className={`hidden md:inline-block min-h-[34px] sm:min-h-[40px] px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-[15px] font-bold transition-colors border cursor-pointer shrink-0 whitespace-nowrap ${
-                  night
+                className={`hidden md:inline-block min-h-[34px] sm:min-h-[40px] px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-[15px] font-bold transition-colors border cursor-pointer shrink-0 whitespace-nowrap ${night
                     ? 'border-white/30 text-white hover:bg-white/10'
                     : 'border-album-line text-album-leaf hover:bg-album-paper'
-                }`}
+                  }`}
               >
                 Sign out
               </button>

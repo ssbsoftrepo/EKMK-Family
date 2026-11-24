@@ -116,7 +116,7 @@ const FamilySignIn: React.FC<{ onDone: () => void }> = ({ onDone }) => {
               <span aria-hidden="true" key={wrong} className={`site-logo w-14 h-14 rounded-full bg-album-leaf text-album-turmeric flex items-center justify-center text-lg font-extrabold flex-shrink-0 ${wrong ? 'logo-wobble' : ''}`}>KMK</span>
             )}
             <span className="flex flex-col leading-tight">
-              <span className="text-2xl font-extrabold">KMK Family Tree</span>
+              <span className="text-2xl font-extrabold">KMK Family Album</span>
               <span lang="ta" className="text-base">இது எங்கள் குடும்பம்</span>
             </span>
           </div>

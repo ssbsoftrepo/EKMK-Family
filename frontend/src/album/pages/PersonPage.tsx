@@ -3,7 +3,6 @@ import { FamilyMember } from '../../types/family';
 import { Family, byAge, firstName, formatDateDMY, formatDateLong, whoLine } from '../family';
 import { href, navigateBack } from '../router';
 import { Face, Hand, Icon, JasmineGarland, PersonTile, Print, Svg, btnSecondary } from '../ui';
-import { ContactButtons } from '../../components/Common/ContactButtons';
 import { formatPhone, phoneToCopy } from '../../lib/siteSettings';
 import { useBirthdayPetals } from '../Magic';
 import { birthdaysOn } from '../family';
@@ -154,13 +153,6 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
             <span className="flex items-center gap-2 text-[15px] pt-0.5"><JasmineGarland className="w-10 h-auto" /> In loving memory</span>
           )}
         </div>
-        <div className="w-full flex flex-col gap-2">
-          <ContactButtons member={m} />
-          <button type="button" onClick={() => setTurnedMember(m)}
-            className={`${btnSecondary} w-full min-h-[52px] cursor-pointer`}>
-            More about {firstName(m)}
-          </button>
-        </div>
       </section>
 
       {/* Children only, displayed below */}
@@ -170,8 +162,8 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
             <h2 className="m-0 text-lg sm:text-xl font-extrabold text-album-leaf">
               Children <span className="text-sm font-semibold text-album-leaf/70">({children.length})</span>
             </h2>
-            <span lang="ta" className="text-xs font-semibold text-album-leaf/70">
-              பிள்ளைகள்
+            <span lang="ta" className="text-xs sm:text-sm font-semibold text-album-leaf/70">
+              பிள்ளைகள் ({children.length})
             </span>
           </div>
           <div className="flex flex-wrap justify-center items-stretch gap-3.5 sm:gap-5 md:gap-6 w-full mx-auto">
@@ -362,9 +354,6 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
               </span>
               <Svg icon={Icon.next} className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-0.5" stroke={2.5} />
             </a>
-
-            {/* Contact Buttons */}
-            <ContactButtons member={turnedMember} />
 
             {/* Turn back footer */}
             <div className="flex items-center justify-end pt-2 border-t border-album-line/50">
