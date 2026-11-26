@@ -6,6 +6,9 @@ import { href, rememberMe } from '../router';
 import { Face, Hand, Icon, Print, Svg, Title, btnPrimary, btnSecondary } from '../ui';
 import { ScratchReveal, WelcomeHome } from '../Magic';
 import { onceOnThisPhone, reducedMotion } from '../magic';
+import { useGridCols } from '../../lib/useIsPhone';
+
+const ROWS_PER_PAGE = 5;
 
 /**
  * "How are we related?" No login: the visitor taps their own photo once
@@ -37,12 +40,12 @@ const Related: React.FC<{ family: Family; id?: string; onFirstVisit: (m: FamilyM
   const notMe = () => { rememberMe.set(null); setMeId(null); };
 
   if (!me) {
-    return <Picker family={family} title="First, who are you?" ta="முதலில், நீங்கள் யார்?" hint="Tap your own photo. This phone will remember it." onPick={chooseMe}
+    return <Picker key="pick-me" family={family} title="First, who are you?" ta="முதலில், நீங்கள் யார்?" hint="Tap your own photo. This phone will remember it." onPick={chooseMe}
       note={them ? `then we'll show how ${firstName(them)} is related to you` : 'the family puzzle'} />;
   }
   if (!them) {
     return (
-      <Picker family={family} title="Who do you want to know about?" ta="யாரைப் பற்றி தெரிந்து கொள்ள வேண்டும்?" hint="Tap their photo." exclude={me.id}
+      <Picker key="pick-them" family={family} title="Who do you want to know about?" ta="யாரைப் பற்றி தெரிந்து கொள்ள வேண்டும்?" hint="Tap their photo." exclude={me.id}
         onPick={(m) => { window.location.hash = href.related(m.id); }} note={`Hello ${firstName(me)}!`}
         footer={<button type="button" onClick={notMe} className="underline text-base min-h-[44px] self-start">Not {firstName(me)}? Change</button>} />
     );
@@ -119,7 +122,19 @@ const Picker: React.FC<{
   onPick: (m: FamilyMember) => void; exclude?: string; footer?: React.ReactNode;
 }> = ({ family, title, ta, hint, note, onPick, exclude, footer }) => {
   const [q, setQ] = useState('');
-  const [limit, setLimit] = useState(36);
+  const [batches, setBatches] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const cols = useGridCols();
+  const limit = batches * ROWS_PER_PAGE * cols;
+
+  const handleShowMore = () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    setTimeout(() => {
+      setBatches((b) => b + 1);
+      setLoadingMore(false);
+    }, 120);
+  };
   const list = useMemo(() => {
     const s = q.trim().toLowerCase();
     const words = s.split(/\s+/).filter(Boolean);
@@ -142,7 +157,7 @@ const Picker: React.FC<{
       <div className="relative max-w-[560px]">
         <span className="absolute left-4 top-1/2 -translate-y-1/2"><Svg icon={Icon.search} className="w-6 h-6" /></span>
         <label className="sr-only" htmlFor="pick-name">Type a name</label>
-        <input id="pick-name" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type a name"
+        <input id="pick-name" type="search" value={q} onChange={(e) => { setQ(e.target.value); setBatches(1); }} placeholder="Type a name"
           className="w-full min-h-[60px] rounded-[18px] border-2 border-album-leaf bg-white pl-[52px] pr-4 text-[19px]" />
       </div>
       {list.length === 0 ? (
@@ -172,7 +187,21 @@ const Picker: React.FC<{
         </div>
       )}
       {list.length > limit && (
-        <button type="button" onClick={() => setLimit((l) => l + 36)} className={`${btnSecondary} self-center`}>Show more ({list.length - limit} left)</button>
+        <button
+          type="button"
+          onClick={handleShowMore}
+          disabled={loadingMore}
+          className={`${btnSecondary} self-center disabled:opacity-75`}
+        >
+          {loadingMore ? (
+            <>
+              <span aria-hidden="true" className="w-5 h-5 rounded-full border-2 border-album-leaf/25 border-t-album-leaf animate-spin" />
+              Loading...
+            </>
+          ) : (
+            `Show more (${list.length - limit} left)`
+          )}
+        </button>
       )}
       {footer}
     </div>

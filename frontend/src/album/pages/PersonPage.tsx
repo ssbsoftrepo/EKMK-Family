@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FamilyMember } from '../../types/family';
-import { Family, byAge, firstName, formatDateDMY, formatDateLong, whoLine } from '../family';
+import { Family, byAge, firstName, formatDateDMY, formatDateDayMonth, whoLine } from '../family';
 import { href, navigateBack } from '../router';
 import { Face, Hand, Icon, JasmineGarland, PersonTile, Print, Svg, btnSecondary } from '../ui';
 import { formatPhone, phoneToCopy } from '../../lib/siteSettings';
@@ -142,7 +142,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
           {(m.birthDate || (m.currentCity && !m.isDeceased)) && (
             <span className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[17px]">
               {m.birthDate && (
-                <span className="flex items-center gap-1.5"><Svg icon={Icon.cake} className="w-[18px] h-[18px] text-album-terracotta" stroke={2.2} />{formatDateLong(m.birthDate)}</span>
+                <span className="flex items-center gap-1.5"><Svg icon={Icon.cake} className="w-[18px] h-[18px] text-album-terracotta" stroke={2.2} />{formatDateDayMonth(m.birthDate)}</span>
               )}
               {m.currentCity && !m.isDeceased && (
                 <span className="flex items-center gap-1.5"><Svg icon={Icon.pin} className="w-[18px] h-[18px] text-album-terracotta" stroke={2.2} />{m.currentCity}</span>
@@ -267,7 +267,7 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
                     <span className="text-[11px] font-bold text-album-leaf/70 uppercase tracking-wide">
                       Date of birth · பிறந்த தேதி
                     </span>
-                    <span className="font-semibold text-album-leaf">{formatDateLong(turnedMember.birthDate)}</span>
+                    <span className="font-semibold text-album-leaf">{formatDateDayMonth(turnedMember.birthDate)}</span>
                   </div>
                 </div>
               )}
@@ -316,11 +316,12 @@ export const PersonPage: React.FC<{ family: Family; id: string }> = ({ family, i
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/50 text-album-leaf/85">
                   <JasmineGarland className="w-8 h-auto shrink-0" />
                   <span className="text-xs font-semibold">In loving memory · மறைவு</span>
-                  {(turnedMember.birthDate || turnedMember.deathDate) && (
+                  {turnedMember.deathDate && formatDateDMY(turnedMember.deathDate) && (
                     <span className="text-xs text-album-leaf/70">
-                      ({turnedMember.birthDate ? formatDateDMY(turnedMember.birthDate) : ''}
-                      {turnedMember.birthDate && turnedMember.deathDate ? ' – ' : ''}
-                      {turnedMember.deathDate ? formatDateDMY(turnedMember.deathDate) : ''})
+                      ({turnedMember.birthDate && formatDateDMY(turnedMember.birthDate)
+                        ? `${formatDateDMY(turnedMember.birthDate)} – `
+                        : ''}
+                      {formatDateDMY(turnedMember.deathDate)})
                     </span>
                   )}
                 </div>

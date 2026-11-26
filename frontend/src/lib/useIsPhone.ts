@@ -19,3 +19,28 @@ export function useIsPhone(): boolean {
   }, []);
   return phone;
 }
+
+/** Column count matching the album's `grid-cols-2 sm:grid-cols-3 md:grid-cols-5` grid. */
+export function useGridCols(): number {
+  const getCols = () => {
+    if (typeof window === 'undefined' || !window.matchMedia) return 5;
+    if (window.matchMedia('(min-width: 768px)').matches) return 5;
+    if (window.matchMedia('(min-width: 640px)').matches) return 3;
+    return 2;
+  };
+  const [cols, setCols] = useState(getCols);
+  useEffect(() => {
+    const md = window.matchMedia?.('(min-width: 768px)');
+    const sm = window.matchMedia?.('(min-width: 640px)');
+    if (!md || !sm) return;
+    const update = () => setCols(getCols());
+    update();
+    md.addEventListener('change', update);
+    sm.addEventListener('change', update);
+    return () => {
+      md.removeEventListener('change', update);
+      sm.removeEventListener('change', update);
+    };
+  }, []);
+  return cols;
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FamilyMember } from '../types/family';
 
 /** Shared pieces of the "family album" look. Text sizes start at 15px and tap targets at 44px. */
@@ -25,37 +25,65 @@ export const initials = (name?: string) => {
 
 export const Face: React.FC<{ member: FamilyMember; className?: string; rounded?: string; ring?: string }> = ({
   member, className = 'w-14 h-14', rounded = 'rounded-2xl', ring = '',
-}) => (
-  <span className={`${className} ${rounded} ${ring} overflow-hidden flex-shrink-0 flex items-end justify-center relative`} style={{ background: toneFor(member.id) }}>
-    {member.photoUrl ? (
-      <img src={member.photoUrl} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-    ) : (
-      <>
-        {/* Phones: the person's initials on the soft colour, like phone contacts. */}
-        <svg aria-hidden="true" viewBox="0 0 100 100" className="md:hidden absolute inset-0 w-full h-full">
-          <text x="50" y="52" textAnchor="middle" dominantBaseline="central" fontSize="38" fontWeight="800"
-            fill="rgb(var(--c-leaf))" fillOpacity="0.55" fontFamily="inherit">{initials(member.fullName)}</text>
-        </svg>
-        {/* Computers: the friendly figure, as before. */}
-        <svg aria-hidden="true" viewBox="0 0 100 100" className="hidden md:block w-[85%] h-[85%]">
-          <g fill="#FFFFFF" fillOpacity="0.65">
-            <circle cx="50" cy="38" r="18" />
-            <path d="M14 100c4-24 18-36 36-36s32 12 36 36z" />
-          </g>
-        </svg>
-      </>
-    )}
-    {member.isDeceased && (
-      <span
-        role="img"
-        aria-label="in loving memory"
-        className="absolute inset-x-0 bottom-0 pointer-events-none bg-gradient-to-t from-black/35 via-black/5 to-transparent pt-2.5 pb-0.5"
-      >
-        <JasmineGarland className="w-full h-auto drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]" />
-      </span>
-    )}
-  </span>
-);
+}) => {
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
+
+  useEffect(() => {
+    setErrored(false);
+    const img = imgRef.current;
+    setLoaded(!!(img && img.complete && img.naturalWidth > 0));
+  }, [member.photoUrl]);
+
+  const showImg = !!member.photoUrl && !errored;
+
+  return (
+    <span className={`${className} ${rounded} ${ring} overflow-hidden flex-shrink-0 flex items-end justify-center relative`} style={{ background: toneFor(member.id) }}>
+      {showImg ? (
+        <>
+          {!loaded && (
+            <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center bg-white/25 animate-pulse">
+              <span className="w-5 h-5 rounded-full border-2 border-album-leaf/25 border-t-album-leaf/75 animate-spin" />
+            </span>
+          )}
+          <img
+            ref={imgRef}
+            src={member.photoUrl}
+            alt=""
+            onLoad={() => setLoaded(true)}
+            onError={() => setErrored(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-150 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+          />
+        </>
+      ) : (
+        <>
+          {/* Phones: the person's initials on the soft colour, like phone contacts. */}
+          <svg aria-hidden="true" viewBox="0 0 100 100" className="md:hidden absolute inset-0 w-full h-full">
+            <text x="50" y="52" textAnchor="middle" dominantBaseline="central" fontSize="38" fontWeight="800"
+              fill="rgb(var(--c-leaf))" fillOpacity="0.55" fontFamily="inherit">{initials(member.fullName)}</text>
+          </svg>
+          {/* Computers: the friendly figure, as before. */}
+          <svg aria-hidden="true" viewBox="0 0 100 100" className="hidden md:block w-[85%] h-[85%]">
+            <g fill="#FFFFFF" fillOpacity="0.65">
+              <circle cx="50" cy="38" r="18" />
+              <path d="M14 100c4-24 18-36 36-36s32 12 36 36z" />
+            </g>
+          </svg>
+        </>
+      )}
+      {member.isDeceased && (
+        <span
+          role="img"
+          aria-label="in loving memory"
+          className="absolute inset-x-0 bottom-0 pointer-events-none bg-gradient-to-t from-black/35 via-black/5 to-transparent pt-2.5 pb-0.5"
+        >
+          <JasmineGarland className="w-full h-auto drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]" />
+        </span>
+      )}
+    </span>
+  );
+};
 
 /*
  * A jasmine garland (malli poo), as draped over the photo of an elder who has passed away,
